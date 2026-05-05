@@ -36,7 +36,7 @@
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/daviihr/TMP.git
+git clone https://github.com/daviiihr/TMP.git
 cd TMP
 
 # Instalar dependencias
