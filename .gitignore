@@ -55,6 +55,3 @@ CLAUDE.md
 # --- Misc ---
 *.pem
 .vercel
-
-# --- Test Files ---
-*.json
