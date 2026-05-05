@@ -73,10 +73,16 @@ export default function HeroScrollSection() {
           1
         );
 
-        // Phase 2: Controller scales down and rotates slightly (30% → 80%)
-        tl.to(
+        // Phase 2: Controller fades in and scales down (30% → 80%)
+        tl.fromTo(
           controllerRef.current,
           {
+            opacity: 0,
+            scale: 1.2,
+            y: 100,
+          },
+          {
+            opacity: 1,
             scale: 0.75,
             rotation: 5,
             y: -40,

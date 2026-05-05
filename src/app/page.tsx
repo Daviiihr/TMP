@@ -52,9 +52,9 @@ export default function Home() {
           </ul>
 
           {/* CTA */}
-          <button className="px-5 py-2 text-xs font-bold uppercase tracking-widest text-arena-cyan border border-arena-cyan/30 rounded-lg transition-all duration-300 hover:bg-arena-cyan/10 hover:border-arena-cyan/60 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]">
+          <a href="login" className="px-5 py-2 text-xs font-bold uppercase tracking-widest text-arena-cyan border border-arena-cyan/30 rounded-lg transition-all duration-300 hover:bg-arena-cyan/10 hover:border-arena-cyan/60 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]">
             Unirse
-          </button>
+          </a>
         </div>
 
         {/* Nav background blur */}
