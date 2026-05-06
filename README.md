@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-14-black?logo=next.js" alt="Next.js 14" />
+  <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js" alt="Next.js 16" />
   <img src="https://img.shields.io/badge/TypeScript-5-blue?logo=typescript" alt="TypeScript" />
   <img src="https://img.shields.io/badge/TailwindCSS-4-06B6D4?logo=tailwindcss" alt="TailwindCSS" />
   <img src="https://img.shields.io/badge/GSAP-3-88CE02?logo=greensock" alt="GSAP" />
@@ -34,6 +34,23 @@
 
 ## 🚀 Inicio Rápido
 
+### Requisitos
+
+- Node.js
+- Docker Desktop
+- WSL 2 habilitado si usas Windows
+
+En Windows, Docker Desktop usa WSL 2 para ejecutar contenedores Linux. Si Docker muestra errores del subsistema de Linux, instala o actualiza WSL:
+
+```powershell
+wsl --install
+wsl --update
+```
+
+Luego reinicia el equipo o Docker Desktop.
+
+### Ejecutar el proyecto
+
 ```bash
 # Clonar el repositorio
 git clone https://github.com/daviiihr/TMP.git
@@ -42,11 +59,117 @@ cd TMP
 # Instalar dependencias
 npm install
 
+# Copiar variables de entorno
+cp .env.example .env.local
+
+# Levantar PostgreSQL y Redis
+docker compose up -d
+
 # Iniciar servidor de desarrollo
 npm run dev
 ```
 
+En PowerShell, si `cp` no funciona, usa:
+
+```powershell
+copy .env.example .env.local
+```
+
 Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+
+Rutas para probar:
+
+- Login: [http://localhost:3000/login](http://localhost:3000/login)
+- Registro: [http://localhost:3000/register](http://localhost:3000/register)
+- PostgreSQL: [http://localhost:3000/api/health/database](http://localhost:3000/api/health/database)
+- Redis: [http://localhost:3000/api/health/redis](http://localhost:3000/api/health/redis)
+
+> Importante: después de crear o modificar `.env.local`, reinicia `npm run dev`.
+
+---
+
+## 🧩 Variables de entorno
+
+El archivo `.env.local` debe quedar así para desarrollo local:
+
+```env
+DATABASE_URL=postgresql://tmp_user:tmp_password@localhost:5433/tmp_db
+REDIS_URL=redis://localhost:6379
+
+JWT_ACCESS_SECRET=change_me_access_secret
+JWT_REFRESH_SECRET=change_me_refresh_secret
+```
+
+PostgreSQL se publica en el puerto local `5433` porque en Windows puede existir otra instalación local de PostgreSQL usando `5432`.
+
+---
+
+## 🗄️ Base de datos y Redis
+
+Los servicios se levantan con:
+
+```bash
+docker compose up -d
+```
+
+Servicios creados:
+
+| Servicio | Contenedor | Puerto local | Uso |
+|----------|------------|--------------|-----|
+| PostgreSQL | `tmp-postgres` | `5433` | Usuarios y datos principales |
+| Redis | `tmp-redis` | `6379` | Refresh tokens y cache |
+
+Comandos útiles:
+
+```powershell
+# Ver contenedores activos
+docker ps
+
+# Ver logs
+docker compose logs postgres
+docker compose logs redis
+
+# Detener servicios
+docker compose down
+```
+
+Para ver cuentas creadas:
+
+```powershell
+docker exec tmp-postgres psql -U tmp_user -d tmp_db -c "SELECT id, username, email, region, role, created_at FROM users ORDER BY created_at DESC;"
+```
+
+También puedes conectar DBeaver o pgAdmin con:
+
+```text
+Host: localhost
+Port: 5433
+Database: tmp_db
+User: tmp_user
+Password: tmp_password
+```
+
+---
+
+## 🔐 Login y registro
+
+Se agregaron endpoints locales en Next.js para conectar los formularios con PostgreSQL y Redis:
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `POST` | `/api/auth/register` | Crea usuario en PostgreSQL con contraseña hasheada |
+| `POST` | `/api/auth/login` | Valida credenciales, genera JWT y guarda refresh token en Redis |
+| `GET` | `/api/health/database` | Verifica conexión a PostgreSQL |
+| `GET` | `/api/health/redis` | Verifica conexión a Redis |
+
+El registro usa los campos actuales de `src/app/register/page.tsx`:
+
+- `username`
+- `email`
+- `password`
+- `region`
+
+La tabla principal está definida en [`database/init/001_schema.sql`](database/init/001_schema.sql).
 
 ---
 
@@ -54,8 +177,13 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
 ```
 TMP/
+├── database/
+│   └── init/
+│       └── 001_schema.sql          # Tabla users para login y registro
+│
 ├── docs/                           # Documentación del proyecto
-│   └── CONTEXT_SISTEMA_TORNEOS.md  # Arquitectura, reglas de negocio, modelo de datos
+│   ├── CONTEXT_SISTEMA_TORNEOS.md  # Arquitectura, reglas de negocio, modelo de datos
+│   └── DATABASE_REDIS_SETUP.md     # Pruebas de PostgreSQL, Redis y auth
 │
 ├── public/                         # Assets estáticos
 │   └── images/
@@ -65,9 +193,15 @@ TMP/
 │
 ├── src/
 │   ├── app/                        # Next.js App Router
+│   │   ├── api/
+│   │   │   ├── auth/login          # Autenticación con PostgreSQL + Redis
+│   │   │   ├── auth/register       # Registro de usuarios
+│   │   │   └── health              # Healthchecks de PostgreSQL y Redis
 │   │   ├── globals.css             # Estilos globales y tokens de diseño
+│   │   ├── login/page.tsx          # Formulario de login
 │   │   ├── layout.tsx              # Layout raíz con fuentes y metadata
-│   │   └── page.tsx                # Página principal
+│   │   ├── page.tsx                # Página principal
+│   │   └── register/page.tsx       # Formulario de registro
 │   │
 │   └── components/                 # Componentes React
 │       ├── HeroScrollSection.tsx   # Hero con animaciones GSAP y parallax
@@ -75,6 +209,8 @@ TMP/
 │       └── CTASection.tsx          # Call to action
 │
 ├── package.json
+├── docker-compose.yml
+├── .env.example
 ├── tsconfig.json
 ├── next.config.ts
 ├── postcss.config.mjs
@@ -90,10 +226,13 @@ TMP/
 
 | Capa | Tecnología |
 |------|-----------|
-| **Framework** | Next.js 14 (App Router) |
+| **Framework** | Next.js 16 (App Router) |
 | **Lenguaje** | TypeScript 5 |
 | **Estilos** | TailwindCSS 4 |
 | **Animaciones** | GSAP 3 + ScrollTrigger |
+| **Base de datos** | PostgreSQL |
+| **Cache / sesiones** | Redis |
+| **Auth local** | bcrypt + JWT |
 | **Linting** | ESLint |
 
 ### Stack completo del sistema (backend — en desarrollo)
@@ -117,6 +256,14 @@ TMP/
 | `npm run build` | Build de producción optimizado |
 | `npm run start` | Servidor de producción |
 | `npm run lint` | Análisis estático con ESLint |
+
+Validaciones recomendadas antes de subir cambios:
+
+```bash
+npm run lint
+npx tsc --noEmit
+npm run build
+```
 
 ---
 

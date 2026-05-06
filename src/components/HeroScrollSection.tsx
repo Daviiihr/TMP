@@ -8,6 +8,18 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const PARTICLES = Array.from({ length: 15 }, (_, i) => {
+  const seed = i + 1;
+
+  return {
+    left: `${(seed * 37) % 100}%`,
+    top: `${60 + ((seed * 23) % 40)}%`,
+    animationDuration: `${8 + ((seed * 11) % 12)}s`,
+    animationDelay: `${(seed * 7) % 10}s`,
+    size: `${1 + ((seed * 5) % 3)}px`,
+  };
+});
+
 export default function HeroScrollSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -402,20 +414,20 @@ export default function HeroScrollSection() {
         </div>
 
         {/* Floating particles (CSS only) */}
-        {Array.from({ length: 15 }).map((_, i) => (
+        {PARTICLES.map((particle, i) => (
           <div
             key={i}
             className="particle"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${60 + Math.random() * 40}%`,
+              left: particle.left,
+              top: particle.top,
               animationName: "drift",
-              animationDuration: `${8 + Math.random() * 12}s`,
-              animationDelay: `${Math.random() * 10}s`,
+              animationDuration: particle.animationDuration,
+              animationDelay: particle.animationDelay,
               animationIterationCount: "infinite",
               animationTimingFunction: "linear",
-              width: `${1 + Math.random() * 3}px`,
-              height: `${1 + Math.random() * 3}px`,
+              width: particle.size,
+              height: particle.size,
               background:
                 i % 3 === 0
                   ? "rgba(0, 240, 255, 0.4)"
