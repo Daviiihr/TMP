@@ -73,7 +73,7 @@ export default function CTASection() {
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button className="group relative px-10 py-4 bg-gradient-to-r from-arena-cyan to-arena-cyan-dim text-zinc-950 font-bold text-sm uppercase tracking-widest rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_0_50px_rgba(0,240,255,0.3)] hover:scale-105 w-full sm:w-auto">
-                <span className="relative z-10">Crear cuenta gratis</span>
+                <a href="register" className="relative z-10">Crear cuenta gratis</a>
                 <div className="absolute inset-0 bg-gradient-to-r from-arena-cyan via-white to-arena-cyan opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
               </button>
               <button className="px-10 py-4 border border-zinc-700 text-zinc-300 font-semibold text-sm uppercase tracking-widest rounded-xl transition-all duration-300 hover:border-arena-cyan/50 hover:text-arena-cyan hover:shadow-[0_0_30px_rgba(0,240,255,0.1)] w-full sm:w-auto">
