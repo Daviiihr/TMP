@@ -290,7 +290,7 @@ export default function HeroScrollSection() {
 
           <div ref={ctaRef} className="mt-8 pointer-events-auto">
             <button className="group relative px-8 py-3.5 bg-gradient-to-r from-arena-cyan to-arena-cyan-dim text-zinc-950 font-bold text-sm uppercase tracking-widest rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,240,255,0.3)] hover:scale-105">
-              <span className="relative z-10">Únete ahora</span>
+              <a href="login" className="relative z-10">Únete ahora</a>
               <div className="absolute inset-0 bg-gradient-to-r from-arena-cyan via-white to-arena-cyan opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
             </button>
           </div>
