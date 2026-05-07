@@ -22,14 +22,25 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulación de llamada al backend (NestJS)
-    console.log("Registrando nuevo usuario:", formData);
-    
-    setTimeout(() => {
+
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = (await response.json()) as { message?: string };
+
+      alert(data.message ?? "Cuenta creada exitosamente.");
+
+      if (response.ok) {
+        window.location.href = "/login";
+      }
+    } catch {
+      alert("No se pudo conectar con el servidor.");
+    } finally {
       setIsLoading(false);
-      alert("Cuenta creada exitosamente. Ahora puedes iniciar sesión.");
-    }, 1500);
+    }
   };
 
   return (
@@ -100,7 +111,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-arena-magenta transition-all duration-300 appearance-none"
               >
-                <option value="" disabled selected>Selecciona tu región</option>
+                <option value="" disabled>Selecciona tu región</option>
                 <option value="NA">Norteamérica (NA)</option>
                 <option value="EU">Europa (EU)</option>
                 <option value="LATAM">Latinoamérica (LATAM)</option>

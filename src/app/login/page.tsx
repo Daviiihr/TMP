@@ -11,14 +11,21 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulación de llamada al backend (NestJS)
-    console.log("Intentando iniciar sesión con:", { email, password });
-    
-    setTimeout(() => {
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = (await response.json()) as { message?: string };
+
+      alert(data.message ?? "Sesion iniciada.");
+    } catch {
+      alert("No se pudo conectar con el servidor.");
+    } finally {
       setIsLoading(false);
-      alert("Conecta el backend de NestJS para validar las credenciales");
-    }, 1500);
+    }
   };
 
   return (
