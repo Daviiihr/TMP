@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { createAccessToken, createRefreshToken, type AuthUser } from "@/lib/auth";
 import { getPostgresPool } from "@/lib/database";
 import { getRedisClient } from "@/lib/redis";
+import { redirect } from "next/dist/server/api-utils";
+import DashboardPage from "@/app/dashboard/page";
 
 export const runtime = "nodejs";
 
@@ -109,6 +111,7 @@ export async function POST(request: Request) {
       message: "Sesion iniciada.",
       user: authUser,
       accessToken,
+      redirect: "/dashboard"
     });
 
     response.cookies.set("tmp_refresh_token", refreshToken, {
@@ -117,6 +120,15 @@ export async function POST(request: Request) {
       secure: process.env.NODE_ENV === "production",
       path: "/",
       maxAge: 7 * 24 * 60 * 60,
+    });
+
+    // Set access token cookie
+    response.cookies.set("accessToken", accessToken, {
+      httpOnly: true, // Consider false if you need to access it from client-side JS
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 15 * 60, // 15 minutes to match token expiration
     });
 
     return response;
