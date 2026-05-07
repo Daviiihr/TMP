@@ -2,11 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,9 +20,13 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = (await response.json()) as { message?: string };
+      const data = (await response.json()) as { message?: string; redirect?: string };
 
-      alert(data.message ?? "Sesion iniciada.");
+      if (data.redirect) {
+        router.push(data.redirect);
+      } else {
+        alert(data.message ?? "Sesion iniciada.");
+      }
     } catch {
       alert("No se pudo conectar con el servidor.");
     } finally {
