@@ -22,10 +22,9 @@ export default function LoginPage() {
       });
       const data = (await response.json()) as { message?: string; redirect?: string };
 
+      alert(data.message ?? "Sesion iniciada.");
       if (data.redirect) {
         router.push(data.redirect);
-      } else {
-        alert(data.message ?? "Sesion iniciada.");
       }
     } catch {
       alert("No se pudo conectar con el servidor.");

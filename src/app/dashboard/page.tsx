@@ -1,13 +1,27 @@
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getPostgresPool } from "@/lib/database";
 
 export default async function DashboardPage() {
   const session = await getSession();
 
-  if (!session || session.role !== "PLAYER") {
+  // Cualquier usuario autenticado puede ver este panel
+  if (!session) {
     redirect("/");
   }
+
+  const pool = getPostgresPool();
+  
+  // Buscar torneos creados por este usuario
+  const myTournamentsResult = await pool.query(
+    `SELECT id, name, status, created_at 
+     FROM tournaments 
+     WHERE organizer_id = $1 
+     ORDER BY created_at DESC`,
+    [session.id]
+  );
+  const myTournaments = myTournamentsResult.rows;
 
   return (
     <main className="min-h-screen bg-[#09090b] text-zinc-100 p-4 md:p-8">
@@ -23,6 +37,14 @@ export default async function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {session.role === "ADMIN" && (
+              <Link 
+                href="/admin/dashboard" 
+                className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-zinc-950 bg-arena-magenta border border-arena-magenta rounded-lg transition-all duration-300 hover:bg-arena-magenta/80"
+              >
+                Panel Admin
+              </Link>
+            )}
             <Link 
               href="/profile" 
               className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-white bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-300 hover:bg-zinc-700 hover:border-zinc-600"
@@ -48,15 +70,40 @@ export default async function DashboardPage() {
             <section className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold uppercase tracking-tight text-white">
-                  Torneos Disponibles
+                  Mis Torneos Creados
                 </h2>
-                <span className="px-2 py-1 text-[10px] font-bold uppercase bg-arena-magenta/20 text-arena-magenta rounded border border-arena-magenta/30">
-                  Próximamente
-                </span>
+                <button className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-arena-cyan text-zinc-950 rounded-lg hover:bg-arena-cyan-dim transition-colors">
+                  + Crear Torneo
+                </button>
               </div>
-              <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-950/50">
-                <p className="text-zinc-500 font-medium italic">Falta implementar</p>
-              </div>
+              
+              {myTournaments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-950/50">
+                  <p className="text-zinc-500 font-medium mb-4">No has creado ningún torneo aún.</p>
+                  <p className="text-xs text-zinc-600 max-w-sm text-center">
+                    Puedes crear hasta 3 torneos por día, pero solo puedes tener 1 torneo activo a la vez.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {myTournaments.map((t: any) => (
+                    <div key={t.id} className="flex items-center justify-between p-4 bg-zinc-950/50 rounded-lg border border-zinc-800 hover:border-arena-cyan/30 transition-colors">
+                      <div>
+                        <h3 className="font-bold text-white">{t.name}</h3>
+                        <p className="text-xs text-zinc-500 mt-1">Creado: {new Date(t.created_at).toLocaleDateString()}</p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded border ${t.status === 'DRAFT' ? 'bg-zinc-800 text-zinc-400 border-zinc-700' : 'bg-arena-cyan/20 text-arena-cyan border-arena-cyan/30'}`}>
+                          {t.status}
+                        </span>
+                        <button className="text-xs font-bold uppercase text-white hover:text-arena-cyan transition-colors">
+                          Gestionar →
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
 
             <section className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
