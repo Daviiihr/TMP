@@ -1,8 +1,22 @@
 import HeroScrollSection from "@/components/HeroScrollSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import CTASection from "@/components/CTASection";
+import { getSession } from "@/lib/session";
+import { getPostgresPool } from "@/lib/database";
+import Link from "next/link";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getSession();
+  let tournaments: any[] = [];
+  
+  if (session) {
+    const pool = getPostgresPool();
+    const res = await pool.query(
+      "SELECT id, name, status, created_at FROM tournaments WHERE status NOT IN ('CANCELLED', 'COMPLETED') ORDER BY created_at DESC LIMIT 3"
+    );
+    tournaments = res.rows;
+  }
+
   return (
     <main className="relative bg-[#09090b]">
       {/* Navigation */}
@@ -51,10 +65,28 @@ export default function Home() {
             </li>
           </ul>
 
-          {/* CTA */}
-          <a href="login" className="px-5 py-2 text-xs font-bold uppercase tracking-widest text-arena-cyan border border-arena-cyan/30 rounded-lg transition-all duration-300 hover:bg-arena-cyan/10 hover:border-arena-cyan/60 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]">
-            Unirse
-          </a>
+          {/* CTA / User Profile */}
+          {session ? (
+            <div className="flex items-center gap-4">
+              <Link href="/dashboard" className="flex items-center gap-2 group px-2 py-1.5 rounded-xl border border-zinc-800/50 hover:border-arena-cyan/30 bg-zinc-900/50 backdrop-blur transition-all duration-300">
+                <div className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-arena-cyan font-bold text-xs uppercase shadow-[0_0_10px_rgba(0,240,255,0.1)]">
+                  {session.username.charAt(0)}
+                </div>
+                <div className="hidden sm:flex flex-col pr-2">
+                  <span className="text-xs font-bold text-white leading-tight">
+                    {session.username}
+                  </span>
+                  <span className="text-[9px] text-arena-cyan uppercase tracking-widest leading-tight">
+                    En línea
+                  </span>
+                </div>
+              </Link>
+            </div>
+          ) : (
+            <a href="login" className="px-5 py-2 text-xs font-bold uppercase tracking-widest text-arena-cyan border border-arena-cyan/30 rounded-lg transition-all duration-300 hover:bg-arena-cyan/10 hover:border-arena-cyan/60 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]">
+              Unirse
+            </a>
+          )}
         </div>
 
         {/* Nav background blur */}
@@ -64,7 +96,7 @@ export default function Home() {
       {/* Sections */}
       <HeroScrollSection />
       <FeaturesSection />
-      <CTASection />
+      <CTASection session={session} tournaments={tournaments} />
     </main>
   );
 }
