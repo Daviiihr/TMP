@@ -5,13 +5,20 @@ import { getSession } from "@/lib/session";
 import { getPostgresPool } from "@/lib/database";
 import Link from "next/link";
 
+type TournamentSummary = {
+  id: string;
+  name: string;
+  status: string;
+  created_at: Date;
+};
+
 export default async function Home() {
   const session = await getSession();
-  let tournaments: any[] = [];
+  let tournaments: TournamentSummary[] = [];
   
   if (session) {
     const pool = getPostgresPool();
-    const res = await pool.query(
+    const res = await pool.query<TournamentSummary>(
       "SELECT id, name, status, created_at FROM tournaments WHERE status NOT IN ('CANCELLED', 'COMPLETED') ORDER BY created_at DESC LIMIT 3"
     );
     tournaments = res.rows;

@@ -3,6 +3,13 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getPostgresPool } from "@/lib/database";
 
+type TournamentSummary = {
+  id: string;
+  name: string;
+  status: string;
+  created_at: Date;
+};
+
 export default async function DashboardPage() {
   const session = await getSession();
 
@@ -14,7 +21,7 @@ export default async function DashboardPage() {
   const pool = getPostgresPool();
   
   // Buscar torneos creados por este usuario
-  const myTournamentsResult = await pool.query(
+  const myTournamentsResult = await pool.query<TournamentSummary>(
     `SELECT id, name, status, created_at 
      FROM tournaments 
      WHERE organizer_id = $1 
@@ -86,7 +93,7 @@ export default async function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {myTournaments.map((t: any) => (
+                  {myTournaments.map((t) => (
                     <div key={t.id} className="flex items-center justify-between p-4 bg-zinc-950/50 rounded-lg border border-zinc-800 hover:border-arena-cyan/30 transition-colors">
                       <div>
                         <h3 className="font-bold text-white">{t.name}</h3>

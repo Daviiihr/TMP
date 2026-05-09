@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
+import { allowedEmailDomainsMessage, emailMatchesAllowedDomain } from "@/lib/auth";
 import { getPostgresPool } from "@/lib/database";
 
 export const runtime = "nodejs";
@@ -32,6 +33,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { ok: false, message: "Ingresa un correo valido." },
         { status: 400 },
+      );
+    }
+
+    if (!emailMatchesAllowedDomain(email)) {
+      return NextResponse.json(
+        { ok: false, message: allowedEmailDomainsMessage() },
+        { status: 403 },
       );
     }
 
