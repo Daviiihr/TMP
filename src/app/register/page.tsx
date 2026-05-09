@@ -95,7 +95,7 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-arena-magenta transition-all duration-300"
-                placeholder="correo@example"
+                placeholder="correo@gmail.com"
               />
             </div>
 

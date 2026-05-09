@@ -2,9 +2,8 @@ import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { createAccessToken, createRefreshToken, type AuthUser } from "@/lib/auth";
 import { getPostgresPool } from "@/lib/database";
+import { formatAllowedEmailDomains, isAllowedEmailDomain } from "@/lib/email-domain";
 import { getRedisClient } from "@/lib/redis";
-import { redirect } from "next/dist/server/api-utils";
-import DashboardPage from "@/app/dashboard/page";
 
 export const runtime = "nodejs";
 
@@ -29,6 +28,16 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { ok: false, message: "Correo y contrasena son obligatorios." },
         { status: 400 },
+      );
+    }
+
+    if (!isAllowedEmailDomain(email)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: `Solo se permiten correos de estos dominios: ${formatAllowedEmailDomains()}.`,
+        },
+        { status: 403 },
       );
     }
 

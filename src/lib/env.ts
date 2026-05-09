@@ -23,3 +23,10 @@ export function jwtAccessSecret(): string {
 export function jwtRefreshSecret(): string {
   return requiredEnv("JWT_REFRESH_SECRET");
 }
+
+export function allowedEmailDomains(): string[] {
+  return requiredEnv("AUTH_ALLOWED_EMAIL_DOMAINS")
+    .split(",")
+    .map((domain) => domain.trim().toLowerCase().replace(/^@/, ""))
+    .filter(Boolean);
+}

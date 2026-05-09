@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { getPostgresPool } from "@/lib/database";
+import { formatAllowedEmailDomains, isAllowedEmailDomain } from "@/lib/email-domain";
 
 export const runtime = "nodejs";
 
@@ -32,6 +33,16 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { ok: false, message: "Ingresa un correo valido." },
         { status: 400 },
+      );
+    }
+
+    if (!isAllowedEmailDomain(email)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: `Solo se permiten correos de estos dominios: ${formatAllowedEmailDomains()}.`,
+        },
+        { status: 403 },
       );
     }
 
