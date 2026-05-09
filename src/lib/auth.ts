@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { jwtAccessSecret, jwtRefreshSecret } from "./env";
+import { allowedEmailDomains, jwtAccessSecret, jwtRefreshSecret } from "./env";
 
 export type AuthUser = {
   id: string;
@@ -20,4 +20,23 @@ export function createRefreshToken(user: AuthUser): string {
     expiresIn: "7d",
     subject: user.id,
   });
+}
+
+export function emailMatchesAllowedDomain(email: string): boolean {
+  const domains = allowedEmailDomains();
+
+  if (domains.length === 0) {
+    return true;
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const emailDomain = normalizedEmail.split("@").at(-1);
+
+  return Boolean(emailDomain && domains.includes(emailDomain));
+}
+
+export function allowedEmailDomainsMessage(): string {
+  const domains = allowedEmailDomains();
+
+  return `Usa un correo con dominio autorizado: ${domains.join(", ")}.`;
 }

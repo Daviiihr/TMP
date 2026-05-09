@@ -98,6 +98,9 @@ REDIS_URL=redis://localhost:6379
 
 JWT_ACCESS_SECRET=change_me_access_secret
 JWT_REFRESH_SECRET=change_me_refresh_secret
+
+# Limita registro/login al dominio de correo permitido.
+ALLOWED_EMAIL_DOMAINS=gmail.com
 ```
 
 PostgreSQL se publica en el puerto local `5433` porque en Windows puede existir otra instalación local de PostgreSQL usando `5432`.
@@ -161,6 +164,8 @@ Se agregaron endpoints locales en Next.js para conectar los formularios con Post
 | `POST` | `/api/auth/login` | Valida credenciales, genera JWT y guarda refresh token en Redis |
 | `GET` | `/api/health/database` | Verifica conexión a PostgreSQL |
 | `GET` | `/api/health/redis` | Verifica conexión a Redis |
+
+`/api/auth/register` y `/api/auth/login` validan el dominio del correo. Por defecto solo se acepta `gmail.com`; puedes declararlo explicitamente con `ALLOWED_EMAIL_DOMAINS=gmail.com`.
 
 El registro usa los campos actuales de `src/app/register/page.tsx`:
 

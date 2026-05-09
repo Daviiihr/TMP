@@ -4,10 +4,23 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import type { AuthUser } from "@/lib/auth";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function CTASection({ session, tournaments }: { session?: any; tournaments?: any[] }) {
+type TournamentSummary = {
+  id: string;
+  name: string;
+  status: string;
+  created_at: Date;
+};
+
+type CTASectionProps = {
+  session: AuthUser | null;
+  tournaments: TournamentSummary[];
+};
+
+export default function CTASection({ session, tournaments }: CTASectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 

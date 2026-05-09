@@ -1,10 +1,14 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import { createAccessToken, createRefreshToken, type AuthUser } from "@/lib/auth";
+import {
+  allowedEmailDomainsMessage,
+  createAccessToken,
+  createRefreshToken,
+  emailMatchesAllowedDomain,
+  type AuthUser,
+} from "@/lib/auth";
 import { getPostgresPool } from "@/lib/database";
 import { getRedisClient } from "@/lib/redis";
-import { redirect } from "next/dist/server/api-utils";
-import DashboardPage from "@/app/dashboard/page";
 
 export const runtime = "nodejs";
 
@@ -29,6 +33,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { ok: false, message: "Correo y contrasena son obligatorios." },
         { status: 400 },
+      );
+    }
+
+    if (!emailMatchesAllowedDomain(email)) {
+      return NextResponse.json(
+        { ok: false, message: allowedEmailDomainsMessage() },
+        { status: 403 },
       );
     }
 
@@ -111,7 +122,7 @@ export async function POST(request: Request) {
       message: "Sesion iniciada.",
       user: authUser,
       accessToken,
-      redirect: "/dashboard"
+      redirect: "/dashboard",
     });
 
     response.cookies.set("tmp_refresh_token", refreshToken, {
