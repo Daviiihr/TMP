@@ -19,6 +19,15 @@ export class UserRepository {
     return result.rows[0] || null;
   }
 
+  async findById(id: string): Promise<UserRow | null> {
+    const result = await this.pool.query<UserRow>(
+      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until 
+       FROM users WHERE id = $1`,
+      [id]
+    );
+    return result.rows[0] || null;
+  }
+
   async create(userData: { username: string; email: string; passwordHash: string; region: string }) {
     const result = await this.pool.query<{
       id: string;
@@ -46,6 +55,13 @@ export class UserRepository {
     await this.pool.query(
       `UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE id = $1`,
       [id]
+    );
+  }
+
+  async updateRole(id: string, role: string) {
+    await this.pool.query(
+      `UPDATE users SET role = $2 WHERE id = $1`,
+      [id, role]
     );
   }
 }

@@ -2,6 +2,7 @@ import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getPostgresPool } from "@/lib/database";
+import TeamSection from "@/components/dashboard/TeamSection";
 
 type TournamentSummary = {
   id: string;
@@ -53,6 +54,12 @@ export default async function DashboardPage() {
               </Link>
             )}
             <Link 
+              href="/admin/tournaments/type" 
+              className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-zinc-950 bg-arena-magenta border border-arena-magenta rounded-lg transition-all duration-300 hover:bg-arena-magenta/80"
+            >
+              Crear Torneo
+            </Link>
+            <Link 
               href="/profile" 
               className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-white bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-300 hover:bg-zinc-700 hover:border-zinc-600"
             >
@@ -79,9 +86,6 @@ export default async function DashboardPage() {
                 <h2 className="text-xl font-bold uppercase tracking-tight text-white">
                   Mis Torneos Creados
                 </h2>
-                <button className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-arena-cyan text-zinc-950 rounded-lg hover:bg-arena-cyan-dim transition-colors">
-                  + Crear Torneo
-                </button>
               </div>
               
               {myTournaments.length === 0 ? (
@@ -112,7 +116,7 @@ export default async function DashboardPage() {
                 </div>
               )}
             </section>
-
+ 
             <section className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
               <h2 className="text-xl font-bold uppercase tracking-tight text-white mb-6">
                 Historial de Participación
@@ -122,7 +126,7 @@ export default async function DashboardPage() {
               </div>
             </section>
           </div>
-
+ 
           {/* Right Column: Ranking & Teams */}
           <div className="space-y-6">
             <section className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
@@ -156,15 +160,8 @@ export default async function DashboardPage() {
                 </div>
               </div>
             </section>
-
-            <section className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
-              <h2 className="text-xl font-bold uppercase tracking-tight text-white mb-6">
-                Mis Equipos
-              </h2>
-              <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-950/50">
-                <p className="text-zinc-500 font-medium italic">Falta implementar</p>
-              </div>
-            </section>
+ 
+            <TeamSection />
           </div>
         </div>
       </div>
