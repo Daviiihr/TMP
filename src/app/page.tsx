@@ -2,27 +2,14 @@ import HeroScrollSection from "@/components/HeroScrollSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import CTASection from "@/components/CTASection";
 import { getSession } from "@/lib/session";
-import { getPostgresPool } from "@/lib/database";
+import { TournamentRepository } from "@/repositories/tournament.repository";
 import Link from "next/link";
 
-type TournamentSummary = {
-  id: string;
-  name: string;
-  status: string;
-  created_at: Date;
-};
+const tournamentRepo = new TournamentRepository();
 
 export default async function Home() {
   const session = await getSession();
-  let tournaments: TournamentSummary[] = [];
-  
-  if (session) {
-    const pool = getPostgresPool();
-    const res = await pool.query<TournamentSummary>(
-      "SELECT id, name, status, created_at FROM tournaments WHERE status NOT IN ('CANCELLED', 'COMPLETED') ORDER BY created_at DESC LIMIT 3"
-    );
-    tournaments = res.rows;
-  }
+  const tournaments = session ? await tournamentRepo.findActive(3) : [];
 
   return (
     <main className="relative bg-[#09090b]">

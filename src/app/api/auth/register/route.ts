@@ -1,88 +1,47 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import { allowedEmailDomainsMessage, emailMatchesAllowedDomain } from "@/lib/auth";
-import { getPostgresPool } from "@/lib/database";
+import { UserRepository } from "@/repositories/user.repository";
+import { AuthValidator } from "@/services/auth.validator";
 
 export const runtime = "nodejs";
 
-const VALID_REGIONS = new Set(["NA", "EU", "LATAM", "ASIA"]);
-
-type RegisterBody = {
-  username?: string;
-  email?: string;
-  password?: string;
-  region?: string;
-};
+const validator = new AuthValidator();
+const userRepo = new UserRepository();
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as RegisterBody;
-    const username = body.username?.trim();
-    const email = body.email?.trim().toLowerCase();
-    const password = body.password;
-    const region = body.region;
+    const body = await request.json();
 
-    if (!username || username.length < 3 || username.length > 40) {
+    // 1. Validar inputs (delegado al servicio)
+    const validation = validator.validateRegister(body);
+    if (!validation.isValid) {
       return NextResponse.json(
-        { ok: false, message: "El nombre de usuario debe tener entre 3 y 40 caracteres." },
-        { status: 400 },
+        { ok: false, message: validation.message },
+        { status: validation.status },
       );
     }
 
-    if (!email || !email.includes("@")) {
-      return NextResponse.json(
-        { ok: false, message: "Ingresa un correo valido." },
-        { status: 400 },
-      );
-    }
+    // 2. Hash de contraseña
+    const passwordHash = await bcrypt.hash(body.password, 12);
 
-    if (!emailMatchesAllowedDomain(email)) {
-      return NextResponse.json(
-        { ok: false, message: allowedEmailDomainsMessage() },
-        { status: 403 },
-      );
-    }
-
-    if (!password || password.length < 8) {
-      return NextResponse.json(
-        { ok: false, message: "La contrasena debe tener al menos 8 caracteres." },
-        { status: 400 },
-      );
-    }
-
-    if (!region || !VALID_REGIONS.has(region)) {
-      return NextResponse.json(
-        { ok: false, message: "Selecciona una region valida." },
-        { status: 400 },
-      );
-    }
-
-    const passwordHash = await bcrypt.hash(password, 12);
-
-    const result = await getPostgresPool().query<{
-      id: string;
-      username: string;
-      email: string;
-      role: "PLAYER";
-      region: string;
-    }>(
-      `
-        INSERT INTO users (username, email, password_hash, region)
-        VALUES ($1, $2, $3, $4)
-        RETURNING id, username, email, role, region
-      `,
-      [username, email, passwordHash, region],
-    );
+    // 3. Crear usuario (delegado al repositorio — CRUD Create)
+    const newUser = await userRepo.create({
+      username: body.username.trim(),
+      email: body.email.trim().toLowerCase(),
+      passwordHash,
+      region: body.region,
+    });
 
     return NextResponse.json(
       {
         ok: true,
         message: "Cuenta creada exitosamente.",
-        user: result.rows[0],
+        user: newUser,
       },
       { status: 201 },
     );
   } catch (error) {
+    // Violación de UNIQUE constraint (usuario/correo duplicado)
     if (
       typeof error === "object" &&
       error !== null &&

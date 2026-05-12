@@ -1,60 +1,30 @@
-import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import {
-  allowedEmailDomainsMessage,
-  createAccessToken,
-  createRefreshToken,
-  emailMatchesAllowedDomain,
-  type AuthUser,
-} from "@/lib/auth";
-import { getPostgresPool } from "@/lib/database";
-import { getRedisClient } from "@/lib/redis";
+import { UserRepository } from "@/repositories/user.repository";
+import { AuthValidator } from "@/services/auth.validator";
+import { AuthService } from "@/services/auth.service";
 
 export const runtime = "nodejs";
 
-type LoginBody = {
-  email?: string;
-  password?: string;
-};
-
-type UserRow = AuthUser & {
-  password_hash: string;
-  failed_login_attempts: number;
-  locked_until: Date | null;
-};
+const validator = new AuthValidator();
+const userRepo = new UserRepository();
+const authService = new AuthService();
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as LoginBody;
-    const email = body.email?.trim().toLowerCase();
-    const password = body.password;
+    const body = await request.json();
 
-    if (!email || !password) {
+    // 1. Validar inputs (delegado al servicio)
+    const validation = validator.validateLogin(body);
+    if (!validation.isValid) {
       return NextResponse.json(
-        { ok: false, message: "Correo y contrasena son obligatorios." },
-        { status: 400 },
+        { ok: false, message: validation.message },
+        { status: validation.status },
       );
     }
 
-    if (!emailMatchesAllowedDomain(email)) {
-      return NextResponse.json(
-        { ok: false, message: allowedEmailDomainsMessage() },
-        { status: 403 },
-      );
-    }
-
-    const pool = getPostgresPool();
-    const result = await pool.query<UserRow>(
-      `
-        SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until
-        FROM users
-        WHERE email = $1
-      `,
-      [email],
-    );
-
-    const user = result.rows[0];
-
+    // 2. Buscar usuario (delegado al repositorio — CRUD Read)
+    const email = body.email.trim().toLowerCase();
+    const user = await userRepo.findByEmail(email);
     if (!user) {
       return NextResponse.json(
         { ok: false, message: "Credenciales invalidas." },
@@ -62,87 +32,17 @@ export async function POST(request: Request) {
       );
     }
 
-    if (user.locked_until && user.locked_until > new Date()) {
+    // 3. Verificar contraseña (delegado al servicio)
+    const passwordResult = await authService.verifyPassword(user, body.password);
+    if (!passwordResult.ok) {
       return NextResponse.json(
-        { ok: false, message: "Cuenta bloqueada temporalmente. Intenta mas tarde." },
-        { status: 423 },
+        { ok: false, message: passwordResult.message },
+        { status: passwordResult.status },
       );
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
-
-    if (!isValidPassword) {
-      const attempts = user.failed_login_attempts + 1;
-      const lockedUntil = attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null;
-
-      await pool.query(
-        `
-          UPDATE users
-          SET failed_login_attempts = $2,
-              locked_until = $3
-          WHERE id = $1
-        `,
-        [user.id, attempts, lockedUntil],
-      );
-
-      return NextResponse.json(
-        { ok: false, message: "Credenciales invalidas." },
-        { status: 401 },
-      );
-    }
-
-    await pool.query(
-      `
-        UPDATE users
-        SET failed_login_attempts = 0,
-            locked_until = NULL
-        WHERE id = $1
-      `,
-      [user.id],
-    );
-
-    const authUser: AuthUser = {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      role: user.role,
-    };
-    const accessToken = createAccessToken(authUser);
-    const refreshToken = createRefreshToken(authUser);
-    const redis = getRedisClient();
-
-    if (redis.status === "wait" || redis.status === "end") {
-      await redis.connect();
-    }
-
-    await redis.set(`refresh:${user.id}`, refreshToken, "EX", 7 * 24 * 60 * 60);
-
-    const response = NextResponse.json({
-      ok: true,
-      message: "Sesion iniciada.",
-      user: authUser,
-      accessToken,
-      redirect: "/dashboard",
-    });
-
-    response.cookies.set("tmp_refresh_token", refreshToken, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60,
-    });
-
-    // Set access token cookie
-    response.cookies.set("accessToken", accessToken, {
-      httpOnly: true, // Consider false if you need to access it from client-side JS
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 15 * 60, // 15 minutes to match token expiration
-    });
-
-    return response;
+    // 4. Crear sesión (delegado al servicio)
+    return authService.createSession(user);
   } catch (error) {
     return NextResponse.json(
       {

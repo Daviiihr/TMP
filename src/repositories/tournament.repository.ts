@@ -1,8 +1,16 @@
 import { getPostgresPool } from "@/lib/database";
 
+export type TournamentSummary = {
+  id: string;
+  name: string;
+  status: string;
+  created_at: Date;
+};
+
 export class TournamentRepository {
   private pool = getPostgresPool();
 
+  /** CRUD — Read: Buscar torneo por ID */
   async getById(id: string) {
     const result = await this.pool.query(
       `SELECT id, name, type, min_players_per_team, max_players_per_team, max_players FROM tournaments WHERE id = $1`,
@@ -11,9 +19,8 @@ export class TournamentRepository {
     return result.rows[0] || null;
   }
 
+  /** CRUD — Read: Contar inscripciones de un torneo */
   async getEnrollmentCount(tournamentId: string): Promise<number> {
-    // For individual tournaments, count individual_enrollments
-    // For team tournaments, count teams linked to this tournament
     const tournament = await this.getById(tournamentId);
     if (!tournament) throw new Error("Torneo no encontrado.");
 
@@ -30,5 +37,30 @@ export class TournamentRepository {
       );
       return parseInt(result.rows[0].count);
     }
+  }
+
+  /** CRUD — Read: Torneos activos (para la landing page) */
+  async findActive(limit: number): Promise<TournamentSummary[]> {
+    const result = await this.pool.query<TournamentSummary>(
+      `SELECT id, name, status, created_at 
+       FROM tournaments 
+       WHERE status NOT IN ('CANCELLED', 'COMPLETED') 
+       ORDER BY created_at DESC 
+       LIMIT $1`,
+      [limit]
+    );
+    return result.rows;
+  }
+
+  /** CRUD — Read: Torneos creados por un organizador (para el dashboard) */
+  async findByOrganizer(organizerId: string): Promise<TournamentSummary[]> {
+    const result = await this.pool.query<TournamentSummary>(
+      `SELECT id, name, status, created_at 
+       FROM tournaments 
+       WHERE organizer_id = $1 
+       ORDER BY created_at DESC`,
+      [organizerId]
+    );
+    return result.rows;
   }
 }
