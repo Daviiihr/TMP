@@ -1,0 +1,163 @@
+/* ===== Bracket Visualization ===== */
+
+.bracket-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  padding: 24px 0;
+}
+
+/* --- Main Bracket Container --- */
+.bracket-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-height: 400px;
+}
+
+.bracket-container--single {
+  justify-content: center;
+}
+
+/* --- Half Bracket (Left / Right) --- */
+.half-bracket {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.half-bracket--right {
+  flex-direction: row-reverse;
+}
+
+/* --- Round Column --- */
+.bracket-round {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.round-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #52525b;
+  margin-bottom: 12px;
+  white-space: nowrap;
+}
+
+.round-matches {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex: 1;
+  gap: 0;
+}
+
+/* Increase vertical spacing for each subsequent round */
+.bracket-round:nth-child(1) .bracket-match-wrapper { padding: 4px 0; }
+.bracket-round:nth-child(2) .bracket-match-wrapper { padding: 24px 0; }
+.bracket-round:nth-child(3) .bracket-match-wrapper { padding: 60px 0; }
+.bracket-round:nth-child(4) .bracket-match-wrapper { padding: 130px 0; }
+
+/* --- Match Wrapper --- */
+.bracket-match-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* --- Connector lines --- */
+.connector-line {
+  width: 20px;
+  height: 2px;
+  background: #27272a;
+  flex-shrink: 0;
+}
+
+/* --- Match Card --- */
+.match-card {
+  width: 140px;
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.match-card:hover {
+  border-color: #00f0ff33;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.05);
+}
+
+.match-card--bye {
+  border-color: #fbbf2433;
+}
+
+.match-card--bye:hover {
+  border-color: #fbbf2466;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.05);
+}
+
+.match-player {
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #e4e4e7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.match-player--top {
+  background: rgba(0, 240, 255, 0.04);
+}
+
+.match-player--bottom {
+  background: rgba(255, 0, 200, 0.04);
+}
+
+.match-player--empty {
+  color: #52525b;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.match-divider {
+  height: 1px;
+  background: #27272a;
+}
+
+/* --- Final --- */
+.bracket-final {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  z-index: 10;
+}
+
+.final-trophy {
+  font-size: 36px;
+  filter: drop-shadow(0 0 20px rgba(255, 200, 0, 0.3));
+  animation: float 3s ease-in-out infinite;
+}
+
+.final-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #00f0ff;
+  text-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+}
+
+/* --- Animations --- */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}

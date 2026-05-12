@@ -1,22 +1,30 @@
 import { generateBracket, Participant } from './src/lib/algorithms/brackets';
 
-const testParticipants: Participant[] = [
-  { id: '1', name: 'Jugador 1' },
-  { id: '2', name: 'Jugador 2' },
-  { id: '3', name: 'Jugador 3' },
-  { id: '4', name: 'Jugador 4' },
-  { id: '5', name: 'Jugador 5' },
+const testCases = [
+  { name: "3 jugadores", count: 3 },
+  { name: "5 jugadores", count: 5 },
+  { name: "7 jugadores", count: 7 },
+  { name: "8 jugadores (potencia exacta)", count: 8 },
+  { name: "10 jugadores", count: 10 },
 ];
 
-console.log('--- TEST: 5 Participantes ---');
-const matches = generateBracket(testParticipants);
+for (const tc of testCases) {
+  const players: Participant[] = Array.from({ length: tc.count }, (_, i) => ({
+    id: String(i + 1),
+    name: `Jugador ${i + 1}`,
+  }));
 
-matches.forEach(m => {
-  if (m.isBye) {
-    console.log(`[Ronda ${m.round} - Match ${m.matchNumber}] ${m.player1?.name} obtiene BYE (Pase libre a Ronda 2)`);
-  } else {
-    console.log(`[Ronda ${m.round} - Match ${m.matchNumber}] ${m.player1?.name} vs ${m.player2?.name}`);
+  console.log(`\n========== TEST: ${tc.name} ==========`);
+  const result = generateBracket(players);
+  console.log(`Bracket size: ${result.bracketSize} | Rondas: ${result.totalRounds}`);
+
+  for (const round of result.rounds) {
+    console.log(`\n  🏆 ${round.label} (${round.matches.length} partidos):`);
+    round.matches.forEach(m => {
+      const p1 = m.player1?.name || '(vacío)';
+      const p2 = m.player2?.name || (m.isBye ? '— vacío —' : '(Por definir)');
+      const bye = m.isBye ? ' [BYE]' : '';
+      console.log(`    Match ${m.matchNumber}: ${p1} vs ${p2}${bye}`);
+    });
   }
-});
-
-console.log(`\nTotal de enfrentamientos en Ronda 1: ${matches.length}`);
+}
