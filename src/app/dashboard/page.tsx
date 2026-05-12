@@ -1,14 +1,9 @@
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getPostgresPool } from "@/lib/database";
+import { TournamentRepository } from "@/repositories/tournament.repository";
 
-type TournamentSummary = {
-  id: string;
-  name: string;
-  status: string;
-  created_at: Date;
-};
+const tournamentRepo = new TournamentRepository();
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -18,17 +13,8 @@ export default async function DashboardPage() {
     redirect("/");
   }
 
-  const pool = getPostgresPool();
-  
-  // Buscar torneos creados por este usuario
-  const myTournamentsResult = await pool.query<TournamentSummary>(
-    `SELECT id, name, status, created_at 
-     FROM tournaments 
-     WHERE organizer_id = $1 
-     ORDER BY created_at DESC`,
-    [session.id]
-  );
-  const myTournaments = myTournamentsResult.rows;
+  // Buscar torneos creados por este usuario (delegado al repositorio — CRUD Read)
+  const myTournaments = await tournamentRepo.findByOrganizer(session.id);
 
   return (
     <main className="min-h-screen bg-[#09090b] text-zinc-100 p-4 md:p-8">
