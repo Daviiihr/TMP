@@ -1,4 +1,4 @@
-import { TeamRepository, Team } from "@/repositories/team.repository";
+import { TeamRepository, Team, TeamWithMemberCount } from "@/repositories/team.repository";
 import { UserRepository } from "@/repositories/user.repository";
 
 export class TeamService {
@@ -22,8 +22,8 @@ export class TeamService {
     return team;
   }
 
-  async getMyTeams(captainId: string): Promise<Team[]> {
-    return this.teamRepo.findByCaptain(captainId);
+  async getMyTeams(userId: string): Promise<TeamWithMemberCount[]> {
+    return this.teamRepo.findByMember(userId);
   }
 
   async getTeam(id: string): Promise<Team | null> {

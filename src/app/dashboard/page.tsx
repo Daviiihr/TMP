@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getPostgresPool } from "@/lib/database";
 import TeamSection from "@/components/dashboard/TeamSection";
+import { TeamService } from "@/services/team.service";
 
 type TournamentSummary = {
   id: string;
@@ -20,6 +21,7 @@ export default async function DashboardPage() {
   }
 
   const pool = getPostgresPool();
+  const teamService = new TeamService();
   
   // Buscar torneos creados por este usuario
   const myTournamentsResult = await pool.query<TournamentSummary>(
@@ -30,6 +32,7 @@ export default async function DashboardPage() {
     [session.id]
   );
   const myTournaments = myTournamentsResult.rows;
+  const myTeams = await teamService.getMyTeams(session.id);
 
   return (
     <main className="min-h-screen bg-[#09090b] text-zinc-100 p-4 md:p-8">
@@ -161,7 +164,7 @@ export default async function DashboardPage() {
               </div>
             </section>
  
-            <TeamSection />
+            <TeamSection teams={myTeams} userId={session.id} />
           </div>
         </div>
       </div>
