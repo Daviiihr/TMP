@@ -2,9 +2,11 @@ import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { TournamentRepository } from "@/repositories/tournament.repository";
+import { TeamRepository } from "@/repositories/team.repository";
 import TeamSection from "@/components/dashboard/TeamSection";
 
 const tournamentRepo = new TournamentRepository();
+const teamRepo = new TeamRepository();
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -16,6 +18,7 @@ export default async function DashboardPage() {
 
   // Buscar torneos creados por este usuario (delegado al repositorio — CRUD Read)
   const myTournaments = await tournamentRepo.findByOrganizer(session.id);
+  const myTeams = await teamRepo.findByMember(session.id);
 
   return (
     <main className="min-h-screen bg-[#09090b] text-zinc-100 p-4 md:p-8">
@@ -30,7 +33,13 @@ export default async function DashboardPage() {
               Bienvenido de nuevo, <span className="text-arena-cyan font-bold">{session.username}</span>
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-white bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-300 hover:bg-zinc-700 hover:border-zinc-600"
+            >
+              Inicio
+            </Link>
             {session.role === "ADMIN" && (
               <Link 
                 href="/admin/dashboard" 
@@ -45,7 +54,13 @@ export default async function DashboardPage() {
             >
               Crear Torneo
             </Link>
-            <Link 
+            <Link
+              href="/brackets/test"
+              className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-zinc-950 bg-arena-cyan border border-arena-cyan rounded-lg transition-all duration-300 hover:bg-arena-cyan-dim"
+            >
+              Crear Brackets
+            </Link>
+            <Link
               href="/profile" 
               className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-white bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-300 hover:bg-zinc-700 hover:border-zinc-600"
             >
@@ -147,7 +162,7 @@ export default async function DashboardPage() {
               </div>
             </section>
  
-            <TeamSection />
+            <TeamSection teams={myTeams} userId={session.id} />
           </div>
         </div>
       </div>
