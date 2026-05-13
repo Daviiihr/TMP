@@ -33,14 +33,11 @@ export default async function DashboardPage() {
             <p className="text-zinc-400">
               Bienvenido de nuevo, <span className="text-arena-cyan font-bold">{session.username}</span>
             </p>
+            <a href="/" className="font-bold uppercase hover:text-arena-cyan transition-colors duration-300">
+              Volver al inicio
+            </a>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-white bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-300 hover:bg-zinc-700 hover:border-zinc-600"
-            >
-              Inicio
-            </Link>
             {session.role === "ADMIN" && (
               <Link 
                 href="/admin/dashboard" 

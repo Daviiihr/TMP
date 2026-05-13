@@ -38,7 +38,7 @@ export default async function AdminDashboardPage() {
               href="/dashboard" 
               className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-white bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-300 hover:bg-zinc-700 hover:border-zinc-600"
             >
-              Ver Dashboard Normal
+              Dashboard de Usuario
             </Link>
             <form action="/api/auth/logout" method="POST" className="inline-flex items-center">
               <button
