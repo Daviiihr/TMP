@@ -16,49 +16,12 @@ export async function PATCH(
     const body = await request.json();
     const { status } = body;
 
-    const validStatuses = ["DRAFT", "REGISTRATION", "CANCELLED", "COMPLETED"];
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json(
-        { ok: false, message: `Status inválido. Debe ser: ${validStatuses.join(", ")}` },
-        { status: 400 }
-      );
-    }
-
-    const pool = appFactory.createPostgresPool();
-
-    // Verificar que el torneo pertenece al usuario
-    const tournament = await pool.query(
-      "SELECT id, organizer_id, status FROM tournaments WHERE id = $1",
-      [id]
-    );
-
-    if (tournament.rows.length === 0) {
-      return NextResponse.json({ ok: false, message: "Torneo no encontrado." }, { status: 404 });
-    }
-
-    if (tournament.rows[0].organizer_id !== session.id) {
-      return NextResponse.json({ ok: false, message: "No tienes permiso para modificar este torneo." }, { status: 403 });
-    }
-
-    // Si se quiere activar (REGISTRATION), verificar que no haya otro activo
-    if (status === "REGISTRATION") {
-      const active = await pool.query(
-        "SELECT id, name FROM tournaments WHERE organizer_id = $1 AND status = 'REGISTRATION' AND id != $2",
-        [session.id, id]
-      );
-      if (active.rows.length > 0) {
-        return NextResponse.json(
-          { ok: false, message: `Ya tienes un torneo activo: "${active.rows[0].name}". Desactívalo primero.` },
-          { status: 409 }
-        );
-      }
-    }
-
-    await pool.query("UPDATE tournaments SET status = $1 WHERE id = $2", [status, id]);
+    const tournamentService = appFactory.createTournamentService();
+    const result = await tournamentService.changeStatus(id, status, session.id);
 
     return NextResponse.json({
       ok: true,
-      message: `Torneo actualizado a ${status}.`,
+      message: result.message,
     });
   } catch (error) {
     return NextResponse.json(

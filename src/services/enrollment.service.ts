@@ -1,5 +1,6 @@
 import { TeamRepository } from "@/repositories/team.repository";
 import { TournamentRepository } from "@/repositories/tournament.repository";
+import { AppEventEmitter } from "@/observers/event-emitter";
 import { Pool } from "pg";
 
 export class EnrollmentService {
@@ -7,6 +8,7 @@ export class EnrollmentService {
     private teamRepo: TeamRepository,
     private tournamentRepo: TournamentRepository,
     private pool: Pool,
+    private eventEmitter: AppEventEmitter,
   ) {}
 
   async enrollPlayerInTournament(userId: string, tournamentId: string) {
@@ -26,6 +28,8 @@ export class EnrollmentService {
       `INSERT INTO individual_enrollments (user_id, tournament_id) VALUES ($1, $2)`,
       [userId, tournamentId]
     );
+
+    await this.eventEmitter.emit("enrollment:playerJoined", { userId, tournamentId });
 
     return { success: true, message: "Te has inscrito exitosamente al torneo." };
   }
@@ -54,6 +58,9 @@ export class EnrollmentService {
     }
 
     await this.teamRepo.assignToTournament(teamId, tournamentId);
+    
+    await this.eventEmitter.emit("enrollment:teamJoined", { teamId, tournamentId });
+
     return { success: true, message: "El equipo se ha inscrito exitosamente en el torneo." };
   }
 }
