@@ -51,7 +51,7 @@ export default async function DashboardPage() {
               </Link>
             )}
             <Link 
-              href="/admin/tournaments/type" 
+              href="/tournaments/type" 
               className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-zinc-950 bg-arena-magenta border border-arena-magenta rounded-lg transition-all duration-300 hover:bg-arena-magenta/80"
             >
               Crear Torneo

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const protectedPrefixes = ["/dashboard", "/admin"];
+const protectedPrefixes = ["/dashboard", "/admin", "/tournaments"];
 const authPrefixes = ["/login", "/register"];
 
 export default function proxy(request: NextRequest) {
@@ -28,5 +28,5 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/login", "/register"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/tournaments/:path*", "/login", "/register"],
 };
