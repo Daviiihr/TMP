@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       `INSERT INTO tournaments 
        (name, game, region, max_players, type, min_players_per_team, max_players_per_team, start_date, end_date, registration_closes_at, status, organizer_id) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-      [name, game, regions, maxPlayers, type, playersPerTeam, playersPerTeam, startDate, endDate, registrationClosesAt, 'REGISTRATION', session.id]
+      [name, game, regions, maxPlayers, type, playersPerTeam, playersPerTeam, startDate, endDate, registrationClosesAt, 'DRAFT', session.id]
     );
 
     return NextResponse.redirect(new URL("/dashboard", request.url));

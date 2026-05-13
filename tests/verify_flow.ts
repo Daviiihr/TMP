@@ -1,7 +1,7 @@
-import { getPostgresPool } from "../src/lib/database.ts";
-import { TeamRepository } from "../src/repositories/team.repository.ts";
-import { TournamentRepository } from "../src/repositories/tournament.repository.ts";
-import { EnrollmentService } from "../src/services/enrollment.service.ts";
+import { getPostgresPool } from "../src/lib/database";
+import { TeamRepository } from "../src/repositories/team.repository";
+import { TournamentRepository } from "../src/repositories/tournament.repository";
+import { EnrollmentService } from "../src/services/enrollment.service";
 
 async function runTests() {
   console.log("🚀 Starting Integration Tests...");

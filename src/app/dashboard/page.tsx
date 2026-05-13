@@ -4,6 +4,7 @@ import Link from "next/link";
 import { TournamentRepository } from "@/repositories/tournament.repository";
 import { TeamRepository } from "@/repositories/team.repository";
 import TeamSection from "@/components/dashboard/TeamSection";
+import TournamentCard from "@/components/dashboard/TournamentCard";
 
 const tournamentRepo = new TournamentRepository();
 const teamRepo = new TeamRepository();
@@ -19,6 +20,7 @@ export default async function DashboardPage() {
   // Buscar torneos creados por este usuario (delegado al repositorio — CRUD Read)
   const myTournaments = await tournamentRepo.findByOrganizer(session.id);
   const myTeams = await teamRepo.findByMember(session.id);
+  const hasActiveTournament = myTournaments.some(t => t.status === "REGISTRATION");
 
   return (
     <main className="min-h-screen bg-[#09090b] text-zinc-100 p-4 md:p-8">
@@ -84,9 +86,17 @@ export default async function DashboardPage() {
           <div className="lg:col-span-2 space-y-6">
             <section className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold uppercase tracking-tight text-white">
-                  Mis Torneos Creados
-                </h2>
+                <div>
+                  <h2 className="text-xl font-bold uppercase tracking-tight text-white">
+                    Mis Torneos Creados
+                  </h2>
+                  {hasActiveTournament && (
+                    <p className="text-[10px] text-green-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                      1 torneo activo
+                    </p>
+                  )}
+                </div>
               </div>
               
               {myTournaments.length === 0 ? (
@@ -99,20 +109,14 @@ export default async function DashboardPage() {
               ) : (
                 <div className="space-y-4">
                   {myTournaments.map((t) => (
-                    <div key={t.id} className="flex items-center justify-between p-4 bg-zinc-950/50 rounded-lg border border-zinc-800 hover:border-arena-cyan/30 transition-colors">
-                      <div>
-                        <h3 className="font-bold text-white">{t.name}</h3>
-                        <p className="text-xs text-zinc-500 mt-1">Creado: {new Date(t.created_at).toLocaleDateString()}</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded border ${t.status === 'DRAFT' ? 'bg-zinc-800 text-zinc-400 border-zinc-700' : 'bg-arena-cyan/20 text-arena-cyan border-arena-cyan/30'}`}>
-                          {t.status}
-                        </span>
-                        <button className="text-xs font-bold uppercase text-white hover:text-arena-cyan transition-colors">
-                          Gestionar →
-                        </button>
-                      </div>
-                    </div>
+                    <TournamentCard
+                      key={t.id}
+                      id={t.id}
+                      name={t.name}
+                      status={t.status}
+                      createdAt={new Date(t.created_at).toLocaleDateString()}
+                      hasActiveTournament={hasActiveTournament}
+                    />
                   ))}
                 </div>
               )}

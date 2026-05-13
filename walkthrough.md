@@ -1,244 +1,268 @@
-# Walkthrough — Análisis SOLID y Plan de Refactorización
+# Principios de Diseño de Software — Tournament Manager Pro (TMP)
 
-## Arquitectura Actual vs Arquitectura Propuesta
-
-```
-ACTUAL (problemático):                    PROPUESTO (SOLID + POO + CRUD):
-
-Route Handler (login)                     Route Handler (login)
-  ├── Valida inputs (inline)                ├── AuthValidator.validateLogin()     ← POO (clase)
-  ├── pool.query("SELECT...")               ├── UserRepository.findByEmail()      ← CRUD (Read)
-  ├── bcrypt.compare(...)                   ├── AuthService.verifyPassword()      ← POO (servicio)
-  ├── pool.query("UPDATE...")               ├── UserRepository.updateAttempts()   ← CRUD (Update)
-  └── jwt.sign + cookies                    └── AuthService.createSession()       ← POO (servicio)
-```
+Este documento identifica y justifica los principios de diseño de software aplicados en el proyecto TMP, con referencias directas al código fuente.
 
 ---
 
-## Análisis SOLID del Proyecto
+## 1. Principios SOLID
 
-### Archivos Revisados
+### S — Single Responsibility Principle (Responsabilidad Única)
 
-| Capa | Archivo | Líneas |
-|------|---------|--------|
-| API | `src/app/api/auth/login/route.ts` | 157 |
-| API | `src/app/api/auth/register/route.ts` | 108 |
-| API | `src/app/api/auth/logout/route.ts` | 19 |
-| Middleware | `src/proxy.ts` | 33 |
-| Lib | `src/lib/auth.ts` | 43 |
-| Lib | `src/lib/database.ts` | 30 |
-| Lib | `src/lib/session.ts` | 19 |
-| Lib | `src/lib/env.ts` | 33 |
-| Repositorio | `src/repositories/user.repository.ts` | 52 |
-| Servicio | `src/services/auth.validator.ts` | 61 |
-| Algoritmo | `src/lib/algorithms/brackets.ts` | 157 |
-| Componente | `src/components/BracketView.tsx` | 129 |
-| Página | `src/app/page.tsx` | 110 |
-| Página | `src/app/dashboard/page.tsx` | 174 |
+> *Cada módulo tiene una sola razón para cambiar.*
 
----
+| Capa | Clase/Archivo | Responsabilidad única |
+|------|--------------|----------------------|
+| Repositorio | `UserRepository` | CRUD exclusivo de la tabla `users` |
+| Repositorio | `TeamRepository` | CRUD exclusivo de la tabla `teams` y `team_members` |
+| Repositorio | `TournamentRepository` | CRUD exclusivo de la tabla `tournaments` |
+| Servicio | `AuthValidator` | Solo validar inputs de login/registro |
+| Servicio | `AuthService` | Solo manejar autenticación (tokens, sesiones, intentos) |
+| Servicio | `TeamService` | Solo lógica de negocio de equipos |
+| Servicio | `EnrollmentService` | Solo lógica de inscripción a torneos |
+| Algoritmo | `brackets.ts` | Solo generar la estructura del bracket |
+| Componente | `BracketView.tsx` | Solo renderizar el bracket visualmente |
+| Lib | `env.ts` | Solo acceso a variables de entorno |
+| Lib | `database.ts` | Solo conexión a PostgreSQL |
+| Lib | `redis.ts` | Solo conexión a Redis |
 
-## S — Single Responsibility (Responsabilidad Única)
+**Justificación:** Cada archivo tiene **una sola razón para cambiar**. Si cambia la base de datos, solo se toca `database.ts`. Si cambian las reglas de inscripción, solo se toca `EnrollmentService`. Si cambia el diseño visual del bracket, solo se toca `BracketView.tsx`. Esto reduce el riesgo de errores en cascada.
 
-> *"Cada clase o función debe tener una sola razón para cambiar."*
-
-### ❌ login/route.ts — Hace 5 cosas en 1 función
-
-| Responsabilidad | Líneas | ¿Debería estar aquí? |
-|----------------|--------|---------------------|
-| Validar inputs | 32-44 | ❌ → `AuthValidator` |
-| Query a la BD | 46-54 | ❌ → `UserRepository` |
-| Lógica de bloqueo | 65-91 | ❌ → `AuthService` |
-| Generar tokens JWT | 110-111 | ❌ → `AuthService` |
-| Cookies + Redis | 112-143 | ❌ → `AuthService` |
-
-**Solución con POO + CRUD:** Cada responsabilidad se delega a una clase:
-- `AuthValidator` (ya existe) → Validación
-- `UserRepository` (ya existe) → CRUD de la tabla `users`
-- `AuthService` (nuevo) → Lógica de negocio (tokens, bloqueo, sesiones)
-
-### ❌ register/route.ts — Validación duplicada
-
-Tiene validación inline (líneas 25-58) cuando `AuthValidator.validateRegister()` ya hace exactamente lo mismo.
-
-**Solución:** Usar el `AuthValidator` existente:
-```diff
-- if (!username || username.length < 3 || username.length > 40) { ... }
-- if (!email || !email.includes("@")) { ... }
-+ const validation = new AuthValidator().validateRegister(body);
-+ if (!validation.isValid) return NextResponse.json({ ok: false, message: validation.message }, { status: validation.status });
-```
-
-### ❌ page.tsx y dashboard/page.tsx — SQL directo en la vista
-
-Las páginas hacen `pool.query("SELECT...")` directamente. Mezclan presentación con acceso a datos.
-
-**Solución con CRUD:** Crear `TournamentRepository` con métodos Read:
+**Ejemplo concreto — `login/route.ts`:**
 ```typescript
-class TournamentRepository {
-  // CRUD — Read
-  async findActive(limit: number): Promise<TournamentSummary[]> { ... }
-  async findByOrganizer(organizerId: string): Promise<TournamentSummary[]> { ... }
+// El route handler solo ORQUESTA, no hace lógica:
+const validation = validator.validateLogin(body);     // → AuthValidator
+const user = await userRepo.findByEmail(email);       // → UserRepository
+const result = await authService.verifyPassword(...); // → AuthService
+return authService.createSession(user);               // → AuthService
+```
+
+---
+
+### O — Open/Closed Principle (Abierto/Cerrado)
+
+> *Abierto para extensión, cerrado para modificación.*
+
+**Dónde se aplica:**
+
+- **Repositorios**: Para agregar una nueva consulta (ej: `findByRegion()`), solo se agrega un nuevo método a la clase existente sin modificar los métodos anteriores.
+- **Servicios**: `EnrollmentService` maneja inscripción individual Y de equipo. Si mañana se agrega inscripción de "dúo", se agrega un método nuevo sin tocar los existentes.
+- **Componentes**: `BracketView` acepta un `BracketResult` genérico. Si el algoritmo cambia internamente, el componente no necesita modificarse mientras la interfaz `BracketResult` se respete.
+
+**Justificación:** Al separar la lógica en clases con interfaces bien definidas, se puede extender el sistema (agregar nuevos tipos de torneo, nuevos métodos CRUD) sin modificar el código que ya funciona.
+
+---
+
+### L — Liskov Substitution Principle (Sustitución de Liskov)
+
+> *Las interfaces se respetan consistentemente.*
+
+**Dónde se aplica:**
+
+- La interfaz `Participant` se usa tanto para jugadores individuales como para equipos en el algoritmo de brackets. Cualquier objeto que tenga `{id, name}` puede ser un participante.
+- `AuthUser` define el contrato de un usuario autenticado y se respeta en `session.ts`, `auth.ts`, y todos los route handlers.
+
+```typescript
+// Cualquier cosa con id + name puede ser un participante del bracket
+export interface Participant {
+  id: string;
+  name: string;
 }
 ```
 
-### ❌ brackets.ts — Función monolítica
-
-`generateBracket()` hace shuffle + cálculo + generación de todas las rondas.
-
-**Solución:** Separar en funciones con responsabilidad única:
-```typescript
-function shuffleParticipants(participants: Participant[]): Participant[] { ... }
-function calculateBracketSize(count: number): number { ... }
-function generateFirstRound(slots: (Participant | null)[], bracketSize: number): Match[] { ... }
-function generateNextRounds(prevMatches: Match[], round: number, bracketSize: number): Match[] { ... }
-```
+**Justificación:** Al usar interfaces TypeScript como contratos, garantizamos que cualquier implementación que cumpla el contrato puede ser sustituida sin romper el sistema.
 
 ---
 
-## O — Open/Closed (Abierto/Cerrado)
+### I — Interface Segregation Principle (Segregación de Interfaces)
 
-> *"Abierto para extensión, cerrado para modificación."*
+> *No obligar a depender de cosas que no se necesitan.*
 
-### ❌ brackets.ts — Solo soporta eliminación simple
+**Dónde se aplica:**
 
-Si mañana necesitas doble eliminación o round robin, tendrías que modificar el código existente.
+- `TournamentSummary` es un tipo liviano con solo `{id, name, status, created_at}` para las páginas que solo necesitan mostrar una lista. No carga con campos innecesarios como `max_players`, `region`, o `type`.
+- Los componentes React reciben solo las props que necesitan:
+  - `MatchCard` recibe `{player1, player2, isBye}` — no el objeto `Match` completo.
+  - `BracketView` recibe `{result}` — no todo el estado de la página.
 
-**Solución con POO (Patrón Strategy):**
+**Justificación:** Al exponer solo los datos necesarios, reducimos el acoplamiento y evitamos que un cambio en campos no relacionados afecte a los consumidores.
+
+---
+
+### D — Dependency Inversion Principle (Inversión de Dependencias)
+
+> *Depender de abstracciones, no de implementaciones concretas.*
+
+**Dónde se aplica:**
+
+- **Route handlers dependen de servicios y repositorios**, no de `getPostgresPool()` directamente. Si mañana se cambia PostgreSQL por otro motor, solo se modifican los repositorios.
+- **`env.ts` centraliza el acceso a `process.env`**. Ningún archivo accede a `process.env.DATABASE_URL` directamente; todos usan `databaseUrl()`.
+- **Servicios dependen de repositorios**, no de queries SQL. `TeamService` usa `teamRepo.findById()`, no `pool.query("SELECT...")`.
+
+```
+Route Handler → Servicio → Repositorio → Base de datos
+     ↑              ↑            ↑
+  (no conoce     (no conoce   (única capa
+   SQL ni BD)     SQL)         que conoce SQL)
+```
+
+**Justificación:** Esta arquitectura en capas permite cambiar la implementación de una capa sin afectar a las demás. Los tests pueden inyectar repositorios falsos (mocks) sin necesitar una BD real.
+
+---
+
+## 2. Patrón Repository (CRUD)
+
+> *Encapsular toda la lógica de acceso a datos en clases dedicadas.*
+
+| Repositorio | Create | Read | Update | Delete |
+|-------------|--------|------|--------|--------|
+| `UserRepository` | `create()` | `findByEmail()`, `findById()` | `updateLoginAttempts()`, `resetLoginAttempts()`, `updateRole()` | — |
+| `TeamRepository` | `create()`, `addMember()` | `findById()`, `findByCaptain()`, `searchTeams()`, `getMemberCount()`, `isUserInTeam()` | `assignToTournament()` | — |
+| `TournamentRepository` | — | `getById()`, `findActive()`, `findByOrganizer()`, `getEnrollmentCount()` | — | — |
+
+**Justificación:** El patrón Repository:
+1. **Centraliza el SQL** en un solo lugar por entidad
+2. **Evita duplicación** — la misma query no se escribe en 4 archivos distintos
+3. **Facilita testing** — se puede mockear el repositorio sin necesitar la BD
+4. **Cumple SRP** — cada repositorio solo conoce su tabla
+
+---
+
+## 3. Patrón Service Layer (Capa de Servicios)
+
+> *Encapsular la lógica de negocio compleja en clases de servicio.*
+
+| Servicio | Responsabilidad | Repositorios que usa |
+|----------|----------------|---------------------|
+| `AuthService` | Verificar contraseñas, manejar bloqueos, crear sesiones JWT | `UserRepository` |
+| `AuthValidator` | Validar formato de inputs (email, password, username) | Ninguno (pura lógica) |
+| `TeamService` | Crear equipos, buscar, unirse a equipos, promover a CAPTAIN | `TeamRepository`, `UserRepository` |
+| `EnrollmentService` | Inscribir jugadores/equipos en torneos con reglas de negocio | `TeamRepository`, `TournamentRepository` |
+
+**Justificación:** Los servicios contienen las **reglas de negocio** que son más complejas que un simple CRUD:
+- "Si un jugador crea un equipo, su rol debe cambiar de PLAYER a CAPTAIN" → `TeamService`
+- "Si fallan 5 intentos de login, bloquear la cuenta 15 minutos" → `AuthService`
+- "Un equipo solo puede inscribirse si tiene exactamente N jugadores" → `EnrollmentService`
+
+---
+
+## 4. Programación Orientada a Objetos (POO)
+
+### Encapsulamiento
+
+Cada clase encapsula su estado interno:
 ```typescript
-// Interfaz abstracta (contrato)
-interface BracketStrategy {
-  generate(participants: Participant[]): BracketResult;
+export class UserRepository {
+  private pool = getPostgresPool();  // ← encapsulado, no accesible desde fuera
+  
+  async findByEmail(email: string) { ... }  // ← interfaz pública
 }
+```
 
-// Implementaciones concretas (extensiones — sin tocar las anteriores)
-class SingleEliminationBracket implements BracketStrategy {
-  generate(participants: Participant[]): BracketResult { ... }
+### Composición sobre Herencia
+
+Los servicios **componen** repositorios en vez de heredar de ellos:
+```typescript
+export class EnrollmentService {
+  private teamRepo = new TeamRepository();        // ← composición
+  private tournamentRepo = new TournamentRepository(); // ← composición
 }
+```
 
-class DoubleEliminationBracket implements BracketStrategy {
-  generate(participants: Participant[]): BracketResult { ... }
+**Justificación:** La composición es más flexible que la herencia. `EnrollmentService` necesita datos de `teams` Y `tournaments`, algo que sería imposible con herencia simple.
+
+---
+
+## 5. Patrón Singleton
+
+> *Una sola instancia de recursos costosos compartida globalmente.*
+
+```typescript
+// database.ts — Pool de conexiones PostgreSQL
+declare global { var tmpPostgresPool: Pool | undefined; }
+
+export function getPostgresPool() {
+  if (!globalThis.tmpPostgresPool) {
+    globalThis.tmpPostgresPool = new Pool({ ... });  // Se crea UNA sola vez
+  }
+  return globalThis.tmpPostgresPool;  // Siempre devuelve la misma instancia
 }
-
-// Uso: solo cambias la estrategia, el resto del código no se toca
-const strategy: BracketStrategy = new SingleEliminationBracket();
-const result = strategy.generate(players);
 ```
 
-### ❌ proxy.ts — Rutas protegidas hardcodeadas
+Se aplica en: `database.ts` (PostgreSQL) y `redis.ts` (Redis).
+
+**Justificación:** Crear un pool de conexiones a la BD por cada request sería extremadamente costoso. El Singleton garantiza que toda la aplicación comparte un solo pool con un máximo de 10 conexiones.
+
+---
+
+## 6. Middleware / Proxy Pattern
 
 ```typescript
-// ACTUAL: hay que modificar el array cada vez
-const protectedPrefixes = ["/dashboard", "/admin"];
-
-// PROPUESTO: configuración externa
-import { PROTECTED_ROUTES } from "@/config/routes";
+// proxy.ts
+export default function proxy(request: NextRequest) {
+  // Intercepta TODAS las requests antes de llegar a la página
+  if (isProtected && !token) return redirect("/login");
+  if (isAuth && token) return redirect("/dashboard");
+  return NextResponse.next();
+}
 ```
+
+**Justificación:** En vez de verificar la autenticación en cada página individualmente (duplicación), el middleware lo hace de forma centralizada. Esto cumple con el principio DRY.
 
 ---
 
-## L — Liskov Substitution (Sustitución de Liskov)
+## 7. Separación de Responsabilidades por Capas (Arquitectura en Capas)
 
-> *"Las clases hijas deben poder sustituir a las padres sin romper nada."*
+```
+┌─────────────────────────────────────────────────────┐
+│  PRESENTACIÓN (pages, components)                    │
+│  - page.tsx, BracketView.tsx, TeamSection.tsx        │
+│  - Solo UI, no conoce SQL ni lógica de negocio      │
+├─────────────────────────────────────────────────────┤
+│  API (route handlers)                                │
+│  - login/route.ts, teams/route.ts                   │
+│  - Solo orquesta: valida → servicio → respuesta     │
+├─────────────────────────────────────────────────────┤
+│  SERVICIOS (business logic)                          │
+│  - AuthService, TeamService, EnrollmentService      │
+│  - Reglas de negocio complejas                      │
+├─────────────────────────────────────────────────────┤
+│  REPOSITORIOS (data access / CRUD)                   │
+│  - UserRepository, TeamRepository, TournamentRepo   │
+│  - Única capa que conoce SQL                        │
+├─────────────────────────────────────────────────────┤
+│  INFRAESTRUCTURA (connections)                       │
+│  - database.ts, redis.ts, env.ts                    │
+│  - Pools de conexión, variables de entorno          │
+└─────────────────────────────────────────────────────┘
+```
 
-### ✅ Cumple — No hay herencia mal usada
-
-Las interfaces (`Participant`, `Match`, `AuthUser`) están bien definidas y se respetan en todo el proyecto. Si se implementa el patrón Strategy (punto anterior), todas las estrategias devolverán un `BracketResult` con la misma estructura, cumpliendo Liskov.
+**Justificación:** Cada capa solo se comunica con la capa inmediatamente inferior. Una página nunca hace SQL directamente, y un repositorio nunca genera HTML. Esto hace que cada capa sea independientemente testeable, reemplazable y mantenible.
 
 ---
 
-## I — Interface Segregation (Segregación de Interfaces)
+## 8. DRY (Don't Repeat Yourself)
 
-> *"No obligues a un consumidor a depender de cosas que no necesita."*
-
-### 🟡 brackets.ts — Campo `isBye` innecesario en rondas 2+
-
-El campo `isBye` solo tiene sentido en la Ronda 1. En todas las demás rondas siempre es `false`. Los componentes de rondas posteriores cargan con un campo inútil.
-
-### 🟡 user.repository.ts — `UserRow` expone `password_hash`
-
-`UserRow` extiende `AuthUser` y agrega `password_hash`. Si alguien pasa accidentalmente un `UserRow` a un JSON response, filtra la contraseña hasheada.
-
-**Solución:** Separar interfaces por rol:
-```typescript
-// Para responses (seguro)
-interface SafeUser { id: string; email: string; username: string; role: string; }
-
-// Solo para uso interno del repositorio (privado)
-interface UserDBRow extends SafeUser { password_hash: string; failed_login_attempts: number; }
-```
+| Antes (duplicado) | Después (centralizado) |
+|---|---|
+| Validación de email repetida en `login` y `register` | `AuthValidator` con `validateLogin()` y `validateRegister()` |
+| Query de torneos activos en `page.tsx` y `dashboard.tsx` | `TournamentRepository.findActive()` y `findByOrganizer()` |
+| `process.env.DATABASE_URL` accedido en múltiples archivos | `env.ts` con `databaseUrl()` |
 
 ---
 
-## D — Dependency Inversion (Inversión de Dependencias)
+## Resumen
 
-> *"Depende de abstracciones, no de implementaciones concretas."*
-
-### ❌ 4 archivos llaman a `getPostgresPool()` directamente
-
-| Archivo | Línea | Problema |
-|---------|-------|---------|
-| `login/route.ts` | 46 | Query SQL directo en el route handler |
-| `register/route.ts` | 62 | Query SQL directo en el route handler |
-| `page.tsx` | 20 | Query SQL directo en componente React |
-| `dashboard/page.tsx` | 21 | Query SQL directo en componente React |
-
-Si cambias la base de datos de PostgreSQL a otra cosa, tendrías que tocar **4 archivos**.
-
-**Solución con CRUD + POO (Patrón Repository):**
-
-```
-Página/Route → Servicio (POO) → Repositorio (CRUD) → Base de datos
-     ↑              ↑                 ↑
-  (no sabe       (lógica de       (única capa que
-   de SQL)       negocio)          conoce SQL)
-```
-
-Todos los archivos dependerían de **repositorios** (abstracciones), no de `getPostgresPool()` (implementación concreta).
-
-### ❌ brackets.ts — `Math.random()` hardcodeado
-
-Línea 55 usa `Math.random()` directamente. Imposible hacer tests deterministas.
-
-**Solución con Inyección de Dependencias:**
-```typescript
-export function generateBracket(
-  participants: Participant[],
-  shuffleFn: (arr: Participant[]) => Participant[] = defaultShuffle  // ← inyectable
-): BracketResult { ... }
-
-// En producción: usa el shuffle aleatorio por defecto
-// En tests: generateBracket(players, (arr) => arr)  // sin mezclar, predecible
-```
-
----
-
-## ✅ Lo que SÍ está bien hecho
-
-| Buena práctica | Archivo | Principio |
-|---------------|---------|-----------|
-| Repositorio separado con métodos CRUD | `user.repository.ts` | S + D |
-| Validador con responsabilidad única | `auth.validator.ts` | S |
-| Variables de entorno centralizadas | `env.ts` | S + D |
-| Componentes visuales separados | `BracketView.tsx` (MatchCard, RoundColumn) | S |
-| Interfaces TypeScript bien definidas | `brackets.ts` (Participant, Match, RoundData) | I |
-| Middleware conciso | `proxy.ts` | S |
-
----
-
-## Plan de Acción (por prioridad)
-
-| # | Acción | Principios | Patrón | Impacto |
-|---|--------|-----------|--------|---------|
-| 1 | `login/route.ts` → usar `UserRepository` + `AuthValidator` | S + D | CRUD + POO | 🔴 Alto |
-| 2 | `register/route.ts` → usar `AuthValidator` + `UserRepository` | S + D | CRUD + POO | 🔴 Alto |
-| 3 | Crear `TournamentRepository` (CRUD) | S + D | Repository | 🔴 Alto |
-| 4 | Crear `AuthService` (clase para tokens/sesiones) | S | POO | 🟡 Medio |
-| 5 | Inyectar `shuffleFn` en `generateBracket()` | D | DI | 🟡 Medio |
-| 6 | Patrón Strategy para tipos de bracket | O | Strategy | 🟢 Futuro |
-| 7 | Extraer config de rutas protegidas | O | Config | 🟢 Futuro |
-
-> **Conclusión:** Sí, CRUD + POO resuelven directamente las violaciones encontradas.
-> El patrón Repository (CRUD) soluciona las violaciones de D (Dependency Inversion)
-> y S (Single Responsibility), mientras que las clases POO (Service, Strategy, Validator)
-> resuelven O (Open/Closed) y permiten extensibilidad futura.
+| Principio | Dónde se aplica | Beneficio |
+|-----------|----------------|-----------|
+| **SOLID (S)** | Repos, Services, Components | Cambios aislados, sin efectos secundarios |
+| **SOLID (O)** | Interfaces, Services | Se puede extender sin modificar |
+| **SOLID (L)** | `Participant`, `AuthUser` | Sustitución segura de implementaciones |
+| **SOLID (I)** | `TournamentSummary`, Props de componentes | Sin dependencias innecesarias |
+| **SOLID (D)** | Capas, `env.ts` | Desacoplamiento total entre capas |
+| **Repository (CRUD)** | 3 repositorios | SQL centralizado y testeable |
+| **Service Layer** | 4 servicios | Lógica de negocio organizada |
+| **POO** | Clases con encapsulamiento y composición | Estado controlado y reutilizable |
+| **Singleton** | DB Pool, Redis Client | Eficiencia en recursos |
+| **Middleware** | `proxy.ts` | Auth centralizada, DRY |
+| **Arquitectura en Capas** | Presentación → API → Servicio → Repo | Separación total de responsabilidades |
+| **DRY** | Validators, Repos, env.ts | Cero duplicación |
