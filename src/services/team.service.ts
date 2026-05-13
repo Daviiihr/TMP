@@ -2,8 +2,10 @@ import { TeamRepository, Team } from "@/repositories/team.repository";
 import { UserRepository } from "@/repositories/user.repository";
 
 export class TeamService {
-  private teamRepo = new TeamRepository();
-  private userRepo = new UserRepository();
+  constructor(
+    private teamRepo: TeamRepository,
+    private userRepo: UserRepository,
+  ) {}
 
   async createTeam(name: string, captainId: string, size: number): Promise<Team> {
     if (size < 1) throw new Error("El tamaño del equipo debe ser al menos 1.");

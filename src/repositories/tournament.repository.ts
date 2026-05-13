@@ -1,4 +1,5 @@
 import { getPostgresPool } from "@/lib/database";
+import { Pool } from "pg";
 
 export type TournamentSummary = {
   id: string;
@@ -8,7 +9,7 @@ export type TournamentSummary = {
 };
 
 export class TournamentRepository {
-  private pool = getPostgresPool();
+  constructor(private pool: Pool = getPostgresPool()) {}
 
   /** CRUD — Read: Buscar torneo por ID */
   async getById(id: string) {

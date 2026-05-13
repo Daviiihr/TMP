@@ -1,7 +1,7 @@
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getPostgresPool } from "@/lib/database";
+import { appFactory } from "@/factories/app.factory";
 
 export default async function AdminDashboardPage() {
   const session = await getSession();
@@ -11,7 +11,7 @@ export default async function AdminDashboardPage() {
     redirect("/dashboard");
   }
 
-  const pool = getPostgresPool();
+  const pool = appFactory.createPostgresPool();
   
   // Obtener estadísticas globales para el admin
   const userCountResult = await pool.query("SELECT COUNT(*) FROM users");

@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { UserRepository } from "@/repositories/user.repository";
-import { AuthValidator } from "@/services/auth.validator";
-import { AuthService } from "@/services/auth.service";
+import { appFactory } from "@/factories/app.factory";
 
 export const runtime = "nodejs";
 
-const validator = new AuthValidator();
-const userRepo = new UserRepository();
-const authService = new AuthService();
+const validator = appFactory.createAuthValidator();
+const userRepo = appFactory.createUserRepository();
+const authService = appFactory.createAuthService();
 
 export async function POST(request: Request) {
   try {

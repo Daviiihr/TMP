@@ -1,9 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 
-export default function CreateTeamForm({ session }: { session: any }) {
+type TeamCreateResponse = {
+  message?: string;
+};
+
+export default function CreateTeamForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -23,13 +26,13 @@ export default function CreateTeamForm({ session }: { session: any }) {
         body: JSON.stringify({ name, size: parseInt(size as string) })
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as TeamCreateResponse;
       if (res.ok) {
         setMessage({ type: 'success', text: "Equipo creado exitosamente!" });
       } else {
         setMessage({ type: 'error', text: data.message || "Error al crear el equipo" });
       }
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: "Error de conexión con el servidor" });
     } finally {
       setLoading(false);

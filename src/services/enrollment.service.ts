@@ -1,11 +1,13 @@
 import { TeamRepository } from "@/repositories/team.repository";
 import { TournamentRepository } from "@/repositories/tournament.repository";
-import { getPostgresPool } from "@/lib/database";
+import { Pool } from "pg";
 
 export class EnrollmentService {
-  private teamRepo = new TeamRepository();
-  private tournamentRepo = new TournamentRepository();
-  private pool = getPostgresPool();
+  constructor(
+    private teamRepo: TeamRepository,
+    private tournamentRepo: TournamentRepository,
+    private pool: Pool,
+  ) {}
 
   async enrollPlayerInTournament(userId: string, tournamentId: string) {
     const tournament = await this.tournamentRepo.getById(tournamentId);

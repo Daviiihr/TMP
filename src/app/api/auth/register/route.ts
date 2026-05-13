@@ -1,12 +1,12 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import { UserRepository } from "@/repositories/user.repository";
-import { AuthValidator } from "@/services/auth.validator";
+import { appFactory } from "@/factories/app.factory";
+import { getErrorMessage, hasErrorCode } from "@/lib/errors";
 
 export const runtime = "nodejs";
 
-const validator = new AuthValidator();
-const userRepo = new UserRepository();
+const validator = appFactory.createAuthValidator();
+const userRepo = appFactory.createUserRepository();
 
 export async function POST(request: Request) {
   try {
@@ -42,12 +42,7 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     // Violación de UNIQUE constraint (usuario/correo duplicado)
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      error.code === "23505"
-    ) {
+    if (hasErrorCode(error, "23505")) {
       return NextResponse.json(
         { ok: false, message: "El usuario o correo ya existe." },
         { status: 409 },
@@ -58,7 +53,7 @@ export async function POST(request: Request) {
       {
         ok: false,
         message: "No se pudo crear la cuenta.",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: getErrorMessage(error),
       },
       { status: 500 },
     );

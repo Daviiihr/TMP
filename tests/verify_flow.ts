@@ -1,14 +1,15 @@
 import { getPostgresPool } from "../src/lib/database";
-import { TeamRepository } from "../src/repositories/team.repository";
-import { TournamentRepository } from "../src/repositories/tournament.repository";
-import { EnrollmentService } from "../src/services/enrollment.service";
+import { appFactory } from "../src/factories/app.factory";
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
+}
 
 async function runTests() {
   console.log("🚀 Starting Integration Tests...");
   const pool = getPostgresPool();
-  const teamRepo = new TeamRepository();
-  const tournamentRepo = new TournamentRepository();
-  const enrollmentService = new EnrollmentService();
+  const teamRepo = appFactory.createTeamRepository();
+  const enrollmentService = appFactory.createEnrollmentService();
 
   try {
     // 1. Setup: Get an Admin and a Player
@@ -33,8 +34,8 @@ async function runTests() {
     try {
       await enrollmentService.enrollPlayerInTournament(playerId, indTournId);
       console.log("✅ Player enrolled in individual tournament: SUCCESS");
-    } catch (e: any) {
-      console.log("❌ Player enrolled in individual tournament: FAILED - " + e.message);
+    } catch (e: unknown) {
+      console.log("❌ Player enrolled in individual tournament: FAILED - " + getErrorMessage(e));
     }
 
     // 3. Create a Team Tournament (Size 5)
@@ -52,8 +53,8 @@ async function runTests() {
     try {
       await enrollmentService.enrollTeamInTournament(team5.id, teamTournId);
       console.log("✅ Team (size 5) enrolled in tournament (size 5): SUCCESS");
-    } catch (e: any) {
-      console.log("❌ Team (size 5) enrolled in tournament (size 5): FAILED - " + e.message);
+    } catch (e: unknown) {
+      console.log("❌ Team (size 5) enrolled in tournament (size 5): FAILED - " + getErrorMessage(e));
     }
 
     // 3.2 Create wrong size team (3)
@@ -61,8 +62,8 @@ async function runTests() {
     try {
       await enrollmentService.enrollTeamInTournament(team3.id, teamTournId);
       console.log("❌ Team (size 3) enrolled in tournament (size 5): SHOULD HAVE FAILED");
-    } catch (e: any) {
-      console.log("✅ Team (size 3) enrolled in tournament (size 5): FAILED AS EXPECTED - " + e.message);
+    } catch (e: unknown) {
+      console.log("✅ Team (size 3) enrolled in tournament (size 5): FAILED AS EXPECTED - " + getErrorMessage(e));
     }
 
     // 4. Cross-type enrollment tests
@@ -70,19 +71,19 @@ async function runTests() {
     try {
       await enrollmentService.enrollPlayerInTournament(playerId, teamTournId);
       console.log("❌ Player enrolled in TEAM tournament: SHOULD HAVE FAILED");
-    } catch (e: any) {
-      console.log("✅ Player enrolled in TEAM tournament: FAILED AS EXPECTED - " + e.message);
+    } catch (e: unknown) {
+      console.log("✅ Player enrolled in TEAM tournament: FAILED AS EXPECTED - " + getErrorMessage(e));
     }
 
     try {
       await enrollmentService.enrollTeamInTournament(team5.id, indTournId);
       console.log("❌ Team enrolled in INDIVIDUAL tournament: SHOULD HAVE FAILED");
-    } catch (e: any) {
-      console.log("✅ Team enrolled in INDIVIDUAL tournament: FAILED AS EXPECTED - " + e.message);
+    } catch (e: unknown) {
+      console.log("✅ Team enrolled in INDIVIDUAL tournament: FAILED AS EXPECTED - " + getErrorMessage(e));
     }
 
     console.log("\n✨ All tests completed!");
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("FATAL ERROR:", error);
   }
 }

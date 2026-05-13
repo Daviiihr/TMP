@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { appFactory } from "@/factories/app.factory";
+import { getErrorMessage } from "@/lib/errors";
 import { getSession } from "@/lib/session";
-import { EnrollmentService } from "@/services/enrollment.service";
 
 export async function POST(request: Request) {
   try {
@@ -16,11 +17,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: "Team ID y Tournament ID son obligatorios." }, { status: 400 });
     }
 
-    const enrollmentService = new EnrollmentService();
+    const enrollmentService = appFactory.createEnrollmentService();
     const result = await enrollmentService.enrollTeamInTournament(teamId, tournamentId);
 
     return NextResponse.json({ ok: true, ...result }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
+  } catch (error: unknown) {
+    return NextResponse.json({ ok: false, message: getErrorMessage(error) }, { status: 400 });
   }
 }

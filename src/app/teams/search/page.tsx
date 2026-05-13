@@ -2,10 +2,16 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import type { TeamWithMemberCount } from "@/repositories/team.repository";
+
+type TeamsApiResponse = {
+  teams?: TeamWithMemberCount[];
+  message?: string;
+};
 
 export default function SearchTeamsPage() {
   const [query, setQuery] = useState("");
-  const [teams, setTeams] = useState<any[]>([]);
+  const [teams, setTeams] = useState<TeamWithMemberCount[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -17,13 +23,13 @@ export default function SearchTeamsPage() {
     setMessage(null);
     try {
       const res = await fetch(`/api/teams/search?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
+      const data = (await res.json()) as TeamsApiResponse;
       if (res.ok) {
-        setTeams(data.teams);
+        setTeams(data.teams ?? []);
       } else {
-        setMessage({ type: 'error', text: data.message });
+        setMessage({ type: 'error', text: data.message ?? "Error al buscar equipos" });
       }
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: "Error de conexión" });
     } finally {
       setLoading(false);
@@ -39,17 +45,17 @@ export default function SearchTeamsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ teamId })
       });
-      const data = await res.json();
+      const data = (await res.json()) as TeamsApiResponse;
       if (res.ok) {
-        setMessage({ type: 'success', text: data.message });
+        setMessage({ type: 'success', text: data.message ?? "Te has unido al equipo exitosamente." });
         // Refresh list to update member count
         const searchRes = await fetch(`/api/teams/search?q=${encodeURIComponent(query)}`);
-        const searchData = await searchRes.json();
-        setTeams(searchData.teams);
+        const searchData = (await searchRes.json()) as TeamsApiResponse;
+        setTeams(searchData.teams ?? []);
       } else {
-        setMessage({ type: 'error', text: data.message });
+        setMessage({ type: 'error', text: data.message ?? "Error al intentar unirse" });
       }
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: "Error al intentar unirse" });
     } finally {
       setLoading(false);

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
+import { appFactory } from "@/factories/app.factory";
 import { getSession } from "@/lib/session";
-import { getPostgresPool } from "@/lib/database";
 
 export async function PATCH(
   request: Request,
@@ -24,7 +24,7 @@ export async function PATCH(
       );
     }
 
-    const pool = getPostgresPool();
+    const pool = appFactory.createPostgresPool();
 
     // Verificar que el torneo pertenece al usuario
     const tournament = await pool.query(

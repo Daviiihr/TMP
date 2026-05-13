@@ -1,5 +1,6 @@
 import { getPostgresPool } from "@/lib/database";
 import { AuthUser } from "@/lib/auth";
+import { Pool } from "pg";
 
 export interface UserRow extends AuthUser {
   password_hash: string;
@@ -8,7 +9,7 @@ export interface UserRow extends AuthUser {
 }
 
 export class UserRepository {
-  private pool = getPostgresPool();
+  constructor(private pool: Pool = getPostgresPool()) {}
 
   async findByEmail(email: string): Promise<UserRow | null> {
     const result = await this.pool.query<UserRow>(

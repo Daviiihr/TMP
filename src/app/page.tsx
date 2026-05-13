@@ -1,11 +1,11 @@
 import HeroScrollSection from "@/components/HeroScrollSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import CTASection from "@/components/CTASection";
+import { appFactory } from "@/factories/app.factory";
 import { getSession } from "@/lib/session";
-import { TournamentRepository } from "@/repositories/tournament.repository";
 import Link from "next/link";
 
-const tournamentRepo = new TournamentRepository();
+const tournamentRepo = appFactory.createTournamentRepository();
 
 export default async function Home() {
   const session = await getSession();

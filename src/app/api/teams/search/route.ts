@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { TeamService } from "@/services/team.service";
+import { appFactory } from "@/factories/app.factory";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function GET(request: Request) {
   try {
@@ -10,11 +11,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ ok: false, message: "El término de búsqueda es obligatorio." }, { status: 400 });
     }
 
-    const teamService = new TeamService();
+    const teamService = appFactory.createTeamService();
     const teams = await teamService.searchTeams(query);
 
     return NextResponse.json({ ok: true, teams }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ ok: false, message: getErrorMessage(error) }, { status: 500 });
   }
 }
