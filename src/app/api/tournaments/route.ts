@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
+import { appFactory } from "@/factories/app.factory";
 import { getSession } from "@/lib/session";
-import { getPostgresPool } from "@/lib/database";
 
 export async function POST(request: Request) {
   try {
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
     const regions = regionsString.split(",").map(r => r.trim());
 
-    const pool = getPostgresPool();
+    const pool = appFactory.createPostgresPool();
     await pool.query(
       `INSERT INTO tournaments 
        (name, game, region, max_players, type, min_players_per_team, max_players_per_team, start_date, end_date, registration_closes_at, status, organizer_id) 

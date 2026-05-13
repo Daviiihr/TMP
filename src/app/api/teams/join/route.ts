@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { appFactory } from "@/factories/app.factory";
+import { getErrorMessage } from "@/lib/errors";
 import { getSession } from "@/lib/session";
-import { TeamService } from "@/services/team.service";
 
 export async function POST(request: Request) {
   try {
@@ -16,11 +17,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: "Team ID es obligatorio." }, { status: 400 });
     }
 
-    const teamService = new TeamService();
+    const teamService = appFactory.createTeamService();
     const result = await teamService.joinTeam(teamId, session.id);
 
     return NextResponse.json({ ok: true, ...result }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
+  } catch (error: unknown) {
+    return NextResponse.json({ ok: false, message: getErrorMessage(error) }, { status: 400 });
   }
 }

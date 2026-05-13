@@ -111,8 +111,6 @@ export function generateBracket(participants: Participant[]): BracketResult {
         ? (feederB.player1 || feederB.player2)
         : null;
 
-      const isBye = (winnerA !== null && winnerB !== null) && (winnerA === null || winnerB === null);
-
       currentMatches.push({
         id: `r${r}_m${i / 2 + 1}`,
         round: r,

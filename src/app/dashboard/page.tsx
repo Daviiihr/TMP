@@ -1,13 +1,12 @@
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { TournamentRepository } from "@/repositories/tournament.repository";
-import { TeamRepository } from "@/repositories/team.repository";
+import { appFactory } from "@/factories/app.factory";
 import TeamSection from "@/components/dashboard/TeamSection";
 import TournamentCard from "@/components/dashboard/TournamentCard";
 
-const tournamentRepo = new TournamentRepository();
-const teamRepo = new TeamRepository();
+const tournamentRepo = appFactory.createTournamentRepository();
+const teamRepo = appFactory.createTeamRepository();
 
 export default async function DashboardPage() {
   const session = await getSession();

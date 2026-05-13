@@ -1,4 +1,5 @@
 import { getPostgresPool } from "@/lib/database";
+import { Pool } from "pg";
 
 export interface Team {
   id: string;
@@ -12,7 +13,7 @@ export interface Team {
 export type TeamWithMemberCount = Team & { member_count: number };
 
 export class TeamRepository {
-  private pool = getPostgresPool();
+  constructor(private pool: Pool = getPostgresPool()) {}
 
   async create(data: { name: string; captain_id: string; size: number }): Promise<Team> {
     const result = await this.pool.query<Team>(

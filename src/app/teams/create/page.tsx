@@ -28,7 +28,7 @@ export default async function CreateTeamPage() {
           </Link>
         </header>
 
-        <CreateTeamForm session={session} />
+        <CreateTeamForm />
       </div>
     </main>
   );

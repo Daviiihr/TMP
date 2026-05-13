@@ -5,7 +5,7 @@ import { getRedisClient } from "@/lib/redis";
 import { UserRepository, type UserRow } from "@/repositories/user.repository";
 
 export class AuthService {
-  private userRepo = new UserRepository();
+  constructor(private userRepo: UserRepository) {}
 
   /**
    * Verifica la contraseña del usuario.
