@@ -114,6 +114,7 @@ export default function HeroScrollSection() {
             opacity: 0,
             scale: 0.4,
             rotation: -30,
+            filter: "blur(0px)",
           },
           {
             x: 0,
@@ -121,6 +122,7 @@ export default function HeroScrollSection() {
             opacity: 1,
             scale: 1,
             rotation: -12,
+            filter: "blur(0px)",
             duration: 6,
             ease: "power2.out",
           },
@@ -136,6 +138,7 @@ export default function HeroScrollSection() {
             opacity: 0,
             scale: 0.4,
             rotation: 25,
+            filter: "blur(0px)",
           },
           {
             x: 0,
@@ -143,10 +146,33 @@ export default function HeroScrollSection() {
             opacity: 1,
             scale: 1,
             rotation: 8,
+            filter: "blur(0px)",
             duration: 6,
             ease: "power2.out",
           },
           2
+        );
+
+        // Phase 3b: subtle blur only after peripherals have settled,
+        // so the focus stays crisp during the initial entrance.
+        tl.to(
+          keyboardRef.current,
+          {
+            filter: "blur(4px)",
+            duration: 3,
+            ease: "power1.out",
+          },
+          8
+        );
+
+        tl.to(
+          trophyRef.current,
+          {
+            filter: "blur(3px)",
+            duration: 3,
+            ease: "power1.out",
+          },
+          8.5
         );
 
         // Phase 4: Info badges appear
@@ -172,29 +198,8 @@ export default function HeroScrollSection() {
           7
         );
 
-        // ── Independent parallax on the peripherals (different Y speeds) ──
-        // This creates the depth-of-field illusion
-        gsap.to(keyboardRef.current, {
-          y: -150,
-          ease: "none",
-          scrollTrigger: {
-            trigger: triggerRef.current,
-            start: "top top",
-            end: "+=250%",
-            scrub: 0.5,
-          },
-        });
-
-        gsap.to(trophyRef.current, {
-          y: -60,
-          ease: "none",
-          scrollTrigger: {
-            trigger: triggerRef.current,
-            start: "top top",
-            end: "+=250%",
-            scrub: 2,
-          },
-        });
+        // ── Peripheral movement is managed by the main timeline only.
+        // Avoid duplicate ScrollTrigger tweens that conflict with the entry animation.
       });
 
       // ── Mobile: simplified animations ──
@@ -242,9 +247,19 @@ export default function HeroScrollSection() {
 
         tl.fromTo(
           trophyRef.current,
-          { x: 300, opacity: 0, scale: 0.3 },
-          { x: 0, opacity: 1, scale: 0.7, rotation: 5, duration: 4 },
+          { x: 300, opacity: 0, scale: 0.3, filter: "blur(0px)" },
+          { x: 0, opacity: 1, scale: 0.7, rotation: 5, filter: "blur(0px)", duration: 4 },
           3
+        );
+
+        tl.to(
+          [keyboardRef.current, trophyRef.current],
+          {
+            filter: "blur(2px)",
+            duration: 2.5,
+            ease: "power1.out",
+          },
+          7
         );
 
         tl.fromTo(
@@ -440,24 +455,7 @@ export default function HeroScrollSection() {
       </div>
 
       {/* Scroll hint */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 text-zinc-500 text-xs uppercase tracking-[0.2em] animate-bounce pointer-events-none">
-        <span>Scroll</span>
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          className="text-arena-cyan"
-        >
-          <path
-            d="M8 3v10M3 8l5 5 5-5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
+      
     </section>
   );
 }
