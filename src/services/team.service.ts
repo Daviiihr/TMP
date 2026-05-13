@@ -1,10 +1,12 @@
 import { TeamRepository, Team } from "@/repositories/team.repository";
 import { UserRepository } from "@/repositories/user.repository";
+import { AppEventEmitter } from "@/observers/event-emitter";
 
 export class TeamService {
   constructor(
     private teamRepo: TeamRepository,
     private userRepo: UserRepository,
+    private eventEmitter: AppEventEmitter,
   ) {}
 
   async createTeam(name: string, captainId: string, size: number): Promise<Team> {
@@ -20,6 +22,12 @@ export class TeamService {
     if (user && user.role === "PLAYER") {
       await this.userRepo.updateRole(captainId, "CAPTAIN");
     }
+    
+    await this.eventEmitter.emit("team:created", {
+      teamId: team.id,
+      captainId,
+      name
+    });
     
     return team;
   }
