@@ -14,7 +14,7 @@ export class TournamentRepository {
   /** CRUD — Read: Buscar torneo por ID */
   async getById(id: string) {
     const result = await this.pool.query(
-      `SELECT id, name, type, min_players_per_team, max_players_per_team, max_players FROM tournaments WHERE id = $1`,
+      `SELECT id, name, type, min_players_per_team, max_players_per_team, max_players, organizer_id, status FROM tournaments WHERE id = $1`,
       [id]
     );
     return result.rows[0] || null;

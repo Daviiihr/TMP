@@ -2,6 +2,11 @@ import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { appFactory } from "@/factories/app.factory";
+import {
+  DashboardGroup,
+  DashboardLeaf,
+  renderDashboardComponent,
+} from "@/components/dashboard/DashboardComposite";
 import TeamSection from "@/components/dashboard/TeamSection";
 import TournamentCard from "@/components/dashboard/TournamentCard";
 
@@ -80,6 +85,16 @@ export default async function DashboardPage() {
           
           {/* Left Column: Tournaments (Main) */}
           <div className="lg:col-span-2 space-y-6">
+  const dashboardTree = new DashboardGroup(
+    "dashboard-grid",
+    "grid grid-cols-1 lg:grid-cols-3 gap-6",
+    [
+      new DashboardGroup(
+        "dashboard-main-column",
+        "lg:col-span-2 space-y-6",
+        [
+          new DashboardLeaf(
+            "created-tournaments",
             <section className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
@@ -94,7 +109,7 @@ export default async function DashboardPage() {
                   )}
                 </div>
               </div>
-              
+
               {myTournaments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-950/50">
                   <p className="text-zinc-500 font-medium mb-4">No has creado ningún torneo aún.</p>
@@ -116,8 +131,10 @@ export default async function DashboardPage() {
                   ))}
                 </div>
               )}
-            </section>
- 
+            </section>,
+          ),
+          new DashboardLeaf(
+            "participation-history",
             <section className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
               <h2 className="text-xl font-bold uppercase tracking-tight text-white mb-6">
                 Historial de Participación
@@ -125,11 +142,16 @@ export default async function DashboardPage() {
               <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-950/50">
                 <p className="text-zinc-500 font-medium italic">Falta implementar</p>
               </div>
-            </section>
-          </div>
- 
-          {/* Right Column: Ranking & Teams */}
-          <div className="space-y-6">
+            </section>,
+          ),
+        ],
+      ),
+      new DashboardGroup(
+        "dashboard-side-column",
+        "space-y-6",
+        [
+          new DashboardLeaf(
+            "global-ranking",
             <section className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
               <h2 className="text-xl font-bold uppercase tracking-tight text-white mb-6">
                 Ranking Global
@@ -160,11 +182,75 @@ export default async function DashboardPage() {
                   <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Tú estás en la posición #10</p>
                 </div>
               </div>
-            </section>
- 
-            <TeamSection teams={myTeams} userId={session.id} />
+            </section>,
+          ),
+          new DashboardLeaf(
+            "teams",
+            <TeamSection teams={myTeams} userId={session.id} />,
+          ),
+        ],
+      ),
+    ],
+  );
+
+  return (
+    <main className="min-h-screen bg-[#09090b] text-zinc-100 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
+          <div>
+            <h1 className="text-4xl font-bold font-[var(--font-display)] uppercase tracking-tighter text-white">
+              Panel de Control
+            </h1>
+            <p className="text-zinc-400">
+              Bienvenido de nuevo, <span className="text-arena-cyan font-bold">{session.username}</span>
+            </p>
           </div>
-        </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-white bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-300 hover:bg-zinc-700 hover:border-zinc-600"
+            >
+              Inicio
+            </Link>
+            {session.role === "ADMIN" && (
+              <Link
+                href="/admin/dashboard"
+                className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-zinc-950 bg-arena-magenta border border-arena-magenta rounded-lg transition-all duration-300 hover:bg-arena-magenta/80"
+              >
+                Panel Admin
+              </Link>
+            )}
+            <Link
+              href="/tournaments/type"
+              className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-zinc-950 bg-arena-magenta border border-arena-magenta rounded-lg transition-all duration-300 hover:bg-arena-magenta/80"
+            >
+              Crear Torneo
+            </Link>
+            <Link
+              href="/brackets/test"
+              className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-zinc-950 bg-arena-cyan border border-arena-cyan rounded-lg transition-all duration-300 hover:bg-arena-cyan-dim"
+            >
+              Crear Brackets
+            </Link>
+            <Link
+              href="/profile"
+              className="inline-flex items-center justify-center px-5 py-2 text-xs font-bold uppercase tracking-widest text-white bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-300 hover:bg-zinc-700 hover:border-zinc-600"
+            >
+              Ver Perfil
+            </Link>
+            <form action="/api/auth/logout" method="POST" className="inline-flex items-center">
+              <button
+                type="submit"
+                className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-arena-cyan bg-transparent hover:text-white transition-colors duration-300 hover:bg-zinc-800/20 rounded-lg border border-arena-cyan/30"
+              >
+                Cerrar Sesión
+              </button>
+            </form>
+          </div>
+        </header>
+
+        {renderDashboardComponent(dashboardTree)}
       </div>
     </main>
   );
