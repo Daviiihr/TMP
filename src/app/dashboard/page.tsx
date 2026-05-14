@@ -146,9 +146,9 @@ export default async function DashboardPage() {
             <p className="text-zinc-400">
               Bienvenido de nuevo, <span className="text-arena-cyan font-bold">{session.username}</span>
             </p>
-            <a href="/" className="font-bold uppercase hover:text-arena-cyan transition-colors duration-300">
+            <Link href="/" className="font-bold uppercase hover:text-arena-cyan transition-colors duration-300">
               Volver al inicio
-            </a>
+            </Link>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {session.role === "ADMIN" && (
