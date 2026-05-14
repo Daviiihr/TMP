@@ -1,22 +1,30 @@
-import { Observer, EventKey } from "./event-emitter";
+import { Observer, EventKey, AppEvents } from "./event-emitter";
 
 export class LoggerObserver implements Observer<EventKey> {
-  async update(eventName: EventKey, data: any): Promise<void> {
+  async update(eventName: EventKey, data: AppEvents[EventKey]): Promise<void> {
     const timestamp = new Date().toISOString();
     
     switch (eventName) {
-      case "tournament:statusChanged":
-        console.log(`[${timestamp}] 🏆 ${eventName} — Torneo ${data.tournamentId} cambió de ${data.oldStatus} → ${data.newStatus} (Usuario: ${data.userId})`);
+      case "tournament:statusChanged": {
+        const eventData = data as AppEvents["tournament:statusChanged"];
+        console.log(`[${timestamp}] 🏆 ${eventName} — Torneo ${eventData.tournamentId} cambió de ${eventData.oldStatus} → ${eventData.newStatus} (Usuario: ${eventData.userId})`);
         break;
-      case "enrollment:playerJoined":
-        console.log(`[${timestamp}] 👤 ${eventName} — Jugador ${data.userId} se inscribió al torneo ${data.tournamentId}`);
+      }
+      case "enrollment:playerJoined": {
+        const eventData = data as AppEvents["enrollment:playerJoined"];
+        console.log(`[${timestamp}] 👤 ${eventName} — Jugador ${eventData.userId} se inscribió al torneo ${eventData.tournamentId}`);
         break;
-      case "enrollment:teamJoined":
-        console.log(`[${timestamp}] 👥 ${eventName} — Equipo ${data.teamId} se inscribió al torneo ${data.tournamentId}`);
+      }
+      case "enrollment:teamJoined": {
+        const eventData = data as AppEvents["enrollment:teamJoined"];
+        console.log(`[${timestamp}] 👥 ${eventName} — Equipo ${eventData.teamId} se inscribió al torneo ${eventData.tournamentId}`);
         break;
-      case "team:created":
-        console.log(`[${timestamp}] 🛡️ ${eventName} — Equipo "${data.name}" (${data.teamId}) creado por el capitán ${data.captainId}`);
+      }
+      case "team:created": {
+        const eventData = data as AppEvents["team:created"];
+        console.log(`[${timestamp}] 🛡️ ${eventName} — Equipo "${eventData.name}" (${eventData.teamId}) creado por el capitán ${eventData.captainId}`);
         break;
+      }
       default:
         console.log(`[${timestamp}] 🔔 ${eventName} —`, data);
     }

@@ -1,5 +1,6 @@
 import { getPostgresPool } from "@/lib/database";
 import { Pool } from "pg";
+import type { ValidTournamentCreationInput } from "@/domain/tournament.rules";
 
 export type TournamentSummary = {
   id: string;
@@ -11,10 +12,41 @@ export type TournamentSummary = {
 export class TournamentRepository {
   constructor(private pool: Pool = getPostgresPool()) {}
 
+  async create(data: ValidTournamentCreationInput) {
+    const result = await this.pool.query(
+      `INSERT INTO tournaments
+       (name, game, region, max_players, type, elimination_mode, min_players_per_team, max_players_per_team, start_date, end_date, registration_closes_at, status, organizer_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $7, $8, $9, $10, 'DRAFT', $11)
+       RETURNING id, name, type, elimination_mode, min_players_per_team, max_players_per_team, max_players, organizer_id, status`,
+      [
+        data.name,
+        data.game,
+        data.regions,
+        data.maxPlayers,
+        data.type,
+        data.eliminationMode,
+        data.playersPerTeam,
+        data.startDate,
+        data.endDate,
+        data.registrationClosesAt,
+        data.organizerId,
+      ]
+    );
+    return result.rows[0];
+  }
+
+  async existsByName(name: string): Promise<boolean> {
+    const result = await this.pool.query(
+      `SELECT 1 FROM tournaments WHERE lower(name) = lower($1) LIMIT 1`,
+      [name]
+    );
+    return result.rows.length > 0;
+  }
+
   /** CRUD — Read: Buscar torneo por ID */
   async getById(id: string) {
     const result = await this.pool.query(
-      `SELECT id, name, type, min_players_per_team, max_players_per_team, max_players, organizer_id, status FROM tournaments WHERE id = $1`,
+      `SELECT id, name, type, elimination_mode, min_players_per_team, max_players_per_team, max_players, organizer_id, status FROM tournaments WHERE id = $1`,
       [id]
     );
     return result.rows[0] || null;
