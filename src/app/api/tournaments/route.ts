@@ -4,6 +4,23 @@ import { assertAdminAccess } from "@/domain/tournament.rules";
 import { hasErrorCode } from "@/lib/errors";
 import { getSession } from "@/lib/session";
 
+export async function GET() {
+  try {
+    const pool = appFactory.createPostgresPool();
+    const result = await pool.query(
+      `SELECT count(*) as count FROM tournaments WHERE status IN ('REGISTRATION', 'IN_PROGRESS')`
+    );
+    const count = parseInt(result.rows[0].count);
+    return NextResponse.json({ ok: true, count });
+  } catch (error) {
+    console.error("Error fetching active tournaments count:", error);
+    return NextResponse.json(
+      { ok: false, message: "Error al obtener la cantidad de torneos." },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const session = await getSession();

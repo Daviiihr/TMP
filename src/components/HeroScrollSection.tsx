@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -21,6 +21,7 @@ const PARTICLES = Array.from({ length: 15 }, (_, i) => {
 });
 
 export default function HeroScrollSection() {
+  const [activeTournaments, setActiveTournaments] = useState<number | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<HTMLDivElement>(null);
@@ -32,6 +33,21 @@ export default function HeroScrollSection() {
   const badgeLeftRef = useRef<HTMLDivElement>(null);
   const badgeRightRef = useRef<HTMLDivElement>(null);
   const featuresTitleRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    async function fetchTournaments() {
+      try {
+        const res = await fetch('/api/tournaments');
+        const data = await res.json();
+        if (data.ok) {
+          setActiveTournaments(data.count);
+        }
+      } catch (error) {
+        console.error("Error fetching active tournaments:", error);
+      }
+    }
+    fetchTournaments();
+  }, []);
 
   useGSAP(
     () => {
@@ -387,7 +403,7 @@ export default function HeroScrollSection() {
               </span>
             </div>
             <p className="text-xs text-zinc-300">
-              <span className="text-white font-bold">12 torneos</span> activos
+              <span className="text-white font-bold">{activeTournaments ?? '...'} torneos</span> activos
               ahora mismo
             </p>
           </div>
