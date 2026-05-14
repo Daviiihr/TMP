@@ -1,4 +1,4 @@
-type AppEvents = {
+export type AppEvents = {
   "tournament:statusChanged": { tournamentId: string; oldStatus: string; newStatus: string; userId: string };
   "enrollment:playerJoined": { userId: string; tournamentId: string };
   "enrollment:teamJoined": { teamId: string; tournamentId: string };
@@ -12,26 +12,30 @@ export interface Observer<T extends EventKey> {
 }
 
 export class AppEventEmitter {
-  private observers: Map<EventKey, Set<Observer<any>>> = new Map();
+  private observers: { [K in EventKey]?: Set<Observer<K>> } = {};
+
+  private getObservers<T extends EventKey>(eventName: T): Set<Observer<T>> {
+    if (!this.observers[eventName]) {
+      this.observers[eventName] = new Set<Observer<T>>() as unknown as {
+        [K in EventKey]?: Set<Observer<K>>;
+      }[T];
+    }
+
+    return this.observers[eventName] as Set<Observer<T>>;
+  }
 
   on<T extends EventKey>(eventName: T, observer: Observer<T>) {
-    if (!this.observers.has(eventName)) {
-      this.observers.set(eventName, new Set());
-    }
-    this.observers.get(eventName)!.add(observer);
+    this.getObservers(eventName).add(observer);
   }
 
   off<T extends EventKey>(eventName: T, observer: Observer<T>) {
-    if (this.observers.has(eventName)) {
-      this.observers.get(eventName)!.delete(observer);
-    }
+    this.getObservers(eventName).delete(observer);
   }
 
   async emit<T extends EventKey>(eventName: T, data: AppEvents[T]) {
-    if (this.observers.has(eventName)) {
-      const handlers = Array.from(this.observers.get(eventName)!);
-      // Execute all handlers concurrently
-      await Promise.all(handlers.map((observer) => observer.update(eventName, data)));
-    }
+    const handlers = this.getObservers(eventName);
+
+    // Execute all handlers concurrently
+    await Promise.all(Array.from(handlers).map((observer) => observer.update(eventName, data)));
   }
 }
