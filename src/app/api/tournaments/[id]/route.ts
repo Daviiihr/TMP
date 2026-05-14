@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { appFactory } from "@/factories/app.factory";
+import { assertAdminAccess } from "@/domain/tournament.rules";
 import { getSession } from "@/lib/session";
 
 export async function PATCH(
@@ -8,9 +9,7 @@ export async function PATCH(
 ) {
   try {
     const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ ok: false, message: "Sesión no iniciada." }, { status: 401 });
-    }
+    assertAdminAccess(session);
 
     const { id } = await params;
     const body = await request.json();
@@ -24,9 +23,12 @@ export async function PATCH(
       message: result.message,
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown";
+    const status = message.includes("Sesion no iniciada") ? 401 : message.includes("administradores") ? 403 : 500;
+
     return NextResponse.json(
-      { ok: false, message: "Error al actualizar el torneo.", details: error instanceof Error ? error.message : "Unknown" },
-      { status: 500 }
+      { ok: false, message: "Error al actualizar el torneo.", details: message },
+      { status }
     );
   }
 }

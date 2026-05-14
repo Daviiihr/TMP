@@ -11,8 +11,14 @@ export interface Observer<T extends EventKey> {
   update(eventName: T, data: AppEvents[T]): void | Promise<void>;
 }
 
+type AnyObserver = {
+  update<T extends EventKey>(eventName: T, data: AppEvents[T]): void | Promise<void>;
+};
+
 export class AppEventEmitter {
+
   private observers: { [K in EventKey]?: Set<Observer<K>> } = {};
+
 
   private getObservers<T extends EventKey>(eventName: T): Set<Observer<T>> {
     if (!this.observers[eventName]) {
