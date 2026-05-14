@@ -16,24 +16,32 @@ type AnyObserver = {
 };
 
 export class AppEventEmitter {
-  private observers: Map<EventKey, Set<AnyObserver>> = new Map();
+
+  private observers: { [K in EventKey]?: Set<Observer<K>> } = {};
+
+
+  private getObservers<T extends EventKey>(eventName: T): Set<Observer<T>> {
+    if (!this.observers[eventName]) {
+      this.observers[eventName] = new Set<Observer<T>>() as unknown as {
+        [K in EventKey]?: Set<Observer<K>>;
+      }[T];
+    }
+
+    return this.observers[eventName] as Set<Observer<T>>;
+  }
 
   on<T extends EventKey>(eventName: T, observer: Observer<T>) {
-    if (!this.observers.has(eventName)) {
-      this.observers.set(eventName, new Set());
-    }
-    this.observers.get(eventName)!.add(observer as AnyObserver);
+    this.getObservers(eventName).add(observer);
   }
 
   off<T extends EventKey>(eventName: T, observer: Observer<T>) {
-    this.observers.get(eventName)?.delete(observer as AnyObserver);
+    this.getObservers(eventName).delete(observer);
   }
 
   async emit<T extends EventKey>(eventName: T, data: AppEvents[T]) {
-    const handlers = this.observers.get(eventName);
-    if (handlers) {
-      // Execute all handlers concurrently
-      await Promise.all(Array.from(handlers).map((observer) => observer.update(eventName, data)));
-    }
+    const handlers = this.getObservers(eventName);
+
+    // Execute all handlers concurrently
+    await Promise.all(Array.from(handlers).map((observer) => observer.update(eventName, data)));
   }
 }
