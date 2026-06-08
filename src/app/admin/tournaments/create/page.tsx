@@ -92,6 +92,20 @@ export default async function CreateTournamentPage({
                   placeholder="NA, EU, LATAM"
                 />
               </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase text-zinc-500">Modalidad de Eliminación</label>
+                <select
+                  name="elimination_mode"
+                  required
+                  defaultValue=""
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-arena-cyan transition-colors appearance-none"
+                >
+                  <option value="" disabled>Selecciona una modalidad</option>
+                  <option value="SINGLE_ELIMINATION">Eliminación simple</option>
+                  <option value="DOUBLE_ELIMINATION">Eliminación doble</option>
+                </select>
+              </div>
             </div>
 
             {/* Constraints */}
@@ -106,6 +120,7 @@ export default async function CreateTournamentPage({
                   name="max_players" 
                   type="number" 
                   required 
+                  min="4"
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-arena-cyan transition-colors" 
                 />
               </div>

@@ -64,14 +64,16 @@ export class TeamRepository {
   }
 
   async searchTeams(query: string): Promise<TeamWithMemberCount[]> {
+    const term = query.trim();
     const result = await this.pool.query(
       `SELECT t.id, t.name, t.captain_id, t.size, t.tournament_id, t.created_at,
               COUNT(tm.user_id)::int as member_count
        FROM teams t
        LEFT JOIN team_members tm ON t.id = tm.team_id
        WHERE t.name ILIKE $1
-       GROUP BY t.id`,
-      [`%${query}%`]
+       GROUP BY t.id
+       ORDER BY t.created_at DESC`,
+      [`%${term}%`]
     );
     return result.rows;
   }

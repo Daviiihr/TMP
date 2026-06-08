@@ -1,4 +1,6 @@
 import { Pool } from "pg";
+import type { TournamentCreationInput } from "@/domain/tournament.rules";
+import { validateTournamentCreation } from "@/domain/tournament.rules";
 import { AppEventEmitter } from "@/observers/event-emitter";
 import { TournamentRepository } from "@/repositories/tournament.repository";
 
@@ -9,8 +11,19 @@ export class TournamentService {
     private eventEmitter: AppEventEmitter
   ) {}
 
+  async createTournament(input: TournamentCreationInput) {
+    const data = validateTournamentCreation(input);
+
+    const nameAlreadyExists = await this.tournamentRepo.existsByName(data.name);
+    if (nameAlreadyExists) {
+      throw new Error("Ya existe un torneo con ese nombre.");
+    }
+
+    return this.tournamentRepo.create(data);
+  }
+
   async changeStatus(tournamentId: string, newStatus: string, userId: string) {
-    const validStatuses = ["DRAFT", "REGISTRATION", "CANCELLED", "COMPLETED"];
+    const validStatuses = ["DRAFT", "REGISTRATION", "IN_PROGRESS", "CANCELLED", "COMPLETED"];
     if (!validStatuses.includes(newStatus)) {
       throw new Error(`Status inválido. Debe ser: ${validStatuses.join(", ")}`);
     }

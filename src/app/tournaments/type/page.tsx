@@ -9,6 +9,10 @@ export default async function TournamentTypePage() {
     redirect("/login");
   }
 
+  if (session.role !== "ADMIN") {
+    redirect("/dashboard");
+  }
+
   return (
     <main className="min-h-screen bg-[#09090b] text-zinc-100 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
