@@ -60,7 +60,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS unique_tournament_name_ci
 ON tournaments (lower(name));
 
 -- Regla de negocio: Solo 1 torneo activo a la vez por usuario.
--- Si el estado no es COMPLETADO o CANCELADO, no puede crear otro.
 CREATE UNIQUE INDEX IF NOT EXISTS unique_active_tournament_per_organizer 
 ON tournaments (organizer_id) 
 WHERE status NOT IN ('COMPLETED', 'CANCELLED');
@@ -75,6 +74,22 @@ CREATE TABLE IF NOT EXISTS teams (
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT teams_size_check CHECK (size >= 1)
 );
+
+CREATE TABLE IF NOT EXISTS team_members (
+  team_id uuid NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  joined_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (team_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS team_members_user_id_idx ON team_members (user_id);
+
+CREATE TABLE IF NOT EXISTS individual_enrollments (
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  tournament_id uuid NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
+  enrolled_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, tournament_id)
+);
+CREATE INDEX IF NOT EXISTS individual_enrollments_tournament_id_idx ON individual_enrollments (tournament_id);
 
 ALTER TABLE teams ADD COLUMN IF NOT EXISTS size integer NOT NULL DEFAULT 1;
 ALTER TABLE teams ADD COLUMN IF NOT EXISTS tournament_id uuid REFERENCES tournaments(id) ON DELETE SET NULL;
