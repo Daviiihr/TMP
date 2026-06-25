@@ -6,6 +6,11 @@ export interface UserRow extends AuthUser {
   password_hash: string;
   failed_login_attempts: number;
   locked_until: Date | null;
+  avatar_url?: string;
+  banner_url?: string;
+  theme_color?: string;
+  bio?: string;
+  competitive_rank?: string;
 }
 
 export class UserRepository {
@@ -13,7 +18,7 @@ export class UserRepository {
 
   async findByEmail(email: string): Promise<UserRow | null> {
     const result = await this.pool.query<UserRow>(
-      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until 
+      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank 
        FROM users WHERE email = $1`,
       [email]
     );
@@ -22,7 +27,7 @@ export class UserRepository {
 
   async findById(id: string): Promise<UserRow | null> {
     const result = await this.pool.query<UserRow>(
-      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until 
+      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank 
        FROM users WHERE id = $1`,
       [id]
     );
@@ -63,6 +68,26 @@ export class UserRepository {
     await this.pool.query(
       `UPDATE users SET role = $2 WHERE id = $1`,
       [id, role]
+    );
+  }
+
+  async updateProfile(id: string, profileData: { avatar_url?: string; banner_url?: string; theme_color?: string; bio?: string; competitive_rank?: string }) {
+    await this.pool.query(
+      `UPDATE users SET 
+        avatar_url = COALESCE($2, avatar_url),
+        banner_url = COALESCE($3, banner_url),
+        theme_color = COALESCE($4, theme_color),
+        bio = COALESCE($5, bio),
+        competitive_rank = COALESCE($6, competitive_rank)
+       WHERE id = $1`,
+      [
+        id, 
+        profileData.avatar_url || null, 
+        profileData.banner_url || null, 
+        profileData.theme_color || null, 
+        profileData.bio || null, 
+        profileData.competitive_rank || null
+      ]
     );
   }
 }
