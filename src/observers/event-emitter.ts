@@ -3,6 +3,7 @@ export type AppEvents = {
   "enrollment:playerJoined": { userId: string; tournamentId: string };
   "enrollment:teamJoined": { teamId: string; tournamentId: string };
   "team:created": { teamId: string; captainId: string; name: string };
+  "match:resultApproved": { matchId: string; tournamentId: string };
 };
 
 export type EventKey = keyof AppEvents;
@@ -10,10 +11,6 @@ export type EventKey = keyof AppEvents;
 export interface Observer<T extends EventKey> {
   update(eventName: T, data: AppEvents[T]): void | Promise<void>;
 }
-
-type AnyObserver = {
-  update<T extends EventKey>(eventName: T, data: AppEvents[T]): void | Promise<void>;
-};
 
 export class AppEventEmitter {
 

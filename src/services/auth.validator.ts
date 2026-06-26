@@ -5,6 +5,7 @@ export type RegisterInput = {
   email?: string;
   password?: string;
   region?: string;
+  country?: string;
 };
 
 export type LoginInput = {
@@ -14,9 +15,13 @@ export type LoginInput = {
 
 export class AuthValidator {
   private static VALID_REGIONS = new Set(["NA", "EU", "LATAM", "ASIA"]);
+  private static VALID_COUNTRIES = new Set([
+    "Chile", "Argentina", "México", "España", "Colombia", 
+    "Perú", "Uruguay", "Venezuela", "Ecuador", "Estados Unidos"
+  ]);
 
   validateRegister(data: RegisterInput): { isValid: boolean; message?: string; status?: number } {
-    const { username, email, password, region } = data;
+    const { username, email, password, region, country } = data;
     const trimmedUsername = username?.trim();
     const trimmedEmail = email?.trim().toLowerCase();
 
@@ -38,6 +43,10 @@ export class AuthValidator {
 
     if (!region || !AuthValidator.VALID_REGIONS.has(region)) {
       return { isValid: false, message: "Selecciona una region valida.", status: 400 };
+    }
+
+    if (!country || !AuthValidator.VALID_COUNTRIES.has(country)) {
+      return { isValid: false, message: "Selecciona un país válido.", status: 400 };
     }
 
     return { isValid: true };

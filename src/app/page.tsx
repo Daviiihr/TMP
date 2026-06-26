@@ -42,20 +42,20 @@ export default async function Home() {
               </a>
             </li>
             <li>
-              <a
-                href="#cta"
+              <Link
+                href="/tournaments"
                 className="hover:text-arena-cyan transition-colors duration-300"
               >
                 Torneos
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href="#"
+              <Link
+                href="/ranking"
                 className="hover:text-arena-cyan transition-colors duration-300"
               >
                 Rankings
-              </a>
+              </Link>
             </li>
           </ul>
 

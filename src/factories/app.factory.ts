@@ -11,6 +11,9 @@ import { TournamentService } from "@/services/tournament.service";
 import { AppEventEmitter } from "@/observers/event-emitter";
 import { LoggerObserver } from "@/observers/logger.observer";
 import { CapacityObserver } from "@/observers/capacity.observer";
+import { RankingRepository } from "@/repositories/ranking.repository";
+import { RankingService } from "@/services/ranking.service";
+import { RankingObserver } from "@/observers/ranking.observer";
 
 export class AppFactory {
   private eventEmitter: AppEventEmitter;
@@ -28,6 +31,7 @@ export class AppFactory {
     this.eventEmitter.on("enrollment:playerJoined", logger);
     this.eventEmitter.on("enrollment:teamJoined", logger);
     this.eventEmitter.on("team:created", logger);
+    this.eventEmitter.on("match:resultApproved", logger);
 
     // Register CapacityObserver
     const capacityObserver = new CapacityObserver(
@@ -37,6 +41,13 @@ export class AppFactory {
     
     this.eventEmitter.on("enrollment:playerJoined", capacityObserver);
     this.eventEmitter.on("enrollment:teamJoined", capacityObserver);
+
+    // Register RankingObserver
+    const rankingObserver = new RankingObserver(
+      this.createRankingService(),
+      this.createPostgresPool()
+    );
+    this.eventEmitter.on("match:resultApproved", rankingObserver);
   }
 
   getEventEmitter(): AppEventEmitter {
@@ -88,6 +99,17 @@ export class AppFactory {
       this.createTournamentRepository(),
       this.createPostgresPool(),
       this.eventEmitter
+    );
+  }
+
+  createRankingRepository(): RankingRepository {
+    return new RankingRepository(this.createPostgresPool());
+  }
+
+  createRankingService(): RankingService {
+    return new RankingService(
+      this.createRankingRepository(),
+      this.createPostgresPool()
     );
   }
 }
