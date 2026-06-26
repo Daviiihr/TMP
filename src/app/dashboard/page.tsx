@@ -126,7 +126,7 @@ export default async function DashboardPage() {
                 
                 <div className="text-center mt-4 pt-2 border-t border-zinc-800/50 flex flex-col gap-2">
                   <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
-                    {myRanking ? `Tú estás en la posición #${myRanking.position} (${myRanking.points} pts)` : "No estás calificado en el ranking aún"}
+                    {myRanking ? `Tú estás en la posición #${myRanking.position} de ${myRanking.country} (${myRanking.points} pts)` : "No estás calificado en el ranking aún"}
                   </p>
                   <Link 
                     href="/ranking" 

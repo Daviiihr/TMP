@@ -12,6 +12,7 @@ export interface UserRow extends AuthUser {
   bio?: string;
   competitive_rank?: string;
   country?: string;
+  region?: string;
 }
 
 export class UserRepository {
@@ -19,7 +20,7 @@ export class UserRepository {
 
   async findByEmail(email: string): Promise<UserRow | null> {
     const result = await this.pool.query<UserRow>(
-      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank, country 
+      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank, country, region 
        FROM users WHERE email = $1`,
       [email]
     );
@@ -28,7 +29,7 @@ export class UserRepository {
 
   async findByUsername(username: string): Promise<UserRow | null> {
     const result = await this.pool.query<UserRow>(
-      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank 
+      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank, country, region 
        FROM users WHERE username = $1`,
       [username]
     );
@@ -38,7 +39,7 @@ export class UserRepository {
   async searchUsers(query: string): Promise<UserRow[]> {
     const searchTerm = `%${query}%`;
     const result = await this.pool.query<UserRow>(
-      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank 
+      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank, country, region 
        FROM users 
        WHERE username ILIKE $1 OR competitive_rank ILIKE $1
        ORDER BY username ASC 
@@ -50,7 +51,7 @@ export class UserRepository {
 
   async findById(id: string): Promise<UserRow | null> {
     const result = await this.pool.query<UserRow>(
-      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank, country 
+      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank, country, region 
        FROM users WHERE id = $1`,
       [id]
     );
