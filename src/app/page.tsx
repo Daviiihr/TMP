@@ -57,6 +57,14 @@ export default async function Home() {
                 Rankings
               </a>
             </li>
+            <li>
+              <a
+                href="players"
+                className="hover:text-arena-cyan transition-colors duration-300"
+              >
+                Buscador de Jugadores
+              </a>
+            </li>
           </ul>
 
           {/* CTA / User Profile */}
