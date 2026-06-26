@@ -26,6 +26,28 @@ export class UserRepository {
     return result.rows[0] || null;
   }
 
+  async findByUsername(username: string): Promise<UserRow | null> {
+    const result = await this.pool.query<UserRow>(
+      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank 
+       FROM users WHERE username = $1`,
+      [username]
+    );
+    return result.rows[0] || null;
+  }
+
+  async searchUsers(query: string): Promise<UserRow[]> {
+    const searchTerm = `%${query}%`;
+    const result = await this.pool.query<UserRow>(
+      `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank 
+       FROM users 
+       WHERE username ILIKE $1 OR competitive_rank ILIKE $1
+       ORDER BY username ASC 
+       LIMIT 50`,
+      [searchTerm]
+    );
+    return result.rows;
+  }
+
   async findById(id: string): Promise<UserRow | null> {
     const result = await this.pool.query<UserRow>(
       `SELECT id, username, email, password_hash, role, failed_login_attempts, locked_until, avatar_url, banner_url, theme_color, bio, competitive_rank, country 
