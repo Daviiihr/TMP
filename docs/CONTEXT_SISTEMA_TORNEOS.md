@@ -150,6 +150,17 @@ MATCH_RESULTS
   has_pending_reports boolean DEFAULT false
   validated_at    timestamp
 
+COUNTRY_RANKINGS
+  id                   uuid PK
+  user_id              uuid FK → USERS UNIQUE
+  country              string
+  accumulated_points   int
+  country_position     int
+  wins                 int
+  losses               int
+  last_match_result_id uuid FK → MATCH_RESULTS
+  calculated_at        timestamp
+
 AUDIT_LOG
   id           uuid PK
   actor_id     uuid FK → USERS
