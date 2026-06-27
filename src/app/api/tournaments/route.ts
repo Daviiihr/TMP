@@ -4,18 +4,30 @@ import { assertAdminAccess } from "@/domain/tournament.rules";
 import { hasErrorCode } from "@/lib/errors";
 import { getSession } from "@/lib/session";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const list = searchParams.get("list") === "true";
     const pool = appFactory.createPostgresPool();
+
+    if (list) {
+      const result = await pool.query(
+        `SELECT id, name, game, region, max_players, type, elimination_mode, start_date, end_date, registration_closes_at, status, organizer_id, created_at 
+         FROM tournaments 
+         ORDER BY created_at DESC`
+      );
+      return NextResponse.json({ ok: true, tournaments: result.rows });
+    }
+
     const result = await pool.query(
       `SELECT count(*) as count FROM tournaments WHERE status IN ('REGISTRATION', 'IN_PROGRESS')`
     );
     const count = parseInt(result.rows[0].count);
     return NextResponse.json({ ok: true, count });
   } catch (error) {
-    console.error("Error fetching active tournaments count:", error);
+    console.error("Error fetching tournaments:", error);
     return NextResponse.json(
-      { ok: false, message: "Error al obtener la cantidad de torneos." },
+      { ok: false, message: "Error al obtener los torneos." },
       { status: 500 }
     );
   }

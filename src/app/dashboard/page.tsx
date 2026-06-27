@@ -26,6 +26,11 @@ export default async function DashboardPage() {
   const myTournaments = isAdmin ? await tournamentRepo.findByOrganizer(session.id) : [];
   const myTeams = await teamRepo.findByMember(session.id);
   const hasActiveTournament = myTournaments.some(t => t.status === "REGISTRATION");
+  
+  const rankingRepo = appFactory.createRankingRepository();
+  const topRankings = await rankingRepo.getRankingsByCountry();
+  const myRanking = await rankingRepo.getUserRanking(session.id);
+
   const mainColumnChildren: DashboardComponent[] = [
     ...(isAdmin
       ? [
@@ -104,29 +109,31 @@ export default async function DashboardPage() {
                 Ranking Global
               </h2>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-zinc-950/50 rounded-lg border border-zinc-800">
-                  <div className="flex items-center gap-3">
-                    <span className="text-zinc-500 font-bold w-4">1</span>
-                    <span className="text-sm font-medium">Ejemplo_01</span>
-                  </div>
-                  <span className="text-arena-cyan font-bold text-sm">2,500 pts</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-zinc-950/50 rounded-lg border border-zinc-800">
-                  <div className="flex items-center gap-3">
-                    <span className="text-zinc-500 font-bold w-4">2</span>
-                    <span className="text-sm font-medium">Ejemplo_02</span>
-                  </div>
-                  <span className="text-arena-cyan font-bold text-sm">2,100 pts</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-zinc-950/50 rounded-lg border border-zinc-800">
-                  <div className="flex items-center gap-3">
-                    <span className="text-zinc-500 font-bold w-4">3</span>
-                    <span className="text-sm font-medium">Ejemplo_03</span>
-                  </div>
-                  <span className="text-arena-cyan font-bold text-sm">1,800 pts</span>
-                </div>
-                <div className="text-center mt-4">
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Tú estás en la posición #10</p>
+                {topRankings.length === 0 ? (
+                  <p className="text-xs text-zinc-500 italic text-center py-4">No hay clasificaciones aún.</p>
+                ) : (
+                  topRankings.slice(0, 3).map((r) => (
+                    <div key={r.username} className="flex items-center justify-between p-3 bg-zinc-950/50 rounded-lg border border-zinc-800">
+                      <div className="flex items-center gap-3">
+                        <span className="text-zinc-500 font-bold w-4">{r.position}</span>
+                        <span className="text-sm font-medium">{r.username}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-400 font-semibold uppercase">{r.country}</span>
+                      </div>
+                      <span className="text-arena-cyan font-bold text-sm">{r.points.toLocaleString()} pts</span>
+                    </div>
+                  ))
+                )}
+                
+                <div className="text-center mt-4 pt-2 border-t border-zinc-800/50 flex flex-col gap-2">
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                    {myRanking ? `Tú estás en la posición #${myRanking.position} de ${myRanking.country} (${myRanking.points} pts)` : "No estás calificado en el ranking aún"}
+                  </p>
+                  <Link 
+                    href="/ranking" 
+                    className="text-xs font-bold text-arena-cyan hover:text-arena-cyan/80 transition-colors uppercase tracking-wider mt-1 block"
+                  >
+                    Ver Ranking Completo →
+                  </Link>
                 </div>
               </div>
             </section>,

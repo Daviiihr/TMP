@@ -15,6 +15,7 @@ export async function updateProfileAction(formData: FormData) {
   const theme_color = formData.get("theme_color") as string | null;
   const bio = formData.get("bio") as string | null;
   const competitive_rank = formData.get("competitive_rank") as string | null;
+  const country = formData.get("country") as string | null;
 
   const repo = new UserRepository();
   await repo.updateProfile(session.id, {
@@ -23,6 +24,7 @@ export async function updateProfileAction(formData: FormData) {
     theme_color: theme_color || undefined,
     bio: bio || undefined,
     competitive_rank: competitive_rank || undefined,
+    country: country || undefined,
   });
 
   revalidatePath("/profile");

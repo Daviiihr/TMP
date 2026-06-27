@@ -9,6 +9,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
     region: "",
+    country: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -116,6 +117,32 @@ export default function RegisterPage() {
                 <option value="EU">Europa (EU)</option>
                 <option value="LATAM">Latinoamérica (LATAM)</option>
                 <option value="ASIA">Asia (ASIA)</option>
+              </select>
+            </div>
+
+            {/* Campo País */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 ml-1">
+                País de Residencia
+              </label>
+              <select
+                name="country"
+                required
+                value={formData.country}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 text-white focus:outline-none focus:border-arena-magenta transition-all duration-300 appearance-none"
+              >
+                <option value="" disabled>Selecciona tu país</option>
+                <option value="Chile">Chile</option>
+                <option value="Argentina">Argentina</option>
+                <option value="México">México</option>
+                <option value="España">España</option>
+                <option value="Colombia">Colombia</option>
+                <option value="Perú">Perú</option>
+                <option value="Uruguay">Uruguay</option>
+                <option value="Venezuela">Venezuela</option>
+                <option value="Ecuador">Ecuador</option>
+                <option value="Estados Unidos">Estados Unidos</option>
               </select>
             </div>
 

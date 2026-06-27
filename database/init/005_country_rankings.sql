@@ -1,3 +1,6 @@
+-- Agregar columna country a la tabla users
+ALTER TABLE users ADD COLUMN IF NOT EXISTS country varchar(50) NOT NULL DEFAULT 'Chile';
+
 CREATE TABLE IF NOT EXISTS country_rankings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE UNIQUE,

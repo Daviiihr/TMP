@@ -30,6 +30,7 @@ export async function POST(request: Request) {
       email: body.email.trim().toLowerCase(),
       passwordHash,
       region: body.region,
+      country: body.country,
     });
 
     return NextResponse.json(
