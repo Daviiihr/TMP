@@ -12,10 +12,6 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get("q") || "";
 
-    if (!query || query.length < 1) {
-      return NextResponse.json({ users: [] });
-    }
-
     const repo = new UserRepository();
     const users = await repo.searchUsers(query);
 

@@ -14,6 +14,7 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<{ id: string; name: string }[]>([]);
+  const [isFocused, setIsFocused] = useState(false);
   const [eliminationMode, setEliminationMode] = useState<"SINGLE_ELIMINATION" | "DOUBLE_ELIMINATION">("SINGLE_ELIMINATION");
   const [bracketData, setBracketData] = useState<BracketResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -47,19 +48,15 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
   }, [tournamentId, bracketData]);
 
   useEffect(() => {
-    if (searchQuery.trim().length > 0) {
-      const delayFn = setTimeout(() => {
-        fetch(`/api/players/search?q=${encodeURIComponent(searchQuery)}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.users) setSearchResults(data.users);
-          })
-          .catch(console.error);
-      }, 300);
-      return () => clearTimeout(delayFn);
-    } else {
-      setSearchResults([]);
-    }
+    const delayFn = setTimeout(() => {
+      fetch(`/api/players/search?q=${encodeURIComponent(searchQuery)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.users) setSearchResults(data.users);
+        })
+        .catch(console.error);
+    }, 300);
+    return () => clearTimeout(delayFn);
   }, [searchQuery]);
 
   const addParticipant = (user: { id: string; name: string }) => {
@@ -179,9 +176,11 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
               placeholder="Escribe una letra para buscar jugador..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setTimeout(() => setIsFocused(false), 200)}
               className="player-search-input"
             />
-            {searchResults.length > 0 && (
+            {isFocused && searchResults.length > 0 && (
               <ul className="search-dropdown">
                 {searchResults.map(user => (
                   <li key={user.id} onClick={() => addParticipant(user)}>

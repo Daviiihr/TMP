@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
 
 type TournamentCardProps = {
   id: string;
@@ -87,9 +88,12 @@ export default function TournamentCard({ id, name, status, createdAt, hasActiveT
           </button>
         )}
 
-        <button className="text-xs font-bold uppercase text-white hover:text-arena-cyan transition-colors">
+        <Link 
+          href={`/dashboard/tournaments/${id}/panel`}
+          className="text-xs font-bold uppercase text-white hover:text-arena-cyan transition-colors"
+        >
           Gestionar →
-        </button>
+        </Link>
       </div>
     </div>
   );
