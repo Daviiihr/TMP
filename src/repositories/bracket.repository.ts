@@ -60,18 +60,16 @@ export class BracketRepository {
       
       const bracketId = bracketRes.rows[0].id;
 
-      // 3. Insert each match into matches table
+      // 3. Insert each match into matches table (first pass: no forward FKs)
       for (const m of allMatches) {
         const pgId = m.id;
-        const nextPgId = m.nextMatchId || null;
-        const loserNextPgId = m.loserNextMatchId || null;
         
         await client.query(
            `INSERT INTO matches
            (id, tournament_id, bracket_id, round_number, match_number, round_label, 
             participant1_id, participant1_name, participant2_id, participant2_name, 
-            next_match_id, next_match_slot, loser_next_match_id, loser_next_match_slot, is_bye, status)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
+            is_bye, status)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
           [
             pgId,
             tournamentId,
@@ -83,14 +81,24 @@ export class BracketRepository {
             m.player1?.name || null,
             m.player2?.id || null,
             m.player2?.name || null,
-            nextPgId,
-            m.nextMatchSlot || null,
-            loserNextPgId,
-            m.loserNextMatchSlot || null,
             m.isBye,
             m.isBye ? 'FINISHED' : 'PENDING'
           ]
         );
+      }
+        
+      // 4. Update foreign keys and bye advancements (second pass)
+      for (const m of allMatches) {
+        const pgId = m.id;
+        const nextPgId = m.nextMatchId || null;
+        const loserNextPgId = m.loserNextMatchId || null;
+
+        if (nextPgId || loserNextPgId) {
+          await client.query(
+            `UPDATE matches SET next_match_id = $1, next_match_slot = $2, loser_next_match_id = $3, loser_next_match_slot = $4 WHERE id = $5`,
+            [nextPgId, m.nextMatchSlot || null, loserNextPgId, m.loserNextMatchSlot || null, pgId]
+          );
+        }
         
         // If it's a Bye, the single player automatically advances
         if (m.isBye && nextPgId) {
