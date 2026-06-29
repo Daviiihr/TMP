@@ -4,6 +4,64 @@
   width: 100%;
   overflow-x: auto;
   padding: 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.bracket-section-title {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #4facfe;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+.loser-title {
+  color: #fbbf24;
+}
+
+.bracket-divider {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 1rem 0;
+  border-radius: 2px;
+}
+
+/* --- Champion Banner --- */
+.champion-banner {
+  text-align: center;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 600px;
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.2);
+  animation: fadeInScale 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.champion-title {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+}
+
+.champion-name {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* --- Main Bracket Container --- */
@@ -13,6 +71,10 @@
   justify-content: center;
   gap: 0;
   min-height: 400px;
+}
+
+.loser-container {
+  min-height: 200px;
 }
 
 .bracket-container--single {

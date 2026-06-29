@@ -1,6 +1,7 @@
 export interface Participant {
   id: string;
   name: string;
+  seed?: number; // Added seed for smart seeding
 }
 
 export interface Match {
@@ -11,10 +12,15 @@ export interface Match {
   player1: Participant | null;
   player2: Participant | null;
   isBye: boolean;       // true = player1 avanza automáticamente (contrincante vacío)
+  nextMatchId?: string; // reference to next match
+  nextMatchSlot?: 1 | 2; // slot in next match
+  loserNextMatchId?: string; // where the loser goes (for double elimination)
+  loserNextMatchSlot?: 1 | 2;
 }
 
 export interface BracketResult {
-  rounds: RoundData[];         // Todas las rondas del bracket (R1, R2... Final)
+  rounds: RoundData[];         // Todas las rondas del bracket de ganadores (R1, R2... Final)
+  loserRounds?: RoundData[];   // Rondas del bracket de perdedores
   bracketSize: number;         // Potencia de 2 usada
   totalParticipants: number;
   totalRounds: number;
@@ -27,19 +33,50 @@ export interface RoundData {
 }
 
 /**
- * Genera la estructura COMPLETA de un bracket de eliminación simple.
- *
- * Usa la potencia de 2 SUPERIOR al número de participantes.
- * Los slots vacíos se muestran como contrincantes "vacío" en la primera ronda,
- * y el jugador que queda solo avanza a la siguiente ronda donde su oponente
- * aparece como "Por definir".
- *
- * Ejemplo con 5 jugadores (bracket de 8):
- *   - R1: 4 matches (3 con 2 jugadores reales, 1 con jugador vs vacío)
- *   - R2: 2 matches (ganadores de R1, incluyendo el que avanzó solo)
- *   - Final: 1 match
+ * Ordena participantes según su seed en un formato 1 vs N, 2 vs N-1, etc.
  */
-export function generateBracket(participants: Participant[]): BracketResult {
+function applySeeding(participants: Participant[], bracketSize: number): (Participant | null)[] {
+  // Sort participants by seed (if available, otherwise random/original order)
+  const sorted = [...participants].sort((a, b) => {
+    if (a.seed !== undefined && b.seed !== undefined) return a.seed - b.seed;
+    return 0; // maintain original if no seeds
+  });
+
+  const slots: (Participant | null)[] = new Array(bracketSize).fill(null);
+  
+  // Fill the first positions using standard bracket seeding pattern
+  const seedPattern = generateSeedPattern(bracketSize);
+  for (let i = 0; i < sorted.length; i++) {
+    slots[seedPattern[i] - 1] = sorted[i];
+  }
+  
+  return slots;
+}
+
+/**
+ * Genera el patrón de seeding. Para 8: [1, 8, 4, 5, 2, 7, 3, 6]
+ */
+function generateSeedPattern(size: number): number[] {
+  let pattern = [1, 2];
+  while (pattern.length < size) {
+    const nextPattern = [];
+    const sum = pattern.length * 2 + 1;
+    for (let i = 0; i < pattern.length; i++) {
+      nextPattern.push(pattern[i]);
+      nextPattern.push(sum - pattern[i]);
+    }
+    pattern = nextPattern;
+  }
+  return pattern;
+}
+
+/**
+ * Genera la estructura de un bracket.
+ */
+export function generateBracket(
+  participants: Participant[], 
+  type: 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION' = 'SINGLE_ELIMINATION'
+): BracketResult {
   const empty: BracketResult = {
     rounds: [],
     bracketSize: 0,
@@ -50,35 +87,25 @@ export function generateBracket(participants: Participant[]): BracketResult {
   if (!participants || participants.length < 2) return empty;
 
   const numParticipants = participants.length;
-
-  // 1. Mezclar aleatoriamente
-  const shuffled = [...participants].sort(() => Math.random() - 0.5);
-
-  // 2. Potencia de 2 SUPERIOR (o igual si ya es potencia)
   const bracketSize = isPowerOf2(numParticipants)
     ? numParticipants
     : Math.pow(2, Math.ceil(Math.log2(numParticipants)));
 
   const totalRounds = Math.log2(bracketSize);
+  const slots = applySeeding(participants, bracketSize);
 
-  // 3. Llenar los slots del bracket: jugadores reales + nulls para los vacíos
-  const slots: (Participant | null)[] = [];
-  for (let i = 0; i < bracketSize; i++) {
-    slots.push(i < shuffled.length ? shuffled[i] : null);
-  }
-
-  // 4. Generar TODAS las rondas
+  // --- Bracket de Ganadores (Winners) ---
   const rounds: RoundData[] = [];
-
-  // --- Ronda 1: emparejar los slots ---
   const r1Matches: Match[] = [];
+  
+  // Ronda 1
   for (let i = 0; i < slots.length; i += 2) {
     const p1 = slots[i];
     const p2 = slots[i + 1];
     const isBye = p1 === null || p2 === null;
 
     r1Matches.push({
-      id: `r1_m${i / 2 + 1}`,
+      id: `w_r1_m${i / 2 + 1}`,
       round: 1,
       roundLabel: getRoundLabel(bracketSize, 1),
       matchNumber: i / 2 + 1,
@@ -87,13 +114,9 @@ export function generateBracket(participants: Participant[]): BracketResult {
       isBye,
     });
   }
-  rounds.push({
-    roundNumber: 1,
-    label: getRoundLabel(bracketSize, 1),
-    matches: r1Matches,
-  });
+  rounds.push({ roundNumber: 1, label: getRoundLabel(bracketSize, 1), matches: r1Matches });
 
-  // --- Rondas siguientes (R2 hasta Final) ---
+  // Rondas siguientes (Winners)
   for (let r = 2; r <= totalRounds; r++) {
     const prevMatches = rounds[r - 2].matches;
     const currentMatches: Match[] = [];
@@ -102,17 +125,19 @@ export function generateBracket(participants: Participant[]): BracketResult {
       const feederA = prevMatches[i];
       const feederB = prevMatches[i + 1];
 
-      // Si un feeder es Bye, el ganador es el jugador real de ese match
-      const winnerA = feederA.isBye
-        ? (feederA.player1 || feederA.player2)
-        : null; // null = "Por definir" (aún no se jugó)
-
-      const winnerB = feederB.isBye
-        ? (feederB.player1 || feederB.player2)
-        : null;
+      const winnerA = feederA.isBye ? (feederA.player1 || feederA.player2) : null;
+      const winnerB = feederB.isBye ? (feederB.player1 || feederB.player2) : null;
+      
+      const newMatchId = `w_r${r}_m${i / 2 + 1}`;
+      
+      // Update feeders
+      feederA.nextMatchId = newMatchId;
+      feederA.nextMatchSlot = 1;
+      feederB.nextMatchId = newMatchId;
+      feederB.nextMatchSlot = 2;
 
       currentMatches.push({
-        id: `r${r}_m${i / 2 + 1}`,
+        id: newMatchId,
         round: r,
         roundLabel: getRoundLabel(bracketSize, r),
         matchNumber: i / 2 + 1,
@@ -122,27 +147,71 @@ export function generateBracket(participants: Participant[]): BracketResult {
       });
     }
 
-    rounds.push({
-      roundNumber: r,
-      label: getRoundLabel(bracketSize, r),
-      matches: currentMatches,
-    });
+    rounds.push({ roundNumber: r, label: getRoundLabel(bracketSize, r), matches: currentMatches });
   }
 
-  return {
+  const result: BracketResult = {
     rounds,
     bracketSize,
     totalParticipants: numParticipants,
     totalRounds,
   };
+
+  if (type === 'DOUBLE_ELIMINATION') {
+    // Basic Losers Bracket structure (Simplified for this MVP)
+    const loserRounds: RoundData[] = [];
+    const totalLoserRounds = (totalRounds - 1) * 2;
+    
+    // We create placeholder matches for losers
+    let matchCount = bracketSize / 4;
+    let roundIndex = 1;
+    for (let r = 1; r <= totalLoserRounds; r++) {
+      const matches: Match[] = [];
+      
+      for(let i=0; i<matchCount; i++) {
+        matches.push({
+          id: `l_r${r}_m${i+1}`,
+          round: r,
+          roundLabel: `Losers Ronda ${r}`,
+          matchNumber: i + 1,
+          player1: null,
+          player2: null,
+          isBye: false
+        });
+      }
+      loserRounds.push({ roundNumber: r, label: `Losers Ronda ${r}`, matches });
+      
+      // Adjust match count dynamically based on the round type (minor/major)
+      if (r % 2 === 0 && matchCount > 1) {
+         matchCount /= 2;
+      }
+    }
+    
+    // Grand final
+    rounds.push({
+      roundNumber: totalRounds + 1,
+      label: "Gran Final",
+      matches: [{
+        id: "grand_final",
+        round: totalRounds + 1,
+        roundLabel: "Gran Final",
+        matchNumber: 1,
+        player1: null, // Winner bracket winner
+        player2: null, // Loser bracket winner
+        isBye: false
+      }]
+    });
+
+    result.loserRounds = loserRounds;
+  }
+
+  return result;
 }
 
-/** Verifica si un número es potencia exacta de 2 */
 function isPowerOf2(n: number): boolean {
   return n > 0 && (n & (n - 1)) === 0;
 }
 
-/** Devuelve un nombre legible para la ronda según el tamaño del bracket */
 function getRoundLabel(bracketSize: number, round: number): string {
   const totalRounds = Math.log2(bracketSize);
   const roundsFromFinal = totalRounds - round;
