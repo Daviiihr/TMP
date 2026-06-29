@@ -106,6 +106,17 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
     setSelectedWinnerId((match as any).winnerId || "");
   };
 
+  useEffect(() => {
+    if (score1 && score2 && selectedMatch) {
+      const s1 = parseInt(score1);
+      const s2 = parseInt(score2);
+      if (!isNaN(s1) && !isNaN(s2)) {
+        if (s1 > s2) setSelectedWinnerId(selectedMatch.player1?.id || "");
+        else if (s2 > s1) setSelectedWinnerId(selectedMatch.player2?.id || "");
+      }
+    }
+  }, [score1, score2, selectedMatch]);
+
   const submitMatchResult = async () => {
     if (!selectedMatch || !onMatchUpdate || !selectedWinnerId) return;
     setIsSubmitting(true);
