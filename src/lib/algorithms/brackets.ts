@@ -48,8 +48,13 @@ function applySeeding(participants: Participant[], bracketSize: number): (Partic
   
   // Fill the first positions using standard bracket seeding pattern
   const seedPattern = generateSeedPattern(bracketSize);
-  for (let i = 0; i < sorted.length; i++) {
-    slots[seedPattern[i] - 1] = sorted[i];
+  for (let i = 0; i < bracketSize; i++) {
+    const expectedSeed = seedPattern[i];
+    if (expectedSeed <= sorted.length) {
+      slots[i] = sorted[expectedSeed - 1]; // sorted is 0-indexed
+    } else {
+      slots[i] = null; // BYE
+    }
   }
   
   return slots;
