@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { UserRepository } from "@/repositories/user.repository";
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await getAuthUser(req);
+    const user = await getSession();
     if (!user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }

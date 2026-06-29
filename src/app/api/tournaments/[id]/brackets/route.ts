@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { BracketRepository } from "@/repositories/bracket.repository";
 import { generateBracket, Participant } from "@/lib/algorithms/brackets";
 import { appFactory } from "@/factories/app.factory";
@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getAuthUser(req);
+    const user = await getSession();
     if (!user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }

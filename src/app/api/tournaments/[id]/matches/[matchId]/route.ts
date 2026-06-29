@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { appFactory } from "@/factories/app.factory";
 import { BracketRepository } from "@/repositories/bracket.repository";
 
@@ -8,7 +8,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string; matchId: string }> }
 ) {
   try {
-    const user = await getAuthUser(req);
+    const user = await getSession();
     if (!user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
