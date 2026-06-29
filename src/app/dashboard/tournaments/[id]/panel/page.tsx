@@ -19,18 +19,32 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchBracket = async () => {
+    try {
+      const res = await fetch(`/api/tournaments/${tournamentId}/brackets`);
+      const data = await res.json();
+      if (data.bracketData) {
+        setBracketData(data.bracketData);
+        setEliminationMode(data.eliminationMode);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    // Fetch active bracket if exists
-    fetch(`/api/tournaments/${tournamentId}/brackets`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.bracketData) {
-          setBracketData(data.bracketData);
-          setEliminationMode(data.eliminationMode);
-        }
-      })
-      .catch(console.error);
+    // Fetch active bracket initial load
+    fetchBracket();
   }, [tournamentId]);
+
+  useEffect(() => {
+    // Sincronización automática (Short-Polling cada 5 segundos)
+    if (!bracketData) return;
+    const interval = setInterval(() => {
+      fetchBracket();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [tournamentId, bracketData]);
 
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
@@ -84,6 +98,37 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleMatchUpdate = async (matchId: string, winnerId: string, score1?: number, score2?: number) => {
+    const res = await fetch(`/api/tournaments/${tournamentId}/matches/${matchId}`, {
+      method: 'PUT',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ winnerId, score1, score2 })
+    });
+    
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Error al actualizar partido");
+    }
+
+    // Refrescar el bracket completo
+    await fetchBracket();
+  };
+
+  const handleMatchUndo = async (matchId: string) => {
+    const res = await fetch(`/api/tournaments/${tournamentId}/matches/${matchId}/undo`, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" }
+    });
+    
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Error al deshacer partido");
+    }
+
+    // Refrescar el bracket completo
+    await fetchBracket();
   };
 
   return (
@@ -177,9 +222,13 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
 
       {bracketData && (
         <section className="bracket-preview-section glass-card">
-          <h2>Vista Previa del Bracket</h2>
+          <h2>Vista Previa del Bracket (En Vivo)</h2>
           <div className="bracket-scroll-container">
-            <BracketView result={bracketData} />
+            <BracketView 
+              result={bracketData} 
+              onMatchUpdate={handleMatchUpdate} 
+              onMatchUndo={handleMatchUndo}
+            />
           </div>
         </section>
       )}

@@ -90,6 +90,21 @@ export async function assertDatabaseConnection() {
 
       console.log("✅ Migraciones de base de datos aplicadas correctamente.");
     }
+
+    // 5. Migraciones para la tabla de matches (Funcionalidad avanzada de Brackets)
+    const matchesTableCheck = await pool.query(
+      `SELECT EXISTS (
+         SELECT FROM information_schema.tables 
+         WHERE table_name = 'matches'
+       );`
+    );
+    if (matchesTableCheck.rows[0]?.exists) {
+      await pool.query(`ALTER TABLE matches ADD COLUMN IF NOT EXISTS score1 INT DEFAULT 0;`);
+      await pool.query(`ALTER TABLE matches ADD COLUMN IF NOT EXISTS score2 INT DEFAULT 0;`);
+      await pool.query(`ALTER TABLE matches ADD COLUMN IF NOT EXISTS loser_next_match_id UUID;`);
+      await pool.query(`ALTER TABLE matches ADD COLUMN IF NOT EXISTS loser_next_match_slot SMALLINT;`);
+    }
+
   } catch (error) {
     console.error("❌ Error en migración dinámica de base de datos:", error);
   }

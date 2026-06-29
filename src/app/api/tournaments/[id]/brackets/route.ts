@@ -45,15 +45,15 @@ export async function GET(
     const tournamentId = resolvedParams.id;
     
     const repo = new BracketRepository();
-    const activeBracket = await repo.getActiveBracket(tournamentId);
+    const activeBracket = await repo.getLiveBracket(tournamentId);
 
     if (!activeBracket) {
       return NextResponse.json({ bracketData: null });
     }
 
     return NextResponse.json({ 
-      bracketData: activeBracket.bracket_data,
-      eliminationMode: activeBracket.elimination_mode 
+      bracketData: activeBracket.bracketData,
+      eliminationMode: activeBracket.eliminationMode 
     });
   } catch (error: any) {
     console.error("Error fetching bracket:", error);
