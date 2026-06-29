@@ -96,4 +96,12 @@ export class TournamentRepository {
     );
     return result.rows;
   }
+
+  /** CRUD — Update: Cambiar estado del torneo */
+  async updateStatus(id: string, status: string) {
+    await this.pool.query(
+      `UPDATE tournaments SET status = $1 WHERE id = $2`,
+      [status, id]
+    );
+  }
 }
