@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import BracketView from "@/components/BracketView";
-import { Participant, BracketResult } from "@/lib/algorithms/brackets";
+import { Participant, BracketResult, Match } from "@/lib/algorithms/brackets";
 import "./panel.css";
 
 export default function TournamentPanelPage({ params }: { params: Promise<{ id: string }> }) {
@@ -83,6 +83,28 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
       setError(err.message);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleMatchAdvance = async (match: Match, winner: Participant) => {
+    try {
+      const res = await fetch(`/api/tournaments/${tournamentId}/matches/${match.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          winnerId: winner.id,
+          winnerName: winner.name,
+          nextMatchId: match.nextMatchId,
+          nextMatchSlot: match.nextMatchSlot
+        })
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Error al avanzar jugador:", errorData);
+        alert(`Error: ${errorData.error}`);
+      }
+    } catch (err) {
+      console.error("Error de red al avanzar jugador", err);
     }
   };
 
@@ -179,7 +201,7 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
         <section className="bracket-preview-section glass-card">
           <h2>Vista Previa del Bracket</h2>
           <div className="bracket-scroll-container">
-            <BracketView result={bracketData} />
+            <BracketView result={bracketData} onMatchAdvance={handleMatchAdvance} />
           </div>
         </section>
       )}

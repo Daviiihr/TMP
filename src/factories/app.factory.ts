@@ -2,6 +2,7 @@ import { Pool } from "pg";
 import { getPostgresPool } from "@/lib/database";
 import { TeamRepository } from "@/repositories/team.repository";
 import { TournamentRepository } from "@/repositories/tournament.repository";
+import { MatchRepository } from "@/repositories/match.repository";
 import { UserRepository } from "@/repositories/user.repository";
 import { AuthService } from "@/services/auth.service";
 import { AuthValidator } from "@/services/auth.validator";
@@ -67,6 +68,10 @@ export class AppFactory {
 
   createTournamentRepository(): TournamentRepository {
     return new TournamentRepository(this.createPostgresPool());
+  }
+
+  createMatchRepository(): MatchRepository {
+    return new MatchRepository(this.createPostgresPool());
   }
 
   createAuthValidator(): AuthValidator {

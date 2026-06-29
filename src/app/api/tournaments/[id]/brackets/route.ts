@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth";
 import { BracketRepository } from "@/repositories/bracket.repository";
 import { generateBracket, Participant } from "@/lib/algorithms/brackets";
+import { appFactory } from "@/factories/app.factory";
 
 export async function POST(
   req: NextRequest,
@@ -28,6 +29,19 @@ export async function POST(
     // Guardar en DB
     const repo = new BracketRepository();
     const bracketId = await repo.saveBracket(tournamentId, user.id, bracketData, eliminationMode);
+
+    // Actualizar estado del torneo a IN_PROGRESS
+    const tournamentRepo = appFactory.createTournamentRepository();
+    const tournament = await tournamentRepo.getById(tournamentId);
+    if (tournament && tournament.status === 'DRAFT') {
+      await tournamentRepo.updateStatus(tournamentId, 'IN_PROGRESS');
+      appFactory.getEventEmitter().emit("tournament:statusChanged", {
+        tournamentId,
+        oldStatus: 'DRAFT',
+        newStatus: 'IN_PROGRESS',
+        userId: user.id
+      });
+    }
 
     return NextResponse.json({ success: true, bracketId, bracketData });
   } catch (error: any) {

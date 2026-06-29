@@ -6,6 +6,7 @@ import "./bracket-view.css";
 
 interface BracketViewProps {
   result: BracketResult;
+  onMatchAdvance?: (match: Match, winner: Participant) => void;
 }
 
 function MatchCard({ 
@@ -73,7 +74,7 @@ function RoundColumn({ round, isRight, onAdvance }: { round: RoundData; isRight:
   );
 }
 
-export default function BracketView({ result }: BracketViewProps) {
+export default function BracketView({ result, onMatchAdvance }: BracketViewProps) {
   const [localResult, setLocalResult] = useState<BracketResult>(result);
   const [champion, setChampion] = useState<Participant | null>(null);
 
@@ -86,6 +87,11 @@ export default function BracketView({ result }: BracketViewProps) {
   if (!localResult || localResult.rounds.length === 0) return null;
 
   const handleAdvance = (match: Match, winner: Participant) => {
+    // Si hay un callback externo (para hacer petición a API), se llama aquí
+    if (onMatchAdvance) {
+      onMatchAdvance(match, winner);
+    }
+    
     if (!match.nextMatchId) {
       // Es la final, seteamos al campeón
       setChampion(winner);
