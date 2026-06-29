@@ -34,9 +34,26 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
   };
 
   useEffect(() => {
+    // Cargar participantes guardados localmente
+    const saved = localStorage.getItem(`tournament_${tournamentId}_participants`);
+    if (saved) {
+      try {
+        setParticipants(JSON.parse(saved));
+      } catch (e) {
+        console.error("Error al cargar participantes", e);
+      }
+    }
+    
     // Fetch active bracket initial load
     fetchBracket();
   }, [tournamentId]);
+
+  useEffect(() => {
+    // Guardar participantes en localStorage cada vez que cambian
+    if (participants.length > 0 || localStorage.getItem(`tournament_${tournamentId}_participants`)) {
+      localStorage.setItem(`tournament_${tournamentId}_participants`, JSON.stringify(participants));
+    }
+  }, [participants, tournamentId]);
 
   useEffect(() => {
     // Sincronización automática (Short-Polling cada 5 segundos)
