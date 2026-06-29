@@ -152,30 +152,60 @@ export default async function CreateTournamentPage({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase text-zinc-500">Fecha Inicio</label>
-                <input 
-                  name="start_date" 
-                  type="datetime-local" 
-                  required 
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-arena-cyan transition-colors" 
-                />
+                <div className="flex gap-2">
+                  <input 
+                    name="start_date_date" 
+                    type="date" 
+                    required 
+                    className="w-2/3 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-arena-cyan transition-colors cursor-pointer"
+                    style={{ colorScheme: 'dark' }}
+                  />
+                  <input 
+                    name="start_date_time" 
+                    type="time" 
+                    required 
+                    className="w-1/3 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-arena-cyan transition-colors cursor-pointer"
+                    style={{ colorScheme: 'dark' }}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase text-zinc-500">Cierre Inscripciones</label>
-                <input 
-                  name="registration_closes_at" 
-                  type="datetime-local" 
-                  required 
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-arena-cyan transition-colors" 
-                />
+                <div className="flex gap-2">
+                  <input 
+                    name="registration_closes_at_date" 
+                    type="date" 
+                    required 
+                    className="w-2/3 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-arena-cyan transition-colors cursor-pointer"
+                    style={{ colorScheme: 'dark' }}
+                  />
+                  <input 
+                    name="registration_closes_at_time" 
+                    type="time" 
+                    required 
+                    className="w-1/3 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-arena-cyan transition-colors cursor-pointer"
+                    style={{ colorScheme: 'dark' }}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase text-zinc-500">Fecha Fin</label>
-                <input 
-                  name="end_date" 
-                  type="datetime-local" 
-                  required 
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-arena-cyan transition-colors" 
-                />
+                <div className="flex gap-2">
+                  <input 
+                    name="end_date_date" 
+                    type="date" 
+                    required 
+                    className="w-2/3 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-arena-cyan transition-colors cursor-pointer"
+                    style={{ colorScheme: 'dark' }}
+                  />
+                  <input 
+                    name="end_date_time" 
+                    type="time" 
+                    required 
+                    className="w-1/3 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-arena-cyan transition-colors cursor-pointer"
+                    style={{ colorScheme: 'dark' }}
+                  />
+                </div>
               </div>
             </div>
           </div>

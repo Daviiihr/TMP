@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { generateBracket, Participant, BracketResult } from "@/lib/algorithms/brackets";
 import BracketView from "@/components/BracketView";
 
@@ -9,15 +9,42 @@ export default function BracketsTestClient() {
   const [playerName, setPlayerName] = useState("");
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [result, setResult] = useState<BracketResult | null>(null);
+  const [searchResults, setSearchResults] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    if (playerName.trim().length > 0) {
+      const delayFn = setTimeout(() => {
+        fetch(`/api/players/search?q=${encodeURIComponent(playerName)}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.users) setSearchResults(data.users);
+          })
+          .catch(console.error);
+      }, 300);
+      return () => clearTimeout(delayFn);
+    } else {
+      setSearchResults([]);
+    }
+  }, [playerName]);
+
+  const addPlayerFromSearch = (user: { id: string; name: string }) => {
+    if (!participants.find(p => p.id === user.id)) {
+      setParticipants((prev) => [...prev, { id: user.id, name: user.name, seed: participants.length + 1 }]);
+    }
+    setPlayerName("");
+    setSearchResults([]);
+  };
 
   const addPlayer = () => {
     if (!playerName.trim()) return;
     const newParticipant: Participant = {
       id: crypto.randomUUID(),
       name: playerName.trim(),
+      seed: participants.length + 1
     };
     setParticipants((prev) => [...prev, newParticipant]);
     setPlayerName("");
+    setSearchResults([]);
   };
 
   const removePlayer = (id: string) => {
@@ -73,22 +100,37 @@ export default function BracketsTestClient() {
               <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider">
                 Participantes
               </h2>
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="text"
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addPlayer()}
-                  placeholder="Nombre del jugador..."
-                  className="flex-1 px-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-arena-cyan/50 focus:shadow-[0_0_15px_rgba(0,240,255,0.1)] transition-all"
-                />
-                <button
-                  onClick={addPlayer}
-                  disabled={!playerName.trim()}
-                  className="px-5 py-2.5 bg-arena-cyan text-zinc-950 font-bold text-sm uppercase rounded-xl hover:shadow-[0_0_25px_rgba(0,240,255,0.3)] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  +
-                </button>
+              <div className="relative mb-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addPlayer()}
+                    placeholder="Nombre del jugador..."
+                    className="flex-1 px-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-arena-cyan/50 focus:shadow-[0_0_15px_rgba(0,240,255,0.1)] transition-all"
+                  />
+                  <button
+                    onClick={addPlayer}
+                    disabled={!playerName.trim()}
+                    className="px-5 py-2.5 bg-arena-cyan text-zinc-950 font-bold text-sm uppercase rounded-xl hover:shadow-[0_0_25px_rgba(0,240,255,0.3)] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    +
+                  </button>
+                </div>
+                {searchResults.length > 0 && (
+                  <ul className="absolute top-full left-0 right-[70px] mt-2 bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden z-10 shadow-xl">
+                    {searchResults.map(user => (
+                      <li 
+                        key={user.id} 
+                        onClick={() => addPlayerFromSearch(user)}
+                        className="px-4 py-3 cursor-pointer hover:bg-zinc-700 text-sm transition-colors text-white"
+                      >
+                        {user.name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
               <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto">
                 {participants.map((p, i) => (

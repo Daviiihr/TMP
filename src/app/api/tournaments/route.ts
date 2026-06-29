@@ -48,9 +48,19 @@ export async function POST(request: Request) {
     const eliminationMode = formData.get("elimination_mode") as string;
     const maxPlayers = parseInt(formData.get("max_players") as string);
     const playersPerTeam = parseInt(formData.get("players_per_team") as string) || null;
-    const startDate = formData.get("start_date") as string;
-    const endDate = formData.get("end_date") as string;
-    const registrationClosesAt = formData.get("registration_closes_at") as string;
+    
+    // Combinar fecha y hora
+    const startDateDate = formData.get("start_date_date") as string;
+    const startDateTime = formData.get("start_date_time") as string;
+    const startDate = `${startDateDate}T${startDateTime}`;
+
+    const endDateDate = formData.get("end_date_date") as string;
+    const endDateTime = formData.get("end_date_time") as string;
+    const endDate = `${endDateDate}T${endDateTime}`;
+
+    const regDate = formData.get("registration_closes_at_date") as string;
+    const regTime = formData.get("registration_closes_at_time") as string;
+    const registrationClosesAt = `${regDate}T${regTime}`;
 
     const regions = regionsString?.split(",").map(r => r.trim()).filter(Boolean) ?? [];
 
