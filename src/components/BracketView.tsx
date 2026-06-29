@@ -93,7 +93,27 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
   // Sincronizar si cambia el prop
   useEffect(() => {
     setLocalResult(result);
-    setChampion(null);
+    
+    // Determinar al campeón si el último partido de la llave principal tiene ganador
+    if (result.rounds.length > 0) {
+      const finalRound = result.rounds[result.rounds.length - 1];
+      const finalMatch = finalRound.matches[0];
+      const winnerId = (finalMatch as any).winnerId;
+      
+      if (winnerId) {
+        if (finalMatch.player1?.id === winnerId) {
+          setChampion(finalMatch.player1);
+        } else if (finalMatch.player2?.id === winnerId) {
+          setChampion(finalMatch.player2);
+        } else {
+          setChampion(null);
+        }
+      } else {
+        setChampion(null);
+      }
+    } else {
+      setChampion(null);
+    }
   }, [result]);
 
   if (!localResult || localResult.rounds.length === 0) return null;
