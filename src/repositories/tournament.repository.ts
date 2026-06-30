@@ -72,6 +72,16 @@ export class TournamentRepository {
     }
   }
 
+  /** CRUD — Read: Obtener jugadores inscritos de un torneo individual */
+  async getEnrolledPlayers(tournamentId: string) {
+    const result = await this.pool.query(
+      `SELECT u.id, u.username as name FROM individual_enrollments e JOIN users u ON e.user_id = u.id WHERE e.tournament_id = $1`,
+      [tournamentId]
+    );
+    return result.rows;
+  }
+
+
   /** CRUD — Read: Torneos activos (para la landing page) */
   async findActive(limit: number): Promise<TournamentSummary[]> {
     const result = await this.pool.query<TournamentSummary>(
