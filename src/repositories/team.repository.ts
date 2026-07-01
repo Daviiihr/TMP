@@ -33,9 +33,15 @@ export class TeamRepository {
     return result.rows[0] || null;
   }
 
-  async findByCaptain(captainId: string): Promise<Team[]> {
-    const result = await this.pool.query<Team>(
-      `SELECT id, name, captain_id, size, tournament_id, created_at FROM teams WHERE captain_id = $1`,
+  async findByCaptain(captainId: string): Promise<TeamWithMemberCount[]> {
+    const result = await this.pool.query<TeamWithMemberCount>(
+      `SELECT t.id, t.name, t.captain_id, t.size, t.tournament_id, t.created_at,
+              COUNT(tm.user_id)::int as member_count
+       FROM teams t
+       LEFT JOIN team_members tm ON t.id = tm.team_id
+       WHERE t.captain_id = $1
+       GROUP BY t.id
+       ORDER BY t.created_at DESC`,
       [captainId]
     );
     return result.rows;

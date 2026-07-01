@@ -32,3 +32,25 @@ export async function PATCH(
     );
   }
 }
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const tournamentRepo = appFactory.createTournamentRepository();
+    const tournament = await tournamentRepo.getById(id);
+
+    if (!tournament) {
+      return NextResponse.json({ ok: false, message: "Torneo no encontrado." }, { status: 404 });
+    }
+
+    return NextResponse.json({ ok: true, tournament });
+  } catch (error) {
+    return NextResponse.json(
+      { ok: false, message: "Error al obtener el torneo." },
+      { status: 500 }
+    );
+  }
+}

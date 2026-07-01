@@ -215,13 +215,20 @@ export default function TournamentsPage() {
                       {new Date(t.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  
-                  <Link 
-                    href="/brackets/test"
-                    className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold text-xs uppercase rounded-xl hover:border-arena-cyan/50 hover:text-arena-cyan transition-all"
-                  >
-                    Ver Brackets →
-                  </Link>
+                  <div className="flex gap-2">
+                    <Link 
+                      href={`/tournaments/${t.id}`}
+                      className="px-4 py-2 bg-arena-magenta border border-arena-magenta text-white font-bold text-xs uppercase rounded-xl hover:shadow-[0_0_15px_rgba(232,80,112,0.4)] transition-all"
+                    >
+                      Inscribirse
+                    </Link>
+                    <Link 
+                      href={`/tournaments/${t.id}/bracket`}
+                      className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold text-xs uppercase rounded-xl hover:border-arena-cyan/50 hover:text-arena-cyan transition-all"
+                    >
+                      Ver Brackets →
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}
