@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { BracketRepository } from "@/repositories/bracket.repository";
 import { generateBracket, Participant } from "@/lib/algorithms/brackets";
+import { appFactory } from "@/factories/app.factory";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getAuthUser(req);
+    const user = await getSession();
     if (!user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -29,6 +30,19 @@ export async function POST(
     const repo = new BracketRepository();
     const bracketId = await repo.saveBracket(tournamentId, user.id, bracketData, eliminationMode);
 
+    // Actualizar estado del torneo a IN_PROGRESS
+    const tournamentRepo = appFactory.createTournamentRepository();
+    const tournament = await tournamentRepo.getById(tournamentId);
+    if (tournament && tournament.status === 'DRAFT') {
+      await tournamentRepo.updateStatus(tournamentId, 'IN_PROGRESS');
+      appFactory.getEventEmitter().emit("tournament:statusChanged", {
+        tournamentId,
+        oldStatus: 'DRAFT',
+        newStatus: 'IN_PROGRESS',
+        userId: user.id
+      });
+    }
+
     return NextResponse.json({ success: true, bracketId, bracketData });
   } catch (error: any) {
     console.error("Error generating bracket:", error);
@@ -45,15 +59,15 @@ export async function GET(
     const tournamentId = resolvedParams.id;
     
     const repo = new BracketRepository();
-    const activeBracket = await repo.getActiveBracket(tournamentId);
+    const liveBracket = await repo.getLiveBracket(tournamentId);
 
-    if (!activeBracket) {
+    if (!liveBracket) {
       return NextResponse.json({ bracketData: null });
     }
 
     return NextResponse.json({ 
-      bracketData: activeBracket.bracket_data,
-      eliminationMode: activeBracket.elimination_mode 
+      bracketData: liveBracket.bracketData,
+      eliminationMode: liveBracket.eliminationMode 
     });
   } catch (error: any) {
     console.error("Error fetching bracket:", error);

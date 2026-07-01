@@ -16,6 +16,8 @@ export interface Match {
   nextMatchSlot?: 1 | 2; // slot in next match
   loserNextMatchId?: string; // where the loser goes (for double elimination)
   loserNextMatchSlot?: 1 | 2;
+  score1?: number; // Added for advanced scoring
+  score2?: number;
 }
 
 export interface BracketResult {

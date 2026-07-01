@@ -14,38 +14,66 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<{ id: string; name: string }[]>([]);
+  const [isFocused, setIsFocused] = useState(false);
   const [eliminationMode, setEliminationMode] = useState<"SINGLE_ELIMINATION" | "DOUBLE_ELIMINATION">("SINGLE_ELIMINATION");
   const [bracketData, setBracketData] = useState<BracketResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchBracket = async () => {
+    try {
+      const res = await fetch(`/api/tournaments/${tournamentId}/brackets`);
+      const data = await res.json();
+      if (data.bracketData) {
+        setBracketData(data.bracketData);
+        setEliminationMode(data.eliminationMode);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    // Fetch active bracket if exists
-    fetch(`/api/tournaments/${tournamentId}/brackets`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.bracketData) {
-          setBracketData(data.bracketData);
-          setEliminationMode(data.eliminationMode);
-        }
-      })
-      .catch(console.error);
+    // Cargar participantes guardados localmente
+    const saved = localStorage.getItem(`tournament_${tournamentId}_participants`);
+    if (saved) {
+      try {
+        setParticipants(JSON.parse(saved));
+      } catch (e) {
+        console.error("Error al cargar participantes", e);
+      }
+    }
+    
+    // Fetch active bracket initial load
+    fetchBracket();
   }, [tournamentId]);
 
   useEffect(() => {
-    if (searchQuery.trim().length > 0) {
-      const delayFn = setTimeout(() => {
-        fetch(`/api/players/search?q=${encodeURIComponent(searchQuery)}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.users) setSearchResults(data.users);
-          })
-          .catch(console.error);
-      }, 300);
-      return () => clearTimeout(delayFn);
-    } else {
-      setSearchResults([]);
+    // Guardar participantes en localStorage cada vez que cambian
+    if (participants.length > 0 || localStorage.getItem(`tournament_${tournamentId}_participants`)) {
+      localStorage.setItem(`tournament_${tournamentId}_participants`, JSON.stringify(participants));
     }
+  }, [participants, tournamentId]);
+
+  useEffect(() => {
+    // Sincronización automática (Short-Polling cada 5 segundos)
+    if (!bracketData) return;
+    const interval = setInterval(() => {
+      fetchBracket();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [tournamentId, bracketData]);
+
+  useEffect(() => {
+    const delayFn = setTimeout(() => {
+      fetch(`/api/players/search?q=${encodeURIComponent(searchQuery)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.users) setSearchResults(data.users);
+        })
+        .catch(console.error);
+    }, 300);
+    return () => clearTimeout(delayFn);
   }, [searchQuery]);
 
   const addParticipant = (user: { id: string; name: string }) => {
@@ -84,6 +112,37 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleMatchUpdate = async (matchId: string, winnerId: string, score1?: number, score2?: number) => {
+    const res = await fetch(`/api/tournaments/${tournamentId}/matches/${matchId}`, {
+      method: 'PUT',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ winnerId, score1, score2 })
+    });
+    
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Error al actualizar partido");
+    }
+
+    // Refrescar el bracket completo
+    await fetchBracket();
+  };
+
+  const handleMatchUndo = async (matchId: string) => {
+    const res = await fetch(`/api/tournaments/${tournamentId}/matches/${matchId}/undo`, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" }
+    });
+    
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Error al deshacer partido");
+    }
+
+    // Refrescar el bracket completo
+    await fetchBracket();
   };
 
   return (
@@ -134,9 +193,11 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
               placeholder="Escribe una letra para buscar jugador..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setTimeout(() => setIsFocused(false), 200)}
               className="player-search-input"
             />
-            {searchResults.length > 0 && (
+            {isFocused && searchResults.length > 0 && (
               <ul className="search-dropdown">
                 {searchResults.map(user => (
                   <li key={user.id} onClick={() => addParticipant(user)}>
@@ -177,9 +238,13 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
 
       {bracketData && (
         <section className="bracket-preview-section glass-card">
-          <h2>Vista Previa del Bracket</h2>
+          <h2>Vista Previa del Bracket (En Vivo)</h2>
           <div className="bracket-scroll-container">
-            <BracketView result={bracketData} />
+            <BracketView 
+              result={bracketData} 
+              onMatchUpdate={handleMatchUpdate} 
+              onMatchUndo={handleMatchUndo}
+            />
           </div>
         </section>
       )}
