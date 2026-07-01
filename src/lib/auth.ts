@@ -11,14 +11,14 @@ export type AuthUser = {
 
 export function createAccessToken(user: AuthUser): string {
   return jwt.sign(user, jwtAccessSecret(), {
-    expiresIn: "15m",
+    expiresIn: "60m",
     subject: user.id,
   });
 }
 
 export function createRefreshToken(user: AuthUser): string {
   return jwt.sign({ id: user.id }, jwtRefreshSecret(), {
-    expiresIn: "7d",
+    expiresIn: "60m",
     subject: user.id,
   });
 }
