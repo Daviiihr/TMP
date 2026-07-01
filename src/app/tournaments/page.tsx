@@ -217,7 +217,7 @@ export default function TournamentsPage() {
                   </div>
                   
                   <Link 
-                    href="/brackets/test"
+                    href={`/tournaments/${t.id}/bracket`}
                     className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold text-xs uppercase rounded-xl hover:border-arena-cyan/50 hover:text-arena-cyan transition-all"
                   >
                     Ver Brackets →
