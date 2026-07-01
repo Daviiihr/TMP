@@ -60,7 +60,7 @@ export class AuthService {
     if (redis.status === "wait" || redis.status === "end") {
       await redis.connect();
     }
-    await redis.set(`refresh:${user.id}`, refreshToken, "EX", 7 * 24 * 60 * 60);
+    await redis.set(`refresh:${user.id}`, refreshToken, "EX", 60 * 60);
 
     // Armar respuesta con cookies
     const response = NextResponse.json({
@@ -76,7 +76,7 @@ export class AuthService {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: 60 * 60,
     });
 
     response.cookies.set("accessToken", accessToken, {
@@ -84,7 +84,7 @@ export class AuthService {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 15 * 60,
+      maxAge: 60 * 60,
     });
 
     return response;
