@@ -31,6 +31,8 @@ export default async function DashboardPage() {
   const topRankings = await rankingRepo.getRankingsByCountry();
   const myRanking = await rankingRepo.getUserRanking(session.id);
 
+  const participationHistory = await tournamentRepo.getUserParticipationHistory(session.id);
+
   const mainColumnChildren: DashboardComponent[] = [
     ...(isAdmin
       ? [
@@ -82,9 +84,47 @@ export default async function DashboardPage() {
         <h2 className="text-xl font-bold uppercase tracking-tight text-white mb-6">
           Historial de Participación
         </h2>
-        <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-950/50">
-          <p className="text-zinc-500 font-medium italic">Falta implementar</p>
-        </div>
+        {participationHistory.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-950/50">
+            <p className="text-zinc-500 font-medium italic">Aún no has participado en ningún torneo.</p>
+            <Link href="/tournaments" className="mt-4 text-xs font-bold text-arena-cyan uppercase tracking-widest hover:text-arena-cyan/80">
+              Explorar Torneos →
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {participationHistory.map((t) => (
+              <div key={t.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-zinc-950 border border-zinc-800/80 rounded-xl hover:border-arena-cyan/30 transition-colors gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-arena-cyan bg-arena-cyan/10 px-2 py-0.5 rounded">
+                      {t.game}
+                    </span>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${t.status === 'COMPLETED' ? 'bg-zinc-800 text-zinc-400' : 'bg-green-500/20 text-green-400 border border-green-500/30'}`}>
+                      {t.status}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-white text-lg">{t.name}</h3>
+                  <p className="text-xs text-zinc-500 mt-1 flex items-center gap-2">
+                    <span className="font-medium">Modalidad: {t.type === 'INDIVIDUAL' ? 'Individual' : 'Equipos'}</span>
+                    {t.type === 'TEAM' && <span className="text-arena-magenta font-bold px-1.5 py-0.5 bg-arena-magenta/10 rounded">Tu Equipo: {t.team_name}</span>}
+                  </p>
+                </div>
+                <div className="flex flex-col md:items-end gap-2">
+                  <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider">
+                    {new Date(t.created_at).toLocaleDateString()}
+                  </p>
+                  <Link 
+                    href={`/tournaments/${t.id}/bracket`}
+                    className="text-xs font-bold text-white bg-zinc-900 border border-zinc-700 px-3 py-1.5 rounded hover:bg-zinc-800 transition-colors"
+                  >
+                    Ver Torneo
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>,
     ),
   ];

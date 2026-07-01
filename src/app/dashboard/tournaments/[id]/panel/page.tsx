@@ -223,7 +223,7 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
               title="Cargar jugadores inscritos al torneo"
               style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", background: "rgba(255, 255, 255, 0.1)", border: "1px solid rgba(255, 255, 255, 0.2)", borderRadius: "6px", color: "white", cursor: "pointer", transition: "all 0.2s" }}
             >
-              <span style={{ fontSize: "1.2rem" }}>⬇️</span> Cargar Inscritos
+              Cargar Inscritos
             </button>
           </div>
 

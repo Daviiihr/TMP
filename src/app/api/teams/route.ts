@@ -25,3 +25,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: getErrorMessage(error) }, { status: 500 });
   }
 }
+
+export async function GET(request: Request) {
+  try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ ok: false, message: "Sesión no iniciada." }, { status: 401 });
+    }
+
+    const teamRepo = appFactory.createTeamRepository();
+    // Return teams where user is captain
+    const teams = await teamRepo.findByCaptain(session.id);
+
+    return NextResponse.json({ ok: true, teams }, { status: 200 });
+  } catch (error: unknown) {
+    return NextResponse.json({ ok: false, message: getErrorMessage(error) }, { status: 500 });
+  }
+}

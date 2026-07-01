@@ -26,13 +26,16 @@ export async function GET(
       return NextResponse.json({ error: "No tienes permiso para ver esto" }, { status: 403 });
     }
 
-    if (tournament.type !== "INDIVIDUAL") {
-      return NextResponse.json({ error: "Este endpoint es solo para torneos individuales" }, { status: 400 });
+    let participants = [];
+    if (tournament.type === "INDIVIDUAL") {
+      participants = await tournamentRepo.getEnrolledPlayers(id);
+    } else {
+      participants = await tournamentRepo.getEnrolledTeams(id);
     }
 
-    const players = await tournamentRepo.getEnrolledPlayers(id);
-
-    return NextResponse.json({ players });
+    // El frontend espera { players: [...] } por compatibilidad, 
+    // pero internamente son participantes (ya sea jugadores o equipos)
+    return NextResponse.json({ players: participants });
   } catch (error) {
     console.error("Error fetching enrolled players:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

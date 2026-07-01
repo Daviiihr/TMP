@@ -50,11 +50,15 @@ export class EnrollmentService {
       throw new Error("El torneo ya ha alcanzado el máximo de equipos.");
     }
 
-    const teamSize = team.size;
-    const requiredSize = tournament.min_players_per_team; // Usamos el mismo valor ya que ahora es fijo
+    const actualMemberCount = await this.teamRepo.getMemberCount(teamId);
+    const requiredSize = tournament.min_players_per_team;
 
-    if (teamSize !== requiredSize) {
-      throw new Error(`El equipo debe tener exactamente ${requiredSize} jugadores.`);
+    if (team.size !== requiredSize) {
+      throw new Error(`Este torneo requiere equipos diseñados para ${requiredSize} jugadores.`);
+    }
+
+    if (actualMemberCount !== requiredSize) {
+      throw new Error(`El equipo está incompleto. Tienes ${actualMemberCount} de ${requiredSize} jugadores necesarios.`);
     }
 
     await this.teamRepo.assignToTournament(teamId, tournamentId);

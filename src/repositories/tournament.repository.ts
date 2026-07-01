@@ -80,7 +80,14 @@ export class TournamentRepository {
     );
     return result.rows;
   }
-
+  /** CRUD — Read: Obtener equipos inscritos de un torneo por equipos */
+  async getEnrolledTeams(tournamentId: string) {
+    const result = await this.pool.query(
+      `SELECT id, name FROM teams WHERE tournament_id = $1`,
+      [tournamentId]
+    );
+    return result.rows;
+  }
 
   /** CRUD — Read: Torneos activos (para la landing page) */
   async findActive(limit: number): Promise<TournamentSummary[]> {
@@ -113,5 +120,21 @@ export class TournamentRepository {
       `UPDATE tournaments SET status = $1 WHERE id = $2`,
       [status, id]
     );
+  }
+
+  /** CRUD — Read: Historial de Participación de un usuario */
+  async getUserParticipationHistory(userId: string) {
+    const result = await this.pool.query(
+      `SELECT DISTINCT t.id, t.name, t.game, t.type, t.status, t.created_at,
+              CASE WHEN t.type = 'TEAM' THEN tm.name ELSE NULL END as team_name
+       FROM tournaments t
+       LEFT JOIN individual_enrollments ie ON t.id = ie.tournament_id AND t.type = 'INDIVIDUAL'
+       LEFT JOIN teams tm ON t.id = tm.tournament_id AND t.type = 'TEAM'
+       LEFT JOIN team_members tmem ON tm.id = tmem.team_id
+       WHERE (ie.user_id = $1) OR (tmem.user_id = $1)
+       ORDER BY t.created_at DESC`,
+      [userId]
+    );
+    return result.rows;
   }
 }
