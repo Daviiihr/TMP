@@ -119,7 +119,7 @@ export default function LoginPage() {
                 <label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-zinc-400">
                   Contraseña
                 </label>
-                <a href="#" className="text-[10px] text-arena-cyan hover:underline">¿Olvidaste tu clave?</a>
+                <Link href="/recuperar-clave" className="text-[10px] text-arena-cyan hover:underline">¿Olvidaste tu clave?</Link>
               </div>
               <div className="relative">
                 <input
