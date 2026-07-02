@@ -21,30 +21,32 @@ describe("LoggerObserver", () => {
       tournamentId: "t1",
       oldStatus: "DRAFT",
       newStatus: "REGISTRATION",
-      userId: "u1"
+      userId: "u1",
     });
     expect(console.log).toHaveBeenCalledWith(
-      expect.stringContaining("Torneo t1 cambió de DRAFT → REGISTRATION (Usuario: u1)")
+      expect.stringContaining(
+        "Torneo t1 cambió de DRAFT → REGISTRATION (Usuario: u1)",
+      ),
     );
   });
 
   it("should log enrollment:playerJoined", async () => {
     await observer.update("enrollment:playerJoined", {
       tournamentId: "t1",
-      userId: "u1"
+      userId: "u1",
     });
     expect(console.log).toHaveBeenCalledWith(
-      expect.stringContaining("Jugador u1 se inscribió al torneo t1")
+      expect.stringContaining("Jugador u1 se inscribió al torneo t1"),
     );
   });
 
   it("should log enrollment:teamJoined", async () => {
     await observer.update("enrollment:teamJoined", {
       tournamentId: "t1",
-      teamId: "team1"
+      teamId: "team1",
     });
     expect(console.log).toHaveBeenCalledWith(
-      expect.stringContaining("Equipo team1 se inscribió al torneo t1")
+      expect.stringContaining("Equipo team1 se inscribió al torneo t1"),
     );
   });
 
@@ -52,10 +54,10 @@ describe("LoggerObserver", () => {
     await observer.update("team:created", {
       teamId: "team1",
       name: "T1",
-      captainId: "u1"
+      captainId: "u1",
     });
     expect(console.log).toHaveBeenCalledWith(
-      expect.stringContaining("Equipo \"T1\" (team1) creado por el capitán u1")
+      expect.stringContaining('Equipo "T1" (team1) creado por el capitán u1'),
     );
   });
 
@@ -64,7 +66,7 @@ describe("LoggerObserver", () => {
     await observer.update("unknown:event" as never, { foo: "bar" } as never);
     expect(console.log).toHaveBeenCalledWith(
       expect.stringContaining("unknown:event"),
-      { foo: "bar" }
+      { foo: "bar" },
     );
   });
 });

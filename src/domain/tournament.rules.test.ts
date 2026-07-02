@@ -86,14 +86,22 @@ describe("tournament.rules", () => {
     });
 
     it("should throw if team tournament has no playersPerTeam", () => {
-      const invalidInput = { ...validBaseInput, type: "TEAM", playersPerTeam: null };
+      const invalidInput = {
+        ...validBaseInput,
+        type: "TEAM",
+        playersPerTeam: null,
+      };
       expect(() => validateTournamentCreation(invalidInput)).toThrow(
         "Los torneos por equipo deben definir al menos 1 jugador por equipo.",
       );
     });
 
     it("should throw if individual tournament defines playersPerTeam", () => {
-      const invalidInput = { ...validBaseInput, type: "INDIVIDUAL", playersPerTeam: 1 };
+      const invalidInput = {
+        ...validBaseInput,
+        type: "INDIVIDUAL",
+        playersPerTeam: 1,
+      };
       expect(() => validateTournamentCreation(invalidInput)).toThrow(
         "Los torneos individuales no deben definir jugadores por equipo.",
       );
