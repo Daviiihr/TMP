@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { UserRepository } from "@/repositories/user.repository";
-import Link from "next/link";
 
 export default async function PlayersSearchPage({
   searchParams,
