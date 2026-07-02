@@ -203,7 +203,8 @@ export default function TournamentPanelPage({
         body: JSON.stringify({ status: newStatus }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Error al actualizar estado");
+      if (!res.ok)
+        throw new Error(data.message || "Error al actualizar estado");
       setTournamentStatus(newStatus);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
@@ -235,24 +236,34 @@ export default function TournamentPanelPage({
         {/* Control de Estado */}
         <section className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-700/50 p-6 md:p-8 rounded-[2rem] shadow-lg mb-8 relative flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
-            <h2 className="text-2xl font-bold uppercase text-white mb-2">Estado del Torneo</h2>
-            <p className="text-zinc-400 text-sm">El estado actual es <span className="font-bold text-[#00f2fe]">{tournamentStatus}</span>. Actualízalo para habilitar inscripciones o iniciar el torneo.</p>
+            <h2 className="text-2xl font-bold uppercase text-white mb-2">
+              Estado del Torneo
+            </h2>
+            <p className="text-zinc-400 text-sm">
+              El estado actual es{" "}
+              <span className="font-bold text-[#00f2fe]">
+                {tournamentStatus}
+              </span>
+              . Actualízalo para habilitar inscripciones o iniciar el torneo.
+            </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            {["DRAFT", "REGISTRATION", "IN_PROGRESS", "COMPLETED"].map((statusOption) => (
-              <button
-                key={statusOption}
-                onClick={() => updateTournamentStatus(statusOption)}
-                disabled={tournamentStatus === statusOption}
-                className={`px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-300 ${
-                  tournamentStatus === statusOption
-                    ? "bg-[#00f2fe] text-zinc-950 shadow-[0_0_15px_rgba(0,242,254,0.4)]"
-                    : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
-                }`}
-              >
-                {statusOption}
-              </button>
-            ))}
+            {["DRAFT", "REGISTRATION", "IN_PROGRESS", "COMPLETED"].map(
+              (statusOption) => (
+                <button
+                  key={statusOption}
+                  onClick={() => updateTournamentStatus(statusOption)}
+                  disabled={tournamentStatus === statusOption}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-300 ${
+                    tournamentStatus === statusOption
+                      ? "bg-[#00f2fe] text-zinc-950 shadow-[0_0_15px_rgba(0,242,254,0.4)]"
+                      : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
+                  }`}
+                >
+                  {statusOption}
+                </button>
+              ),
+            )}
           </div>
         </section>
 

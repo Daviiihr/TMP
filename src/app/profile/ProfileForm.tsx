@@ -6,11 +6,15 @@ import { updateProfileAction } from "./actions";
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 export default function ProfileForm({ user }: { user: any }) {
   const [isPending, startTransition] = useTransition();
-  const [themeColor, setThemeColor] = useState((user.theme_color as string) || "#00ffff");
+  const [themeColor, setThemeColor] = useState(
+    (user.theme_color as string) || "#00ffff",
+  );
   const [avatar, setAvatar] = useState((user.avatar_url as string) || "");
   const [banner, setBanner] = useState((user.banner_url as string) || "");
   const [bio, setBio] = useState((user.bio as string) || "");
-  const [rank, setRank] = useState((user.competitive_rank as string) || "Unranked");
+  const [rank, setRank] = useState(
+    (user.competitive_rank as string) || "Unranked",
+  );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

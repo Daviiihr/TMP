@@ -22,19 +22,19 @@ interface BracketViewProps {
 
 type ExtendedMatch = Match & { status?: string; winnerId?: string };
 
-function MatchCard({ 
-  match, 
-  onMatchClick 
-}: { 
-  match: Match; 
-  onMatchClick?: (match: Match) => void 
+function MatchCard({
+  match,
+  onMatchClick,
+}: {
+  match: Match;
+  onMatchClick?: (match: Match) => void;
 }) {
   const p1 = match.player1;
   const p2 = match.player2;
   const isBye = match.isBye;
-  
+
   const extendedMatch = match as ExtendedMatch;
-  const status = extendedMatch.status || 'PENDING';
+  const status = extendedMatch.status || "PENDING";
   const winnerId = extendedMatch.winnerId || null;
 
   const p1Label = p1?.name || "Por definir";
@@ -45,7 +45,7 @@ function MatchCard({
   const handleClick = () => {
     if (onMatchClick && !isBye && p1 && p2) {
       onMatchClick(match);
-    } else if (onMatchClick && status === 'FINISHED' && !isBye) {
+    } else if (onMatchClick && status === "FINISHED" && !isBye) {
       onMatchClick(match);
     }
   };
@@ -111,7 +111,11 @@ function RoundColumn({
   );
 }
 
-export default function BracketView({ result, onMatchUpdate, onMatchUndo }: BracketViewProps) {
+export default function BracketView({
+  result,
+  onMatchUpdate,
+  onMatchUndo,
+}: BracketViewProps) {
   // Modal State
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [score1, setScore1] = useState("");
@@ -303,7 +307,12 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
           </div>
           <div className="bracket-container loser-container">
             {result.loserRounds.map((round, ri) => (
-              <RoundColumn key={ri} round={round} isRight={false} onMatchClick={handleMatchClick} />
+              <RoundColumn
+                key={ri}
+                round={round}
+                isRight={false}
+                onMatchClick={handleMatchClick}
+              />
             ))}
           </div>
         </>
@@ -321,22 +330,54 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
             </p>
 
             <div className="flex flex-col gap-4 mb-6">
-              <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedWinnerId === selectedMatch.player1?.id ? 'border-green-500 bg-green-500/10' : 'border-white/10 hover:bg-white/5'}`}>
-                <input type="radio" name="winner" className="hidden" 
-                  checked={selectedWinnerId === selectedMatch.player1?.id} 
-                  onChange={() => setSelectedWinnerId(selectedMatch.player1?.id || "")} />
-                <span className="flex-1 font-medium">{selectedMatch.player1?.name}</span>
-                <input type="number" placeholder="Puntos" className="w-20 bg-black/40 border border-white/10 rounded p-1 text-center" 
-                  value={score1} onChange={(e) => handleScore1Change(e.target.value)} onClick={e => e.stopPropagation()} />
+              <label
+                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedWinnerId === selectedMatch.player1?.id ? "border-green-500 bg-green-500/10" : "border-white/10 hover:bg-white/5"}`}
+              >
+                <input
+                  type="radio"
+                  name="winner"
+                  className="hidden"
+                  checked={selectedWinnerId === selectedMatch.player1?.id}
+                  onChange={() =>
+                    setSelectedWinnerId(selectedMatch.player1?.id || "")
+                  }
+                />
+                <span className="flex-1 font-medium">
+                  {selectedMatch.player1?.name}
+                </span>
+                <input
+                  type="number"
+                  placeholder="Puntos"
+                  className="w-20 bg-black/40 border border-white/10 rounded p-1 text-center"
+                  value={score1}
+                  onChange={(e) => handleScore1Change(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                />
               </label>
 
-              <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedWinnerId === selectedMatch.player2?.id ? 'border-green-500 bg-green-500/10' : 'border-white/10 hover:bg-white/5'}`}>
-                <input type="radio" name="winner" className="hidden" 
-                  checked={selectedWinnerId === selectedMatch.player2?.id} 
-                  onChange={() => setSelectedWinnerId(selectedMatch.player2?.id || "")} />
-                <span className="flex-1 font-medium">{selectedMatch.player2?.name}</span>
-                <input type="number" placeholder="Puntos" className="w-20 bg-black/40 border border-white/10 rounded p-1 text-center" 
-                  value={score2} onChange={(e) => handleScore2Change(e.target.value)} onClick={e => e.stopPropagation()} />
+              <label
+                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedWinnerId === selectedMatch.player2?.id ? "border-green-500 bg-green-500/10" : "border-white/10 hover:bg-white/5"}`}
+              >
+                <input
+                  type="radio"
+                  name="winner"
+                  className="hidden"
+                  checked={selectedWinnerId === selectedMatch.player2?.id}
+                  onChange={() =>
+                    setSelectedWinnerId(selectedMatch.player2?.id || "")
+                  }
+                />
+                <span className="flex-1 font-medium">
+                  {selectedMatch.player2?.name}
+                </span>
+                <input
+                  type="number"
+                  placeholder="Puntos"
+                  className="w-20 bg-black/40 border border-white/10 rounded p-1 text-center"
+                  value={score2}
+                  onChange={(e) => handleScore2Change(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                />
               </label>
             </div>
 
@@ -348,19 +389,24 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
               >
                 Cancelar
               </button>
-              {(selectedMatch as ExtendedMatch).status === 'FINISHED' && onMatchUndo && (
-                <button 
-                  className="flex-1 py-2 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
-                  onClick={undoMatchResult}
-                  disabled={isSubmitting}
-                >
-                  Deshacer
-                </button>
-              )}
-              <button 
+              {(selectedMatch as ExtendedMatch).status === "FINISHED" &&
+                onMatchUndo && (
+                  <button
+                    className="flex-1 py-2 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                    onClick={undoMatchResult}
+                    disabled={isSubmitting}
+                  >
+                    Deshacer
+                  </button>
+                )}
+              <button
                 className="flex-1 py-2 rounded bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-50"
                 onClick={submitMatchResult}
-                disabled={isSubmitting || !selectedWinnerId || (selectedMatch as ExtendedMatch).status === 'FINISHED'}
+                disabled={
+                  isSubmitting ||
+                  !selectedWinnerId ||
+                  (selectedMatch as ExtendedMatch).status === "FINISHED"
+                }
               >
                 Guardar
               </button>
