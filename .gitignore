@@ -58,4 +58,7 @@ CLAUDE.md
 
 # --- Temporary Scripts ---
 test_*.mjs
+test_*.ts
 seed_*.mjs
+fix_*.mjs
+fix_*.ts
