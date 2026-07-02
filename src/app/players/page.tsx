@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { UserRepository } from "@/repositories/user.repository";
 
 export default async function PlayersSearchPage({
@@ -40,12 +41,12 @@ export default async function PlayersSearchPage({
           </form>
 
           <li className="mt-4 text-sm text-zinc-500">
-            <a
+            <Link
               href="/"
               className="hover:text-arena-cyan transition-colors duration-300"
             >
               Volver al inicio
-            </a>
+            </Link>
           </li>
         </header>
 
@@ -68,6 +69,7 @@ export default async function PlayersSearchPage({
                 >
                   <div className="h-24 w-full bg-zinc-800 relative">
                     {user.banner_url ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={user.banner_url}
                         alt="Banner"
@@ -85,6 +87,7 @@ export default async function PlayersSearchPage({
                       style={{ borderColor: themeColor }}
                     >
                       {user.avatar_url ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img
                           src={user.avatar_url}
                           alt="Avatar"
