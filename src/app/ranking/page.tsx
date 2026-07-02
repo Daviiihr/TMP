@@ -23,11 +23,13 @@ export default function RankingPage() {
 
   useEffect(() => {
     let active = true;
-    
+
     const loadRankings = async () => {
       setIsLoading(true);
       try {
-        const url = selectedCountry ? `/api/ranking?country=${encodeURIComponent(selectedCountry)}` : "/api/ranking";
+        const url = selectedCountry
+          ? `/api/ranking?country=${encodeURIComponent(selectedCountry)}`
+          : "/api/ranking";
         const res = await fetch(url);
         const data = await res.json();
         if (active && data.ok) {
@@ -41,7 +43,7 @@ export default function RankingPage() {
     };
 
     loadRankings();
-    
+
     // Obtener sesión de forma segura del cliente
     fetch("/api/auth/login")
       .then((res) => {
@@ -79,12 +81,20 @@ export default function RankingPage() {
 
   // Filtrar en memoria por buscador de usuario
   const filteredRankings = rankings.filter((r) =>
-    r.username.toLowerCase().includes(searchQuery.toLowerCase())
+    r.username.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const countries = [
-    "Chile", "Argentina", "México", "España", "Colombia", 
-    "Perú", "Uruguay", "Venezuela", "Ecuador", "Estados Unidos"
+    "Chile",
+    "Argentina",
+    "México",
+    "España",
+    "Colombia",
+    "Perú",
+    "Uruguay",
+    "Venezuela",
+    "Ecuador",
+    "Estados Unidos",
   ];
 
   return (
@@ -92,7 +102,7 @@ export default function RankingPage() {
       {/* Glow effects */}
       <div className="glow-orb w-[500px] h-[500px] bg-arena-cyan top-[-10%] left-[-10%] opacity-15" />
       <div className="glow-orb w-[500px] h-[500px] bg-arena-magenta bottom-[-10%] right-[-10%] opacity-15" />
-      
+
       {/* Background grid */}
       <div className="absolute inset-0 grid-pattern opacity-10 pointer-events-none" />
 
@@ -110,7 +120,9 @@ export default function RankingPage() {
               Ranking de Competidores
             </h1>
             <p className="text-zinc-400 mt-2 text-sm">
-              Consulta la clasificación global o por país. Los puntos se calculan en base a victorias (+3 pts) y derrotas (+1 pt) en torneos.
+              Consulta la clasificación global o por país. Los puntos se
+              calculan en base a victorias (+3 pts) y derrotas (+1 pt) en
+              torneos.
             </p>
           </div>
 
@@ -135,7 +147,9 @@ export default function RankingPage() {
         {/* Filters */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 backdrop-blur p-6 mb-8 flex flex-col md:flex-row gap-4 justify-between items-center">
           <div className="w-full md:w-1/3 space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Filtrar por País</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+              Filtrar por País
+            </label>
             <select
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
@@ -143,13 +157,17 @@ export default function RankingPage() {
             >
               <option value="">🌎 Todos los países (Global)</option>
               {countries.map((c) => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="w-full md:w-1/2 space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Buscar Jugador</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+              Buscar Jugador
+            </label>
             <input
               type="text"
               value={searchQuery}
@@ -169,9 +187,16 @@ export default function RankingPage() {
               <div className="w-12 h-12 bg-zinc-800 text-zinc-300 font-black text-xl rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-zinc-400 shadow-[0_0_15px_rgba(200,200,200,0.15)]">
                 2
               </div>
-              <h3 className="font-bold text-lg text-white group-hover:text-arena-cyan transition-colors">{filteredRankings[1].username}</h3>
-              <p className="text-xs text-zinc-500 uppercase mt-1 tracking-wider">{filteredRankings[1].country}</p>
-              <p className="text-2xl font-black text-white mt-4">{filteredRankings[1].points.toLocaleString()} <span className="text-xs text-zinc-400 font-bold">PTS</span></p>
+              <h3 className="font-bold text-lg text-white group-hover:text-arena-cyan transition-colors">
+                {filteredRankings[1].username}
+              </h3>
+              <p className="text-xs text-zinc-500 uppercase mt-1 tracking-wider">
+                {filteredRankings[1].country}
+              </p>
+              <p className="text-2xl font-black text-white mt-4">
+                {filteredRankings[1].points.toLocaleString()}{" "}
+                <span className="text-xs text-zinc-400 font-bold">PTS</span>
+              </p>
               <div className="mt-2 text-[10px] text-zinc-500 uppercase tracking-widest">
                 W: {filteredRankings[1].wins} · L: {filteredRankings[1].losses}
               </div>
@@ -183,9 +208,16 @@ export default function RankingPage() {
               <div className="w-16 h-16 bg-arena-cyan text-zinc-950 font-black text-2xl rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-arena-cyan shadow-[0_0_20px_rgba(0,240,255,0.3)]">
                 👑
               </div>
-              <h3 className="font-black text-2xl text-white group-hover:text-arena-cyan transition-colors">{filteredRankings[0].username}</h3>
-              <p className="text-xs text-arena-cyan font-bold uppercase mt-1 tracking-widest">{filteredRankings[0].country}</p>
-              <p className="text-3xl font-black text-white mt-4">{filteredRankings[0].points.toLocaleString()} <span className="text-xs text-arena-cyan font-bold">PTS</span></p>
+              <h3 className="font-black text-2xl text-white group-hover:text-arena-cyan transition-colors">
+                {filteredRankings[0].username}
+              </h3>
+              <p className="text-xs text-arena-cyan font-bold uppercase mt-1 tracking-widest">
+                {filteredRankings[0].country}
+              </p>
+              <p className="text-3xl font-black text-white mt-4">
+                {filteredRankings[0].points.toLocaleString()}{" "}
+                <span className="text-xs text-arena-cyan font-bold">PTS</span>
+              </p>
               <div className="mt-2 text-xs text-zinc-400 uppercase tracking-widest font-semibold">
                 W: {filteredRankings[0].wins} · L: {filteredRankings[0].losses}
               </div>
@@ -197,9 +229,16 @@ export default function RankingPage() {
               <div className="w-12 h-12 bg-zinc-800 text-amber-600 font-black text-xl rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-amber-600 shadow-[0_0_15px_rgba(180,83,9,0.15)]">
                 3
               </div>
-              <h3 className="font-bold text-lg text-white group-hover:text-arena-cyan transition-colors">{filteredRankings[2].username}</h3>
-              <p className="text-xs text-zinc-500 uppercase mt-1 tracking-wider">{filteredRankings[2].country}</p>
-              <p className="text-2xl font-black text-white mt-4">{filteredRankings[2].points.toLocaleString()} <span className="text-xs text-zinc-400 font-bold">PTS</span></p>
+              <h3 className="font-bold text-lg text-white group-hover:text-arena-cyan transition-colors">
+                {filteredRankings[2].username}
+              </h3>
+              <p className="text-xs text-zinc-500 uppercase mt-1 tracking-wider">
+                {filteredRankings[2].country}
+              </p>
+              <p className="text-2xl font-black text-white mt-4">
+                {filteredRankings[2].points.toLocaleString()}{" "}
+                <span className="text-xs text-zinc-400 font-bold">PTS</span>
+              </p>
               <div className="mt-2 text-[10px] text-zinc-500 uppercase tracking-widest">
                 W: {filteredRankings[2].wins} · L: {filteredRankings[2].losses}
               </div>
@@ -212,13 +251,19 @@ export default function RankingPage() {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <div className="w-8 h-8 border-4 border-arena-cyan border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm text-zinc-500">Cargando la arena de competición...</p>
+              <p className="text-sm text-zinc-500">
+                Cargando la arena de competición...
+              </p>
             </div>
           ) : filteredRankings.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center px-4">
-              <p className="text-lg text-zinc-500 font-medium mb-2">No hay competidores registrados.</p>
+              <p className="text-lg text-zinc-500 font-medium mb-2">
+                No hay competidores registrados.
+              </p>
               <p className="text-xs text-zinc-600 max-w-sm">
-                Presiona el botón de &apos;🔄 Recalcular / Sembrar Semillas&apos; en la parte superior para generar partidas y usuarios ficticios de demostración.
+                Presiona el botón de &apos;🔄 Recalcular / Sembrar
+                Semillas&apos; en la parte superior para generar partidas y
+                usuarios ficticios de demostración.
               </p>
             </div>
           ) : (
@@ -230,7 +275,9 @@ export default function RankingPage() {
                     <th className="py-4 px-6">Jugador</th>
                     <th className="py-4 px-6">País</th>
                     <th className="py-4 px-6 text-center">Partidas Jugadas</th>
-                    <th className="py-4 px-6 text-center">Victorias / Derrotas</th>
+                    <th className="py-4 px-6 text-center">
+                      Victorias / Derrotas
+                    </th>
                     <th className="py-4 px-6 text-center">Tasa de Victoria</th>
                     <th className="py-4 px-6 text-right">Puntos Totales</th>
                   </tr>
@@ -238,32 +285,48 @@ export default function RankingPage() {
                 <tbody className="divide-y divide-zinc-850/50">
                   {filteredRankings.map((row) => {
                     const totalMatches = row.wins + row.losses;
-                    const winRate = totalMatches > 0 ? ((row.wins / totalMatches) * 100).toFixed(0) : "0";
-                    const isCurrentUser = session && session.username === row.username;
+                    const winRate =
+                      totalMatches > 0
+                        ? ((row.wins / totalMatches) * 100).toFixed(0)
+                        : "0";
+                    const isCurrentUser =
+                      session && session.username === row.username;
 
                     return (
                       <tr
                         key={row.username}
                         className={`transition-colors hover:bg-white/[0.02] ${
-                          isCurrentUser ? "bg-arena-cyan/5 border-l-2 border-l-arena-cyan" : ""
+                          isCurrentUser
+                            ? "bg-arena-cyan/5 border-l-2 border-l-arena-cyan"
+                            : ""
                         }`}
                       >
                         <td className="py-4 px-6 text-center">
                           {row.position === 1 ? (
-                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-500 text-zinc-950 font-black text-xs shadow-[0_0_10px_rgba(234,179,8,0.2)]">1</span>
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-500 text-zinc-950 font-black text-xs shadow-[0_0_10px_rgba(234,179,8,0.2)]">
+                              1
+                            </span>
                           ) : row.position === 2 ? (
-                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-300 text-zinc-950 font-black text-xs shadow-[0_0_10px_rgba(200,200,200,0.2)]">2</span>
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-300 text-zinc-950 font-black text-xs shadow-[0_0_10px_rgba(200,200,200,0.2)]">
+                              2
+                            </span>
                           ) : row.position === 3 ? (
-                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-600 text-zinc-950 font-black text-xs shadow-[0_0_10px_rgba(180,83,9,0.2)]">3</span>
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-600 text-zinc-950 font-black text-xs shadow-[0_0_10px_rgba(180,83,9,0.2)]">
+                              3
+                            </span>
                           ) : (
-                            <span className="text-zinc-500 font-bold">{row.position}</span>
+                            <span className="text-zinc-500 font-bold">
+                              {row.position}
+                            </span>
                           )}
                         </td>
                         <td className="py-4 px-6 font-medium text-white">
                           <div className="flex items-center gap-2">
                             <span>{row.username}</span>
                             {isCurrentUser && (
-                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-arena-cyan text-zinc-950 uppercase tracking-widest font-black">TÚ</span>
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-arena-cyan text-zinc-950 uppercase tracking-widest font-black">
+                                TÚ
+                              </span>
                             )}
                           </div>
                         </td>
@@ -276,19 +339,25 @@ export default function RankingPage() {
                           {totalMatches}
                         </td>
                         <td className="py-4 px-6 text-center text-xs tracking-wider text-zinc-400">
-                          <span className="text-green-400 font-bold">{row.wins} V</span>
+                          <span className="text-green-400 font-bold">
+                            {row.wins} V
+                          </span>
                           <span className="text-zinc-600 px-1">/</span>
-                          <span className="text-red-400 font-bold">{row.losses} D</span>
+                          <span className="text-red-400 font-bold">
+                            {row.losses} D
+                          </span>
                         </td>
                         <td className="py-4 px-6 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <div className="w-16 bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                              <div 
-                                className="bg-arena-cyan h-full rounded-full" 
+                              <div
+                                className="bg-arena-cyan h-full rounded-full"
                                 style={{ width: `${winRate}%` }}
                               />
                             </div>
-                            <span className="text-xs font-bold w-8 text-right">{winRate}%</span>
+                            <span className="text-xs font-bold w-8 text-right">
+                              {winRate}%
+                            </span>
                           </div>
                         </td>
                         <td className="py-4 px-6 text-right font-black text-arena-cyan text-base">

@@ -1,12 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BracketResult, RoundData, Match, Participant } from "@/lib/algorithms/brackets";
+import {
+  BracketResult,
+  RoundData,
+  Match,
+  Participant,
+} from "@/lib/algorithms/brackets";
 import "./bracket-view.css";
 
 interface BracketViewProps {
   result: BracketResult;
-  onMatchUpdate?: (matchId: string, winnerId: string, score1?: number, score2?: number) => Promise<void>;
+  onMatchUpdate?: (
+    matchId: string,
+    winnerId: string,
+    score1?: number,
+    score2?: number,
+  ) => Promise<void>;
   onMatchUndo?: (matchId: string) => Promise<void>;
 }
 
@@ -40,29 +50,51 @@ function MatchCard({
     }
   };
 
-  const interactiveClass = 
-    onMatchClick && !isBye && p1 && p2 ? "cursor-pointer hover:border-white/40 transition-colors" : "";
+  const interactiveClass =
+    onMatchClick && !isBye && p1 && p2
+      ? "cursor-pointer hover:border-white/40 transition-colors"
+      : "";
 
   return (
-    <div 
+    <div
       className={`match-card ${isBye ? "match-card--bye" : ""} ${interactiveClass}`}
       onClick={handleClick}
       title={interactiveClass ? "Clic para reportar resultado" : undefined}
     >
-      <div className={`match-player match-player--top ${isP1Empty ? "match-player--empty" : ""} ${winnerId === p1?.id ? "text-green-400 font-bold" : ""}`}>
+      <div
+        className={`match-player match-player--top ${isP1Empty ? "match-player--empty" : ""} ${winnerId === p1?.id ? "text-green-400 font-bold" : ""}`}
+      >
         <span className="truncate">{p1Label}</span>
-        {match.score1 !== undefined && <span className="ml-auto font-mono bg-black/40 px-2 rounded">{match.score1}</span>}
+        {match.score1 !== undefined && (
+          <span className="ml-auto font-mono bg-black/40 px-2 rounded">
+            {match.score1}
+          </span>
+        )}
       </div>
       <div className="match-divider" />
-      <div className={`match-player match-player--bottom ${isP2Empty ? "match-player--empty" : ""} ${winnerId === p2?.id ? "text-green-400 font-bold" : ""}`}>
+      <div
+        className={`match-player match-player--bottom ${isP2Empty ? "match-player--empty" : ""} ${winnerId === p2?.id ? "text-green-400 font-bold" : ""}`}
+      >
         <span className="truncate">{p2Label}</span>
-        {match.score2 !== undefined && <span className="ml-auto font-mono bg-black/40 px-2 rounded">{match.score2}</span>}
+        {match.score2 !== undefined && (
+          <span className="ml-auto font-mono bg-black/40 px-2 rounded">
+            {match.score2}
+          </span>
+        )}
       </div>
     </div>
   );
 }
 
-function RoundColumn({ round, isRight, onMatchClick }: { round: RoundData; isRight: boolean; onMatchClick?: (match: Match) => void }) {
+function RoundColumn({
+  round,
+  isRight,
+  onMatchClick,
+}: {
+  round: RoundData;
+  isRight: boolean;
+  onMatchClick?: (match: Match) => void;
+}) {
   return (
     <div className="bracket-round">
       <div className="round-label">{round.label}</div>
@@ -87,16 +119,30 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
   const [selectedWinnerId, setSelectedWinnerId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Derived state instead of effect
-  const champion = (() => {
-    if (result && result.rounds.length > 0) {
+  // Sincronizar si cambia el prop
+  useEffect(() => {
+    setTimeout(() => setLocalResult(result), 0);
+
+    // Determinar al campeón si el último partido de la llave principal tiene ganador
+    if (result.rounds.length > 0) {
       const finalRound = result.rounds[result.rounds.length - 1];
       const finalMatch = finalRound.matches[0];
-      const winnerId = (finalMatch as ExtendedMatch).winnerId;
+      const winnerId = (finalMatch as unknown as Record<string, unknown>)
+        .winnerId;
+
       if (winnerId) {
-        if (finalMatch.player1?.id === winnerId) return finalMatch.player1;
-        if (finalMatch.player2?.id === winnerId) return finalMatch.player2;
+        if (finalMatch.player1?.id === winnerId) {
+          setTimeout(() => setChampion(finalMatch.player1 || null), 0);
+        } else if (finalMatch.player2?.id === winnerId) {
+          setTimeout(() => setChampion(finalMatch.player2 || null), 0);
+        } else {
+          setTimeout(() => setChampion(null), 0);
+        }
+      } else {
+        setTimeout(() => setChampion(null), 0);
       }
+    } else {
+      setTimeout(() => setChampion(null), 0);
     }
     return null;
   })();
@@ -116,8 +162,11 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
       const s1 = parseInt(s1Str);
       const s2 = parseInt(s2Str);
       if (!isNaN(s1) && !isNaN(s2)) {
-        if (s1 > s2) setSelectedWinnerId(selectedMatch.player1?.id || "");
-        else if (s2 > s1) setSelectedWinnerId(selectedMatch.player2?.id || "");
+        setTimeout(() => {
+          if (s1 > s2) setSelectedWinnerId(selectedMatch.player1?.id || "");
+          else if (s2 > s1)
+            setSelectedWinnerId(selectedMatch.player2?.id || "");
+        }, 0);
       }
     }
   };
@@ -172,7 +221,10 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
         <div className="bracket-container bracket-container--single">
           <div className="bracket-final">
             <div className="final-trophy">🏆</div>
-            <MatchCard match={finalRound.matches[0]} onMatchClick={handleMatchClick} />
+            <MatchCard
+              match={finalRound.matches[0]}
+              onMatchClick={handleMatchClick}
+            />
             <p className="final-label">FINAL</p>
           </div>
         </div>
@@ -206,7 +258,12 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
         {/* Left half */}
         <div className="half-bracket half-bracket--left">
           {leftRounds.map((round, ri) => (
-            <RoundColumn key={ri} round={round} isRight={false} onMatchClick={handleMatchClick} />
+            <RoundColumn
+              key={ri}
+              round={round}
+              isRight={false}
+              onMatchClick={handleMatchClick}
+            />
           ))}
         </div>
 
@@ -220,7 +277,12 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
         {/* Right half (mirrored) */}
         <div className="half-bracket half-bracket--right">
           {rightRounds.map((round, ri) => (
-            <RoundColumn key={ri} round={round} isRight={true} onMatchClick={handleMatchClick} />
+            <RoundColumn
+              key={ri}
+              round={round}
+              isRight={true}
+              onMatchClick={handleMatchClick}
+            />
           ))}
         </div>
       </div>
@@ -235,7 +297,9 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
       {result.loserRounds && result.loserRounds.length > 0 && (
         <>
           <div className="bracket-divider"></div>
-          <div className="bracket-section-title loser-title">Llave de Perdedores</div>
+          <div className="bracket-section-title loser-title">
+            Llave de Perdedores
+          </div>
           <div className="bracket-container loser-container">
             {result.loserRounds.map((round, ri) => (
               <RoundColumn key={ri} round={round} isRight={false} onMatchClick={handleMatchClick} />
@@ -248,9 +312,13 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
       {selectedMatch && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-slate-900 border border-white/10 rounded-xl p-6 shadow-2xl max-w-sm w-full">
-            <h3 className="text-xl font-bold mb-4 text-center">Reportar Resultado</h3>
-            <p className="text-white/60 text-sm mb-4 text-center">Ronda {selectedMatch.round}</p>
-            
+            <h3 className="text-xl font-bold mb-4 text-center">
+              Reportar Resultado
+            </h3>
+            <p className="text-white/60 text-sm mb-4 text-center">
+              Ronda {selectedMatch.round}
+            </p>
+
             <div className="flex flex-col gap-4 mb-6">
               <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedWinnerId === selectedMatch.player1?.id ? 'border-green-500 bg-green-500/10' : 'border-white/10 hover:bg-white/5'}`}>
                 <input type="radio" name="winner" className="hidden" 
@@ -272,7 +340,7 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
             </div>
 
             <div className="flex gap-2">
-              <button 
+              <button
                 className="flex-1 py-2 rounded bg-white/10 hover:bg-white/20 transition-colors"
                 onClick={() => setSelectedMatch(null)}
                 disabled={isSubmitting}

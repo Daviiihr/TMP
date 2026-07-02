@@ -14,13 +14,13 @@ export async function GET(request: Request) {
       const result = await pool.query(
         `SELECT id, name, game, region, max_players, type, elimination_mode, start_date, end_date, registration_closes_at, status, organizer_id, created_at 
          FROM tournaments 
-         ORDER BY created_at DESC`
+         ORDER BY created_at DESC`,
       );
       return NextResponse.json({ ok: true, tournaments: result.rows });
     }
 
     const result = await pool.query(
-      `SELECT count(*) as count FROM tournaments WHERE status IN ('REGISTRATION', 'IN_PROGRESS')`
+      `SELECT count(*) as count FROM tournaments WHERE status IN ('REGISTRATION', 'IN_PROGRESS')`,
     );
     const count = parseInt(result.rows[0].count);
     return NextResponse.json({ ok: true, count });
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     console.error("Error fetching tournaments:", error);
     return NextResponse.json(
       { ok: false, message: "Error al obtener los torneos." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -40,15 +40,16 @@ export async function POST(request: Request) {
     assertAdminAccess(session);
 
     const formData = await request.formData();
-    
+
     const name = formData.get("name") as string;
     const game = formData.get("game") as string;
     const regionsString = formData.get("regions") as string;
-    const type = formData.get("type") as string || "INDIVIDUAL";
+    const type = (formData.get("type") as string) || "INDIVIDUAL";
     const eliminationMode = formData.get("elimination_mode") as string;
     const maxPlayers = parseInt(formData.get("max_players") as string);
-    const playersPerTeam = parseInt(formData.get("players_per_team") as string) || null;
-    
+    const playersPerTeam =
+      parseInt(formData.get("players_per_team") as string) || null;
+
     // Combinar fecha y hora
     const startDateDate = formData.get("start_date_date") as string;
     const startDateTime = formData.get("start_date_time") as string;
@@ -62,7 +63,11 @@ export async function POST(request: Request) {
     const regTime = formData.get("registration_closes_at_time") as string;
     const registrationClosesAt = `${regDate}T${regTime}`;
 
-    const regions = regionsString?.split(",").map(r => r.trim()).filter(Boolean) ?? [];
+    const regions =
+      regionsString
+        ?.split(",")
+        .map((r) => r.trim())
+        .filter(Boolean) ?? [];
 
     const tournamentService = appFactory.createTournamentService();
     await tournamentService.createTournament({
@@ -88,15 +93,19 @@ export async function POST(request: Request) {
       ? 401
       : message.includes("administradores")
         ? 403
-        : hasErrorCode(error, "23505") || message.includes("Ya existe un torneo")
+        : hasErrorCode(error, "23505") ||
+            message.includes("Ya existe un torneo")
           ? 409
           : 400;
 
     return NextResponse.json(
-      { 
-        ok: false, 
-        message: status === 409 ? "Ya existe un torneo con ese nombre." : "No se pudo crear el torneo.",
-        details: message
+      {
+        ok: false,
+        message:
+          status === 409
+            ? "Ya existe un torneo con ese nombre."
+            : "No se pudo crear el torneo.",
+        details: message,
       },
       { status },
     );

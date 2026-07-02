@@ -70,7 +70,10 @@ export default async function Home() {
           {/* CTA / User Profile */}
           {session ? (
             <div className="flex items-center gap-4">
-              <Link href="/dashboard" className="flex items-center gap-2 group px-2 py-1.5 rounded-xl border border-zinc-800/50 hover:border-arena-cyan/30 bg-zinc-900/50 backdrop-blur transition-all duration-300">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 group px-2 py-1.5 rounded-xl border border-zinc-800/50 hover:border-arena-cyan/30 bg-zinc-900/50 backdrop-blur transition-all duration-300"
+              >
                 <div className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-arena-cyan font-bold text-xs uppercase shadow-[0_0_10px_rgba(0,240,255,0.1)]">
                   {session.username.charAt(0)}
                 </div>
@@ -85,7 +88,10 @@ export default async function Home() {
               </Link>
             </div>
           ) : (
-            <a href="login" className="px-5 py-2 text-xs font-bold uppercase tracking-widest text-arena-cyan border border-arena-cyan/30 rounded-lg transition-all duration-300 hover:bg-arena-cyan/10 hover:border-arena-cyan/60 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]">
+            <a
+              href="login"
+              className="px-5 py-2 text-xs font-bold uppercase tracking-widest text-arena-cyan border border-arena-cyan/30 rounded-lg transition-all duration-300 hover:bg-arena-cyan/10 hover:border-arena-cyan/60 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]"
+            >
               Unirse
             </a>
           )}

@@ -16,7 +16,9 @@ export class EnrollmentService {
     if (!tournament) throw new Error("Torneo no encontrado.");
 
     if (tournament.status !== "DRAFT" && tournament.status !== "REGISTRATION") {
-      throw new Error("El periodo de inscripciones para este torneo está cerrado.");
+      throw new Error(
+        "El periodo de inscripciones para este torneo está cerrado.",
+      );
     }
 
     if (tournament.type !== "INDIVIDUAL") {
@@ -26,25 +28,32 @@ export class EnrollmentService {
     // Verificar si el jugador ya está inscrito
     const isEnrolled = await this.pool.query(
       `SELECT 1 FROM individual_enrollments WHERE user_id = $1 AND tournament_id = $2 LIMIT 1`,
-      [userId, tournamentId]
+      [userId, tournamentId],
     );
     if (isEnrolled.rows.length > 0) {
       throw new Error("Ya te encuentras inscrito en este torneo.");
     }
 
-    const currentCount = await this.tournamentRepo.getEnrollmentCount(tournamentId);
+    const currentCount =
+      await this.tournamentRepo.getEnrollmentCount(tournamentId);
     if (currentCount >= tournament.max_players) {
       throw new Error("El torneo ya ha alcanzado el máximo de jugadores.");
     }
 
     await this.pool.query(
       `INSERT INTO individual_enrollments (user_id, tournament_id) VALUES ($1, $2)`,
-      [userId, tournamentId]
+      [userId, tournamentId],
     );
 
-    await this.eventEmitter.emit("enrollment:playerJoined", { userId, tournamentId });
+    await this.eventEmitter.emit("enrollment:playerJoined", {
+      userId,
+      tournamentId,
+    });
 
-    return { success: true, message: "Te has inscrito exitosamente al torneo." };
+    return {
+      success: true,
+      message: "Te has inscrito exitosamente al torneo.",
+    };
   }
 
   async enrollTeamInTournament(teamId: string, tournamentId: string) {
@@ -55,7 +64,9 @@ export class EnrollmentService {
     if (!tournament) throw new Error("Torneo no encontrado.");
 
     if (tournament.status !== "DRAFT" && tournament.status !== "REGISTRATION") {
-      throw new Error("El periodo de inscripciones para este torneo está cerrado.");
+      throw new Error(
+        "El periodo de inscripciones para este torneo está cerrado.",
+      );
     }
 
     if (tournament.type !== "TEAM") {
@@ -63,13 +74,14 @@ export class EnrollmentService {
     }
 
     if (team.tournament_id === tournamentId) {
-       throw new Error("Tu equipo ya está inscrito en este torneo.");
+      throw new Error("Tu equipo ya está inscrito en este torneo.");
     }
     if (team.tournament_id) {
-       throw new Error("Tu equipo ya está participando en otro torneo.");
+      throw new Error("Tu equipo ya está participando en otro torneo.");
     }
 
-    const currentCount = await this.tournamentRepo.getEnrollmentCount(tournamentId);
+    const currentCount =
+      await this.tournamentRepo.getEnrollmentCount(tournamentId);
     if (currentCount >= tournament.max_players) {
       throw new Error("El torneo ya ha alcanzado el máximo de equipos.");
     }
@@ -78,17 +90,27 @@ export class EnrollmentService {
     const requiredSize = tournament.min_players_per_team;
 
     if (team.size !== requiredSize) {
-      throw new Error(`Este torneo requiere equipos diseñados para ${requiredSize} jugadores.`);
+      throw new Error(
+        `Este torneo requiere equipos diseñados para ${requiredSize} jugadores.`,
+      );
     }
 
     if (actualMemberCount !== requiredSize) {
-      throw new Error(`El equipo está incompleto. Tienes ${actualMemberCount} de ${requiredSize} jugadores necesarios.`);
+      throw new Error(
+        `El equipo está incompleto. Tienes ${actualMemberCount} de ${requiredSize} jugadores necesarios.`,
+      );
     }
 
     await this.teamRepo.assignToTournament(teamId, tournamentId);
-    
-    await this.eventEmitter.emit("enrollment:teamJoined", { teamId, tournamentId });
 
-    return { success: true, message: "El equipo se ha inscrito exitosamente en el torneo." };
+    await this.eventEmitter.emit("enrollment:teamJoined", {
+      teamId,
+      tournamentId,
+    });
+
+    return {
+      success: true,
+      message: "El equipo se ha inscrito exitosamente en el torneo.",
+    };
   }
 }

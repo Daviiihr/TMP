@@ -15,10 +15,14 @@ export async function GET(req: NextRequest) {
     const repo = new UserRepository();
     const users = await repo.searchUsers(query);
 
-    return NextResponse.json({ users: users.map(u => ({ id: u.id, name: u.username })) });
+    return NextResponse.json({
+      users: users.map((u) => ({ id: u.id, name: u.username })),
+    });
   } catch (error: unknown) {
     console.error("Error searching users:", error);
-    const msg = error instanceof Error ? error.message : "Error desconocido";
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 },
+    );
   }
 }

@@ -13,7 +13,9 @@ export default function RegisterPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -49,7 +51,7 @@ export default function RegisterPage() {
       {/* Efectos de fondo (Glow Orbs) */}
       <div className="glow-orb w-[500px] h-[500px] bg-arena-magenta top-[-10%] right-[-10%] opacity-20" />
       <div className="glow-orb w-[500px] h-[500px] bg-arena-cyan bottom-[-10%] left-[-10%] opacity-20" />
-      
+
       {/* Fondo de rejilla sutil */}
       <div className="absolute inset-0 grid-pattern opacity-20 pointer-events-none" />
 
@@ -60,9 +62,14 @@ export default function RegisterPage() {
             T
           </div>
           <h1 className="font-[var(--font-display)] text-4xl font-black uppercase tracking-tighter text-white">
-            Únete a la <span className="text-transparent bg-clip-text bg-gradient-to-r from-arena-magenta to-arena-cyan">Arena</span>
+            Únete a la{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-arena-magenta to-arena-cyan">
+              Arena
+            </span>
           </h1>
-          <p className="text-zinc-500 text-sm mt-2 uppercase tracking-widest">Crea tu cuenta de competidor</p>
+          <p className="text-zinc-500 text-sm mt-2 uppercase tracking-widest">
+            Crea tu cuenta de competidor
+          </p>
         </div>
 
         {/* Tarjeta de Registro */}
@@ -112,7 +119,9 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-arena-magenta transition-all duration-300 appearance-none"
               >
-                <option value="" disabled>Selecciona tu región</option>
+                <option value="" disabled>
+                  Selecciona tu región
+                </option>
                 <option value="NA">Norteamérica (NA)</option>
                 <option value="EU">Europa (EU)</option>
                 <option value="LATAM">Latinoamérica (LATAM)</option>
@@ -132,7 +141,9 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 text-white focus:outline-none focus:border-arena-magenta transition-all duration-300 appearance-none"
               >
-                <option value="" disabled>Selecciona tu país</option>
+                <option value="" disabled>
+                  Selecciona tu país
+                </option>
                 <option value="Chile">Chile</option>
                 <option value="Argentina">Argentina</option>
                 <option value="México">México</option>
@@ -183,7 +194,10 @@ export default function RegisterPage() {
           <div className="mt-8 text-center">
             <p className="text-zinc-500 text-sm">
               ¿Ya tienes cuenta?{" "}
-              <Link href="/login" className="text-arena-magenta font-bold hover:underline">
+              <Link
+                href="/login"
+                className="text-arena-magenta font-bold hover:underline"
+              >
                 Inicia sesión
               </Link>
             </p>
@@ -192,8 +206,8 @@ export default function RegisterPage() {
 
         {/* Botón Volver */}
         <div className="mt-6 text-center">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="text-zinc-600 text-xs uppercase tracking-widest hover:text-zinc-400 transition-colors"
           >
             ← Volver al Inicio

@@ -25,10 +25,12 @@ export default async function CreateTournamentPage({
             <h1 className="text-4xl font-bold font-[var(--font-display)] uppercase tracking-tighter text-white">
               Crear Torneo {isTeamTournament ? "por Equipos" : "Individual"}
             </h1>
-            <p className="text-zinc-400">Configura los parámetros de la competencia</p>
+            <p className="text-zinc-400">
+              Configura los parámetros de la competencia
+            </p>
           </div>
-          <Link 
-            href="/admin/tournaments/type" 
+          <Link
+            href="/admin/tournaments/type"
             className="text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
           >
             ← Cambiar Tipo

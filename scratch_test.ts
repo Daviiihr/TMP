@@ -1,4 +1,4 @@
-import { generateBracket, Participant } from './src/lib/algorithms/brackets';
+import { generateBracket, Participant } from "./src/lib/algorithms/brackets";
 
 const testCases = [
   { name: "3 jugadores", count: 3 },
@@ -16,14 +16,16 @@ for (const tc of testCases) {
 
   console.log(`\n========== TEST: ${tc.name} ==========`);
   const result = generateBracket(players);
-  console.log(`Bracket size: ${result.bracketSize} | Rondas: ${result.totalRounds}`);
+  console.log(
+    `Bracket size: ${result.bracketSize} | Rondas: ${result.totalRounds}`,
+  );
 
   for (const round of result.rounds) {
     console.log(`\n  🏆 ${round.label} (${round.matches.length} partidos):`);
-    round.matches.forEach(m => {
-      const p1 = m.player1?.name || '(vacío)';
-      const p2 = m.player2?.name || (m.isBye ? '— vacío —' : '(Por definir)');
-      const bye = m.isBye ? ' [BYE]' : '';
+    round.matches.forEach((m) => {
+      const p1 = m.player1?.name || "(vacío)";
+      const p2 = m.player2?.name || (m.isBye ? "— vacío —" : "(Por definir)");
+      const bye = m.isBye ? " [BYE]" : "";
       console.log(`    Match ${m.matchNumber}: ${p1} vs ${p2}${bye}`);
     });
   }

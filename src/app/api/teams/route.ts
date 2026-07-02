@@ -7,22 +7,34 @@ export async function POST(request: Request) {
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.json({ ok: false, message: "Sesión no iniciada." }, { status: 401 });
+      return NextResponse.json(
+        { ok: false, message: "Sesión no iniciada." },
+        { status: 401 },
+      );
     }
 
     const body = await request.json();
     const { name, size } = body;
 
     if (!name || !size) {
-      return NextResponse.json({ ok: false, message: "Nombre y tamaño son obligatorios." }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, message: "Nombre y tamaño son obligatorios." },
+        { status: 400 },
+      );
     }
 
     const teamService = appFactory.createTeamService();
     const team = await teamService.createTeam(name, session.id, parseInt(size));
 
-    return NextResponse.json({ ok: true, message: "Equipo creado exitosamente.", team }, { status: 201 });
+    return NextResponse.json(
+      { ok: true, message: "Equipo creado exitosamente.", team },
+      { status: 201 },
+    );
   } catch (error: unknown) {
-    return NextResponse.json({ ok: false, message: getErrorMessage(error) }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, message: getErrorMessage(error) },
+      { status: 500 },
+    );
   }
 }
 
@@ -30,7 +42,10 @@ export async function GET(request: Request) {
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.json({ ok: false, message: "Sesión no iniciada." }, { status: 401 });
+      return NextResponse.json(
+        { ok: false, message: "Sesión no iniciada." },
+        { status: 401 },
+      );
     }
 
     const teamRepo = appFactory.createTeamRepository();
@@ -39,6 +54,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ ok: true, teams }, { status: 200 });
   } catch (error: unknown) {
-    return NextResponse.json({ ok: false, message: getErrorMessage(error) }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, message: getErrorMessage(error) },
+      { status: 500 },
+    );
   }
 }
