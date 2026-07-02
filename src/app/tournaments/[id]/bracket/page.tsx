@@ -13,7 +13,7 @@ export default function PublicBracketPage({ params }: { params: Promise<{ id: st
   const [eliminationMode, setEliminationMode] = useState<"SINGLE_ELIMINATION" | "DOUBLE_ELIMINATION">("SINGLE_ELIMINATION");
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchBracket = async () => {
+  const fetchBracket = React.useCallback(async () => {
     try {
       const res = await fetch(`/api/tournaments/${tournamentId}/brackets`);
       const data = await res.json();
@@ -26,11 +26,11 @@ export default function PublicBracketPage({ params }: { params: Promise<{ id: st
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [tournamentId]);
 
   useEffect(() => {
     // Initial fetch
-    fetchBracket();
+    setTimeout(() => fetchBracket(), 0);
 
     // Sincronización automática (Short-Polling cada 5 segundos) para tiempo real
     const interval = setInterval(() => {
@@ -38,7 +38,7 @@ export default function PublicBracketPage({ params }: { params: Promise<{ id: st
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [tournamentId]);
+  }, [fetchBracket]);
 
   return (
     <main className="min-h-screen bg-[#09090b] text-white px-4 py-20 md:px-8 relative overflow-hidden">

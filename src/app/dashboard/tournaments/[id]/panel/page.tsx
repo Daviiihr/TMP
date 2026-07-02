@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
 import BracketView from "@/components/BracketView";
 import { Participant, BracketResult } from "@/lib/algorithms/brackets";
 import "./panel.css";
@@ -9,7 +8,6 @@ import "./panel.css";
 export default function TournamentPanelPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const tournamentId = resolvedParams.id;
-  const router = useRouter();
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [eliminationMode, setEliminationMode] = useState<"SINGLE_ELIMINATION" | "DOUBLE_ELIMINATION">("SINGLE_ELIMINATION");
@@ -31,7 +29,7 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
     }
   };
 
-  const fetchBracket = async () => {
+  const fetchBracket = React.useCallback(async () => {
     try {
       const res = await fetch(`/api/tournaments/${tournamentId}/brackets`);
       const data = await res.json();
@@ -42,22 +40,26 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [tournamentId]);
 
   useEffect(() => {
     // Cargar participantes guardados localmente
     const saved = localStorage.getItem(`tournament_${tournamentId}_participants`);
     if (saved) {
       try {
-        setParticipants(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setTimeout(() => setParticipants(parsed), 0);
       } catch (e) {
         console.error("Error al cargar participantes", e);
       }
     }
     
     // Fetch initial data
-    fetchTournamentDetails();
-    fetchBracket();
+    setTimeout(() => {
+      fetchTournamentDetails();
+      fetchBracket();
+    }, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tournamentId]);
 
   useEffect(() => {
@@ -74,7 +76,7 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
       fetchBracket();
     }, 5000);
     return () => clearInterval(interval);
-  }, [tournamentId, bracketData]);
+  }, [tournamentId, bracketData, fetchBracket]);
 
   const removeParticipant = (id: string) => {
     setParticipants(participants.filter(p => p.id !== id));
@@ -128,8 +130,12 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
       if (!res.ok) throw new Error(data.error || "Error al generar bracket");
       
       setBracketData(data.bracketData);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Error desconocido");
+      }
     } finally {
       setIsGenerating(false);
     }

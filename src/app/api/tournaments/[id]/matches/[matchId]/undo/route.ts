@@ -32,8 +32,9 @@ export async function POST(
     await repo.undoMatchWinner(tournamentId, matchId);
 
     return NextResponse.json({ success: true, message: "Resultado deshecho exitosamente" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error undoing match:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const msg = error instanceof Error ? error.message : "Error desconocido";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

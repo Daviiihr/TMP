@@ -10,6 +10,8 @@ interface BracketViewProps {
   onMatchUndo?: (matchId: string) => Promise<void>;
 }
 
+type ExtendedMatch = Match & { status?: string; winnerId?: string };
+
 function MatchCard({ 
   match, 
   onMatchClick 
@@ -21,8 +23,7 @@ function MatchCard({
   const p2 = match.player2;
   const isBye = match.isBye;
   
-  // Extend type to get extra properties dynamically added
-  const extendedMatch = match as any;
+  const extendedMatch = match as ExtendedMatch;
   const status = extendedMatch.status || 'PENDING';
   const winnerId = extendedMatch.winnerId || null;
 
@@ -35,7 +36,6 @@ function MatchCard({
     if (onMatchClick && !isBye && p1 && p2) {
       onMatchClick(match);
     } else if (onMatchClick && status === 'FINISHED' && !isBye) {
-      // Also allow clicking finished matches to undo
       onMatchClick(match);
     }
   };
@@ -80,9 +80,6 @@ function RoundColumn({ round, isRight, onMatchClick }: { round: RoundData; isRig
 }
 
 export default function BracketView({ result, onMatchUpdate, onMatchUndo }: BracketViewProps) {
-  const [localResult, setLocalResult] = useState<BracketResult>(result);
-  const [champion, setChampion] = useState<Participant | null>(null);
-  
   // Modal State
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [score1, setScore1] = useState("");
@@ -90,52 +87,50 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
   const [selectedWinnerId, setSelectedWinnerId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Sincronizar si cambia el prop
-  useEffect(() => {
-    setLocalResult(result);
-    
-    // Determinar al campeón si el último partido de la llave principal tiene ganador
-    if (result.rounds.length > 0) {
+  // Derived state instead of effect
+  const champion = (() => {
+    if (result && result.rounds.length > 0) {
       const finalRound = result.rounds[result.rounds.length - 1];
       const finalMatch = finalRound.matches[0];
-      const winnerId = (finalMatch as any).winnerId;
-      
+      const winnerId = (finalMatch as ExtendedMatch).winnerId;
       if (winnerId) {
-        if (finalMatch.player1?.id === winnerId) {
-          setChampion(finalMatch.player1);
-        } else if (finalMatch.player2?.id === winnerId) {
-          setChampion(finalMatch.player2);
-        } else {
-          setChampion(null);
-        }
-      } else {
-        setChampion(null);
+        if (finalMatch.player1?.id === winnerId) return finalMatch.player1;
+        if (finalMatch.player2?.id === winnerId) return finalMatch.player2;
       }
-    } else {
-      setChampion(null);
     }
-  }, [result]);
+    return null;
+  })();
 
-  if (!localResult || localResult.rounds.length === 0) return null;
+  const handleScore1Change = (val: string) => {
+    setScore1(val);
+    autoSelectWinner(val, score2);
+  };
+
+  const handleScore2Change = (val: string) => {
+    setScore2(val);
+    autoSelectWinner(score1, val);
+  };
+
+  const autoSelectWinner = (s1Str: string, s2Str: string) => {
+    if (s1Str && s2Str && selectedMatch) {
+      const s1 = parseInt(s1Str);
+      const s2 = parseInt(s2Str);
+      if (!isNaN(s1) && !isNaN(s2)) {
+        if (s1 > s2) setSelectedWinnerId(selectedMatch.player1?.id || "");
+        else if (s2 > s1) setSelectedWinnerId(selectedMatch.player2?.id || "");
+      }
+    }
+  };
+
+  if (!result || result.rounds.length === 0) return null;
 
   const handleMatchClick = (match: Match) => {
     if (!onMatchUpdate) return;
     setSelectedMatch(match);
     setScore1(match.score1?.toString() || "");
     setScore2(match.score2?.toString() || "");
-    setSelectedWinnerId((match as any).winnerId || "");
+    setSelectedWinnerId((match as ExtendedMatch).winnerId || "");
   };
-
-  useEffect(() => {
-    if (score1 && score2 && selectedMatch) {
-      const s1 = parseInt(score1);
-      const s2 = parseInt(score2);
-      if (!isNaN(s1) && !isNaN(s2)) {
-        if (s1 > s2) setSelectedWinnerId(selectedMatch.player1?.id || "");
-        else if (s2 > s1) setSelectedWinnerId(selectedMatch.player2?.id || "");
-      }
-    }
-  }, [score1, score2, selectedMatch]);
 
   const submitMatchResult = async () => {
     if (!selectedMatch || !onMatchUpdate || !selectedWinnerId) return;
@@ -167,7 +162,7 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
     }
   };
 
-  const { rounds, totalRounds } = localResult;
+  const { rounds, totalRounds } = result;
 
   // Render para brackets de solo 1 ronda (ej. 2 jugadores)
   if (totalRounds === 1) {
@@ -237,12 +232,12 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
         </div>
       )}
 
-      {localResult.loserRounds && localResult.loserRounds.length > 0 && (
+      {result.loserRounds && result.loserRounds.length > 0 && (
         <>
           <div className="bracket-divider"></div>
           <div className="bracket-section-title loser-title">Llave de Perdedores</div>
           <div className="bracket-container loser-container">
-            {localResult.loserRounds.map((round, ri) => (
+            {result.loserRounds.map((round, ri) => (
               <RoundColumn key={ri} round={round} isRight={false} onMatchClick={handleMatchClick} />
             ))}
           </div>
@@ -263,7 +258,7 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
                   onChange={() => setSelectedWinnerId(selectedMatch.player1?.id || "")} />
                 <span className="flex-1 font-medium">{selectedMatch.player1?.name}</span>
                 <input type="number" placeholder="Puntos" className="w-20 bg-black/40 border border-white/10 rounded p-1 text-center" 
-                  value={score1} onChange={(e) => setScore1(e.target.value)} onClick={e => e.stopPropagation()} />
+                  value={score1} onChange={(e) => handleScore1Change(e.target.value)} onClick={e => e.stopPropagation()} />
               </label>
 
               <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedWinnerId === selectedMatch.player2?.id ? 'border-green-500 bg-green-500/10' : 'border-white/10 hover:bg-white/5'}`}>
@@ -272,7 +267,7 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
                   onChange={() => setSelectedWinnerId(selectedMatch.player2?.id || "")} />
                 <span className="flex-1 font-medium">{selectedMatch.player2?.name}</span>
                 <input type="number" placeholder="Puntos" className="w-20 bg-black/40 border border-white/10 rounded p-1 text-center" 
-                  value={score2} onChange={(e) => setScore2(e.target.value)} onClick={e => e.stopPropagation()} />
+                  value={score2} onChange={(e) => handleScore2Change(e.target.value)} onClick={e => e.stopPropagation()} />
               </label>
             </div>
 
@@ -284,7 +279,7 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
               >
                 Cancelar
               </button>
-              {(selectedMatch as any).status === 'FINISHED' && onMatchUndo && (
+              {(selectedMatch as ExtendedMatch).status === 'FINISHED' && onMatchUndo && (
                 <button 
                   className="flex-1 py-2 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
                   onClick={undoMatchResult}
@@ -296,7 +291,7 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
               <button 
                 className="flex-1 py-2 rounded bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-50"
                 onClick={submitMatchResult}
-                disabled={isSubmitting || !selectedWinnerId || (selectedMatch as any).status === 'FINISHED'}
+                disabled={isSubmitting || !selectedWinnerId || (selectedMatch as ExtendedMatch).status === 'FINISHED'}
               >
                 Guardar
               </button>

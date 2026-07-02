@@ -3,13 +3,13 @@
 import { useState, useTransition } from "react";
 import { updateProfileAction } from "./actions";
 
-export default function ProfileForm({ user }: { user: any }) {
+export default function ProfileForm({ user }: { user: Record<string, unknown> }) {
   const [isPending, startTransition] = useTransition();
-  const [themeColor, setThemeColor] = useState(user.theme_color || "#00ffff");
-  const [avatar, setAvatar] = useState(user.avatar_url || "");
-  const [banner, setBanner] = useState(user.banner_url || "");
-  const [bio, setBio] = useState(user.bio || "");
-  const [rank, setRank] = useState(user.competitive_rank || "Unranked");
+  const [themeColor, setThemeColor] = useState((user.theme_color as string) || "#00ffff");
+  const [avatar, setAvatar] = useState((user.avatar_url as string) || "");
+  const [banner, setBanner] = useState((user.banner_url as string) || "");
+  const [bio, setBio] = useState((user.bio as string) || "");
+  const [rank, setRank] = useState((user.competitive_rank as string) || "Unranked");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -95,7 +95,7 @@ export default function ProfileForm({ user }: { user: any }) {
                   <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-5xl font-bold font-[var(--font-display)] uppercase" style={{ backgroundColor: themeColor, color: '#000' }}>
-                    {user.username.charAt(0)}
+                    {String(user.username || "").charAt(0)}
                   </div>
                 )}
               </div>
@@ -105,14 +105,14 @@ export default function ProfileForm({ user }: { user: any }) {
             </div>
 
             <h3 className="text-3xl font-bold text-white mb-1 flex items-center gap-3">
-              {user.username}
+              {String(user.username || "")}
               {user.role === 'ADMIN' && <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded uppercase tracking-wider border border-red-500/30">Admin</span>}
               {user.role === 'CAPTAIN' && <span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded uppercase tracking-wider border border-yellow-500/30">Capitán</span>}
             </h3>
             
             <p className="text-zinc-400 text-sm mb-5 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: themeColor }}></span>
-              {user.email} • {user.region}
+              {String(user.email || "")} • {String(user.region || "")}
             </p>
             
             <div className="bg-zinc-950/50 p-4 rounded-xl border border-zinc-800">

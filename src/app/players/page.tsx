@@ -1,4 +1,5 @@
 import { UserRepository } from "@/repositories/user.repository";
+import Link from "next/link";
 
 export default async function PlayersSearchPage({
   searchParams,
@@ -37,9 +38,9 @@ export default async function PlayersSearchPage({
           </form>
 
           <li className="mt-4 text-sm text-zinc-500">
-            <a href="/" className="hover:text-arena-cyan transition-colors duration-300">
+            <Link href="/" className="hover:text-arena-cyan transition-colors duration-300">
               Volver al inicio
-            </a>
+            </Link>
           </li>
         </header>
 
@@ -52,7 +53,7 @@ export default async function PlayersSearchPage({
             {users.map((user) => {
               const themeColor = user.theme_color || "#00ffff";
               return (
-                <a 
+                <Link 
                   key={user.id} 
                   href={`/player/${user.username}`}
                   className="group block bg-zinc-900 border rounded-2xl overflow-hidden hover:scale-105 transition-all duration-300 shadow-lg relative"
@@ -89,7 +90,7 @@ export default async function PlayersSearchPage({
                       <span className="text-xs text-zinc-500 uppercase tracking-widest">{user.region}</span>
                     </div>
                   </div>
-                </a>
+                </Link>
               );
             })}
           </div>
