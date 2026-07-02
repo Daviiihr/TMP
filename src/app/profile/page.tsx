@@ -25,9 +25,14 @@ export default async function ProfilePage() {
             <h1 className="text-4xl md:text-5xl font-bold font-[var(--font-display)] uppercase tracking-tighter mb-2 text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-500">
               Personalización de Perfil
             </h1>
-            <p className="text-zinc-400 text-lg">Define tu identidad en la arena.</p>
+            <p className="text-zinc-400 text-lg">
+              Define tu identidad en la arena.
+            </p>
           </div>
-          <a href="/dashboard" className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-semibold rounded-lg transition-colors border border-zinc-700 text-center">
+          <a
+            href="/dashboard"
+            className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-semibold rounded-lg transition-colors border border-zinc-700 text-center"
+          >
             Volver al Dashboard
           </a>
         </header>

@@ -14,8 +14,10 @@ export async function POST(request: Request) {
     const seed = searchParams.get("seed") === "true";
 
     if (seed) {
-      console.log("[Seeding] Insertando datos simulados de ranking y partidas...");
-      
+      console.log(
+        "[Seeding] Insertando datos simulados de ranking y partidas...",
+      );
+
       // Aseguramos que la conexión a la base de datos y la migración se hayan corrido
       const assertDb = appFactory.createPostgresPool();
       await assertDb.query("SELECT 1");
@@ -31,18 +33,42 @@ export async function POST(request: Request) {
            VALUES ('AdminOrganizador', 'admin@gmail.com', $1, 'ADMIN', 'LATAM', 'Chile')
            ON CONFLICT (email) DO UPDATE SET role = 'ADMIN'
            RETURNING id`,
-          [adminHash]
+          [adminHash],
         );
         const adminId = adminRes.rows[0]?.id;
 
         if (adminId) {
           const players = [
-            { username: "Seba_CL", email: "seba.cl@gmail.com", country: "Chile" },
-            { username: "Messi_AR", email: "messi.ar@gmail.com", country: "Argentina" },
-            { username: "Canelo_MX", email: "canelo.mx@gmail.com", country: "México" },
-            { username: "Ibai_ES", email: "ibai.es@gmail.com", country: "España" },
-            { username: "James_CO", email: "james.co@gmail.com", country: "Colombia" },
-            { username: "Guerrero_PE", email: "guerrero.pe@gmail.com", country: "Perú" },
+            {
+              username: "Seba_CL",
+              email: "seba.cl@gmail.com",
+              country: "Chile",
+            },
+            {
+              username: "Messi_AR",
+              email: "messi.ar@gmail.com",
+              country: "Argentina",
+            },
+            {
+              username: "Canelo_MX",
+              email: "canelo.mx@gmail.com",
+              country: "México",
+            },
+            {
+              username: "Ibai_ES",
+              email: "ibai.es@gmail.com",
+              country: "España",
+            },
+            {
+              username: "James_CO",
+              email: "james.co@gmail.com",
+              country: "Colombia",
+            },
+            {
+              username: "Guerrero_PE",
+              email: "guerrero.pe@gmail.com",
+              country: "Perú",
+            },
           ];
 
           const playerIds: string[] = [];
@@ -53,7 +79,7 @@ export async function POST(request: Request) {
                VALUES ($1, $2, $3, 'PLAYER', 'LATAM', $4)
                ON CONFLICT (email) DO UPDATE SET country = EXCLUDED.country
                RETURNING id`,
-              [p.username, p.email, playerHash, p.country]
+              [p.username, p.email, playerHash, p.country],
             );
             if (userRes.rows[0]) {
               playerIds.push(userRes.rows[0].id);
@@ -66,7 +92,7 @@ export async function POST(request: Request) {
              VALUES ('Arena de Campeones', 'Super Smash Bros', '{"LATAM"}', 8, 'INDIVIDUAL', 'IN_PROGRESS', $1)
              ON CONFLICT (lower(name)) DO UPDATE SET status = 'IN_PROGRESS'
              RETURNING id`,
-            [adminId]
+            [adminId],
           );
           const tournId = tournRes.rows[0]?.id;
 
@@ -76,7 +102,7 @@ export async function POST(request: Request) {
               await pool.query(
                 `INSERT INTO individual_enrollments (user_id, tournament_id)
                  VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-                [pid, tournId]
+                [pid, tournId],
               );
             }
 
@@ -87,7 +113,7 @@ export async function POST(request: Request) {
                VALUES ($1, 1, 1, $2, 'Seba_CL', $3, 'Messi_AR', $2)
                ON CONFLICT (tournament_id, round_number, match_number) DO UPDATE SET winner_id = EXCLUDED.participant1_id
                RETURNING id`,
-              [tournId, playerIds[0], playerIds[1]]
+              [tournId, playerIds[0], playerIds[1]],
             );
             const m1Id = m1Res.rows[0]?.id;
 
@@ -97,7 +123,7 @@ export async function POST(request: Request) {
                VALUES ($1, 1, 2, $2, 'Canelo_MX', $3, 'Ibai_ES', $2)
                ON CONFLICT (tournament_id, round_number, match_number) DO UPDATE SET winner_id = EXCLUDED.participant1_id
                RETURNING id`,
-              [tournId, playerIds[2], playerIds[3]]
+              [tournId, playerIds[2], playerIds[3]],
             );
             const m2Id = m2Res.rows[0]?.id;
 
@@ -107,7 +133,7 @@ export async function POST(request: Request) {
                VALUES ($1, 1, 3, $2, 'James_CO', $3, 'Guerrero_PE', $3)
                ON CONFLICT (tournament_id, round_number, match_number) DO UPDATE SET winner_id = EXCLUDED.participant2_id
                RETURNING id`,
-              [tournId, playerIds[4], playerIds[5]]
+              [tournId, playerIds[4], playerIds[5]],
             );
             const m3Id = m3Res.rows[0]?.id;
 
@@ -117,7 +143,7 @@ export async function POST(request: Request) {
                 `INSERT INTO match_results (match_id, score_participant1, score_participant2, status)
                  VALUES ($1, 2, 1, 'APPROVED')
                  ON CONFLICT (match_id) DO UPDATE SET status = 'APPROVED', score_participant1 = 2, score_participant2 = 1`,
-                [m1Id]
+                [m1Id],
               );
             }
             if (m2Id) {
@@ -125,7 +151,7 @@ export async function POST(request: Request) {
                 `INSERT INTO match_results (match_id, score_participant1, score_participant2, status)
                  VALUES ($1, 3, 0, 'APPROVED')
                  ON CONFLICT (match_id) DO UPDATE SET status = 'APPROVED', score_participant1 = 3, score_participant2 = 0`,
-                [m2Id]
+                [m2Id],
               );
             }
             if (m3Id) {
@@ -133,7 +159,7 @@ export async function POST(request: Request) {
                 `INSERT INTO match_results (match_id, score_participant1, score_participant2, status)
                  VALUES ($1, 1, 2, 'APPROVED')
                  ON CONFLICT (match_id) DO UPDATE SET status = 'APPROVED', score_participant1 = 1, score_participant2 = 2`,
-                [m3Id]
+                [m3Id],
               );
             }
           }
@@ -146,14 +172,21 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ok: true,
-      message: "Rankings actualizados correctamente" + (seed ? " (con semillas de prueba)" : ""),
+      message:
+        "Rankings actualizados correctamente" +
+        (seed ? " (con semillas de prueba)" : ""),
     });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     console.error("[Recalculate API Error]:", error);
     return NextResponse.json(
-      { ok: false, message: "Error al recalcular rankings", error: errorMessage },
-      { status: 500 }
+      {
+        ok: false,
+        message: "Error al recalcular rankings",
+        error: errorMessage,
+      },
+      { status: 500 },
     );
   }
 }

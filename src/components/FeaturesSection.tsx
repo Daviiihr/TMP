@@ -80,11 +80,11 @@ export default function FeaturesSection() {
               toggleActions: "play none none reverse",
             },
             delay: i * 0.08,
-          }
+          },
         );
       });
     },
-    { scope: sectionRef }
+    { scope: sectionRef },
   );
 
   return (
@@ -117,7 +117,9 @@ export default function FeaturesSection() {
           {features.map((feature, index) => (
             <div
               key={index}
-              ref={(el) => { cardsRef.current[index] = el; }}
+              ref={(el) => {
+                cardsRef.current[index] = el;
+              }}
               className="group glass-card gradient-border rounded-2xl p-6 md:p-8 transition-all duration-500 hover:bg-white/[0.04] hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
             >
               {/* Icon */}

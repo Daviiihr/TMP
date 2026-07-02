@@ -25,7 +25,7 @@ export class AppFactory {
 
   private registerObservers() {
     const logger = new LoggerObserver();
-    
+
     // Register Logger to all events
     this.eventEmitter.on("tournament:statusChanged", logger);
     this.eventEmitter.on("enrollment:playerJoined", logger);
@@ -36,16 +36,16 @@ export class AppFactory {
     // Register CapacityObserver
     const capacityObserver = new CapacityObserver(
       this.createTournamentRepository(),
-      this.createTournamentService()
+      this.createTournamentService(),
     );
-    
+
     this.eventEmitter.on("enrollment:playerJoined", capacityObserver);
     this.eventEmitter.on("enrollment:teamJoined", capacityObserver);
 
     // Register RankingObserver
     const rankingObserver = new RankingObserver(
       this.createRankingService(),
-      this.createPostgresPool()
+      this.createPostgresPool(),
     );
     this.eventEmitter.on("match:resultApproved", rankingObserver);
   }
@@ -81,7 +81,7 @@ export class AppFactory {
     return new TeamService(
       this.createTeamRepository(),
       this.createUserRepository(),
-      this.eventEmitter
+      this.eventEmitter,
     );
   }
 
@@ -89,7 +89,7 @@ export class AppFactory {
     return new TournamentService(
       this.createTournamentRepository(),
       this.createPostgresPool(),
-      this.eventEmitter
+      this.eventEmitter,
     );
   }
 
@@ -98,7 +98,7 @@ export class AppFactory {
       this.createTeamRepository(),
       this.createTournamentRepository(),
       this.createPostgresPool(),
-      this.eventEmitter
+      this.eventEmitter,
     );
   }
 
@@ -109,7 +109,7 @@ export class AppFactory {
   createRankingService(): RankingService {
     return new RankingService(
       this.createRankingRepository(),
-      this.createPostgresPool()
+      this.createPostgresPool(),
     );
   }
 }

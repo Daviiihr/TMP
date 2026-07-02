@@ -34,11 +34,13 @@ export default function RecuperarClavePage() {
     try {
       // Aquí iría la llamada a tu API real, por ejemplo:
       // const response = await fetch("/api/auth/recuperar-clave", { ... });
-      
+
       // Simulamos un tiempo de carga para demostrar la UI
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      setSuccessMessage("Si el correo existe en nuestro sistema, te hemos enviado un enlace para restablecer tu contraseña.");
+      setSuccessMessage(
+        "Si el correo existe en nuestro sistema, te hemos enviado un enlace para restablecer tu contraseña.",
+      );
       setEmail("");
     } catch {
       triggerError("No se pudo procesar la solicitud. Inténtalo más tarde.");
@@ -52,7 +54,7 @@ export default function RecuperarClavePage() {
       {/* Efectos de fondo (Glow Orbs) */}
       <div className="glow-orb w-[500px] h-[500px] bg-arena-cyan top-[-10%] left-[-10%] opacity-20" />
       <div className="glow-orb w-[500px] h-[500px] bg-arena-magenta bottom-[-10%] right-[-10%] opacity-20" />
-      
+
       {/* Fondo de rejilla sutil */}
       <div className="absolute inset-0 grid-pattern opacity-20 pointer-events-none" />
 
@@ -74,17 +76,36 @@ export default function RecuperarClavePage() {
             T
           </div>
           <h1 className="font-[var(--font-display)] text-4xl font-black uppercase tracking-tighter text-white">
-            Recuperar <span className="text-transparent bg-clip-text bg-gradient-to-r from-arena-cyan to-arena-magenta">Clave</span>
+            Recuperar{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-arena-cyan to-arena-magenta">
+              Clave
+            </span>
           </h1>
-          <p className="text-zinc-500 text-sm mt-2 uppercase tracking-widest">Ingresa tu correo para continuar</p>
+          <p className="text-zinc-500 text-sm mt-2 uppercase tracking-widest">
+            Ingresa tu correo para continuar
+          </p>
         </div>
 
         {/* Tarjeta de Recuperación */}
-        <div className={`glass-card gradient-border rounded-3xl p-8 shadow-2xl transition-transform ${isShaking ? "animate-shake" : ""}`}>
+        <div
+          className={`glass-card gradient-border rounded-3xl p-8 shadow-2xl transition-transform ${isShaking ? "animate-shake" : ""}`}
+        >
           {successMessage ? (
             <div className="text-center space-y-6">
               <div className="mx-auto w-16 h-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center border border-green-500/20 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
               </div>
               <p className="text-zinc-300 leading-relaxed text-sm">
                 {successMessage}
@@ -100,7 +121,10 @@ export default function RecuperarClavePage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Campo Email */}
               <div className="space-y-2">
-                <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-zinc-400 ml-1">
+                <label
+                  htmlFor="email"
+                  className="text-xs font-bold uppercase tracking-wider text-zinc-400 ml-1"
+                >
                   Correo Electrónico
                 </label>
                 <input
@@ -120,7 +144,11 @@ export default function RecuperarClavePage() {
 
               {/* Mensaje de Error */}
               {errorMessage && (
-                <div id="error-message" role="alert" className="text-red-500 text-sm font-semibold text-center bg-red-500/10 py-2 rounded-lg border border-red-500/20">
+                <div
+                  id="error-message"
+                  role="alert"
+                  className="text-red-500 text-sm font-semibold text-center bg-red-500/10 py-2 rounded-lg border border-red-500/20"
+                >
                   {errorMessage}
                 </div>
               )}
@@ -148,7 +176,10 @@ export default function RecuperarClavePage() {
             <div className="mt-8 text-center">
               <p className="text-zinc-500 text-sm">
                 ¿Recordaste tu contraseña?{" "}
-                <Link href="/login" className="text-arena-cyan font-bold hover:underline">
+                <Link
+                  href="/login"
+                  className="text-arena-cyan font-bold hover:underline"
+                >
                   Inicia sesión aquí
                 </Link>
               </p>

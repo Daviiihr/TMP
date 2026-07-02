@@ -1,5 +1,10 @@
 export type AppEvents = {
-  "tournament:statusChanged": { tournamentId: string; oldStatus: string; newStatus: string; userId: string };
+  "tournament:statusChanged": {
+    tournamentId: string;
+    oldStatus: string;
+    newStatus: string;
+    userId: string;
+  };
   "enrollment:playerJoined": { userId: string; tournamentId: string };
   "enrollment:teamJoined": { teamId: string; tournamentId: string };
   "team:created": { teamId: string; captainId: string; name: string };
@@ -13,9 +18,7 @@ export interface Observer<T extends EventKey> {
 }
 
 export class AppEventEmitter {
-
   private observers: { [K in EventKey]?: Set<Observer<K>> } = {};
-
 
   private getObservers<T extends EventKey>(eventName: T): Set<Observer<T>> {
     if (!this.observers[eventName]) {
@@ -39,6 +42,8 @@ export class AppEventEmitter {
     const handlers = this.getObservers(eventName);
 
     // Execute all handlers concurrently
-    await Promise.all(Array.from(handlers).map((observer) => observer.update(eventName, data)));
+    await Promise.all(
+      Array.from(handlers).map((observer) => observer.update(eventName, data)),
+    );
   }
 }

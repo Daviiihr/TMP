@@ -15,12 +15,16 @@ export type TeamWithMemberCount = Team & { member_count: number };
 export class TeamRepository {
   constructor(private pool: Pool = getPostgresPool()) {}
 
-  async create(data: { name: string; captain_id: string; size: number }): Promise<Team> {
+  async create(data: {
+    name: string;
+    captain_id: string;
+    size: number;
+  }): Promise<Team> {
     const result = await this.pool.query<Team>(
       `INSERT INTO teams (name, captain_id, size) 
        VALUES ($1, $2, $3) 
        RETURNING id, name, captain_id, size, tournament_id, created_at`,
-      [data.name, data.captain_id, data.size]
+      [data.name, data.captain_id, data.size],
     );
     return result.rows[0];
   }
@@ -28,7 +32,7 @@ export class TeamRepository {
   async findById(id: string): Promise<Team | null> {
     const result = await this.pool.query<Team>(
       `SELECT id, name, captain_id, size, tournament_id, created_at FROM teams WHERE id = $1`,
-      [id]
+      [id],
     );
     return result.rows[0] || null;
   }
@@ -42,7 +46,7 @@ export class TeamRepository {
        WHERE t.captain_id = $1
        GROUP BY t.id
        ORDER BY t.created_at DESC`,
-      [captainId]
+      [captainId],
     );
     return result.rows;
   }
@@ -57,16 +61,16 @@ export class TeamRepository {
        WHERE user_members.user_id = $1
        GROUP BY t.id
        ORDER BY t.created_at DESC`,
-      [userId]
+      [userId],
     );
     return result.rows;
   }
 
   async assignToTournament(teamId: string, tournamentId: string) {
-    await this.pool.query(
-      `UPDATE teams SET tournament_id = $2 WHERE id = $1`,
-      [teamId, tournamentId]
-    );
+    await this.pool.query(`UPDATE teams SET tournament_id = $2 WHERE id = $1`, [
+      teamId,
+      tournamentId,
+    ]);
   }
 
   async searchTeams(query: string): Promise<TeamWithMemberCount[]> {
@@ -79,7 +83,7 @@ export class TeamRepository {
        WHERE t.name ILIKE $1
        GROUP BY t.id
        ORDER BY t.created_at DESC`,
-      [`%${term}%`]
+      [`%${term}%`],
     );
     return result.rows;
   }
@@ -87,14 +91,14 @@ export class TeamRepository {
   async addMember(teamId: string, userId: string) {
     await this.pool.query(
       `INSERT INTO team_members (team_id, user_id) VALUES ($1, $2)`,
-      [teamId, userId]
+      [teamId, userId],
     );
   }
 
   async getMemberCount(teamId: string): Promise<number> {
     const result = await this.pool.query(
       `SELECT COUNT(*) as count FROM team_members WHERE team_id = $1`,
-      [teamId]
+      [teamId],
     );
     return parseInt(result.rows[0].count);
   }
@@ -102,7 +106,7 @@ export class TeamRepository {
   async isUserInTeam(teamId: string, userId: string): Promise<boolean> {
     const result = await this.pool.query(
       `SELECT 1 FROM team_members WHERE team_id = $1 AND user_id = $2`,
-      [teamId, userId]
+      [teamId, userId],
     );
     return result.rows.length > 0;
   }

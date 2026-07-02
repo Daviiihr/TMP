@@ -12,6 +12,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ ok: true, teams }, { status: 200 });
   } catch (error: unknown) {
-    return NextResponse.json({ ok: false, message: getErrorMessage(error) }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, message: getErrorMessage(error) },
+      { status: 500 },
+    );
   }
 }

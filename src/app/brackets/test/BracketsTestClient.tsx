@@ -2,34 +2,43 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { generateBracket, Participant, BracketResult } from "@/lib/algorithms/brackets";
+import {
+  generateBracket,
+  Participant,
+  BracketResult,
+} from "@/lib/algorithms/brackets";
 import BracketView from "@/components/BracketView";
 
 export default function BracketsTestClient() {
   const [playerName, setPlayerName] = useState("");
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [result, setResult] = useState<BracketResult | null>(null);
-  const [searchResults, setSearchResults] = useState<{ id: string; name: string }[]>([]);
+  const [searchResults, setSearchResults] = useState<
+    { id: string; name: string }[]
+  >([]);
 
   useEffect(() => {
     if (playerName.trim().length > 0) {
       const delayFn = setTimeout(() => {
         fetch(`/api/players/search?q=${encodeURIComponent(playerName)}`)
-          .then(res => res.json())
-          .then(data => {
+          .then((res) => res.json())
+          .then((data) => {
             if (data.users) setSearchResults(data.users);
           })
           .catch(console.error);
       }, 300);
       return () => clearTimeout(delayFn);
     } else {
-      setSearchResults([]);
+      setTimeout(() => setSearchResults([]), 0);
     }
   }, [playerName]);
 
   const addPlayerFromSearch = (user: { id: string; name: string }) => {
-    if (!participants.find(p => p.id === user.id)) {
-      setParticipants((prev) => [...prev, { id: user.id, name: user.name, seed: participants.length + 1 }]);
+    if (!participants.find((p) => p.id === user.id)) {
+      setParticipants((prev) => [
+        ...prev,
+        { id: user.id, name: user.name, seed: participants.length + 1 },
+      ]);
     }
     setPlayerName("");
     setSearchResults([]);
@@ -40,7 +49,7 @@ export default function BracketsTestClient() {
     const newParticipant: Participant = {
       id: crypto.randomUUID(),
       name: playerName.trim(),
-      seed: participants.length + 1
+      seed: participants.length + 1,
     };
     setParticipants((prev) => [...prev, newParticipant]);
     setPlayerName("");
@@ -65,11 +74,12 @@ export default function BracketsTestClient() {
   };
 
   const numParticipants = participants.length;
-  const bracketSize = numParticipants > 1
-    ? (numParticipants & (numParticipants - 1)) === 0
-      ? numParticipants
-      : Math.pow(2, Math.ceil(Math.log2(numParticipants)))
-    : 0;
+  const bracketSize =
+    numParticipants > 1
+      ? (numParticipants & (numParticipants - 1)) === 0
+        ? numParticipants
+        : Math.pow(2, Math.ceil(Math.log2(numParticipants)))
+      : 0;
   const totalRounds = bracketSize > 0 ? Math.log2(bracketSize) : 0;
 
   return (
@@ -120,9 +130,9 @@ export default function BracketsTestClient() {
                 </div>
                 {searchResults.length > 0 && (
                   <ul className="absolute top-full left-0 right-[70px] mt-2 bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden z-10 shadow-xl">
-                    {searchResults.map(user => (
-                      <li 
-                        key={user.id} 
+                    {searchResults.map((user) => (
+                      <li
+                        key={user.id}
                         onClick={() => addPlayerFromSearch(user)}
                         className="px-4 py-3 cursor-pointer hover:bg-zinc-700 text-sm transition-colors text-white"
                       >
@@ -138,7 +148,9 @@ export default function BracketsTestClient() {
                     key={p.id}
                     className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 border border-zinc-800 rounded-lg group hover:border-zinc-700 transition-colors"
                   >
-                    <span className="text-[10px] font-bold text-arena-cyan">{i + 1}</span>
+                    <span className="text-[10px] font-bold text-arena-cyan">
+                      {i + 1}
+                    </span>
                     <span className="text-xs font-medium">{p.name}</span>
                     <button
                       onClick={() => removePlayer(p.id)}
@@ -156,16 +168,28 @@ export default function BracketsTestClient() {
               {participants.length >= 2 && (
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-2xl font-black text-white">{numParticipants}</p>
-                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Jugadores</p>
+                    <p className="text-2xl font-black text-white">
+                      {numParticipants}
+                    </p>
+                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                      Jugadores
+                    </p>
                   </div>
                   <div>
-                    <p className="text-2xl font-black text-arena-cyan">{bracketSize}</p>
-                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Bracket</p>
+                    <p className="text-2xl font-black text-arena-cyan">
+                      {bracketSize}
+                    </p>
+                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                      Bracket
+                    </p>
                   </div>
                   <div>
-                    <p className="text-2xl font-black text-arena-magenta">{totalRounds}</p>
-                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Rondas</p>
+                    <p className="text-2xl font-black text-arena-magenta">
+                      {totalRounds}
+                    </p>
+                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                      Rondas
+                    </p>
                   </div>
                 </div>
               )}

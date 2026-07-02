@@ -11,10 +11,11 @@ export async function GET(request: Request) {
     const rankings = await rankingRepo.getRankingsByCountry(country);
     return NextResponse.json({ ok: true, rankings });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { ok: false, message: "Error al obtener rankings", error: errorMessage },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

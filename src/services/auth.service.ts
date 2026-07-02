@@ -1,6 +1,10 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import { createAccessToken, createRefreshToken, type AuthUser } from "@/lib/auth";
+import {
+  createAccessToken,
+  createRefreshToken,
+  type AuthUser,
+} from "@/lib/auth";
 import { getRedisClient } from "@/lib/redis";
 import { UserRepository, type UserRow } from "@/repositories/user.repository";
 
@@ -12,10 +16,17 @@ export class AuthService {
    * Si falla, incrementa los intentos y bloquea si excede el límite.
    * Si es correcta, resetea los intentos.
    */
-  async verifyPassword(user: UserRow, password: string): Promise<{ ok: boolean; message: string; status: number }> {
+  async verifyPassword(
+    user: UserRow,
+    password: string,
+  ): Promise<{ ok: boolean; message: string; status: number }> {
     // Verificar si la cuenta está bloqueada
     if (user.locked_until && user.locked_until > new Date()) {
-      return { ok: false, message: "Cuenta bloqueada temporalmente. Intenta mas tarde.", status: 423 };
+      return {
+        ok: false,
+        message: "Cuenta bloqueada temporalmente. Intenta mas tarde.",
+        status: 423,
+      };
     }
 
     const isValid = await bcrypt.compare(password, user.password_hash);
@@ -36,7 +47,8 @@ export class AuthService {
    */
   private async handleFailedAttempt(user: UserRow): Promise<void> {
     const attempts = user.failed_login_attempts + 1;
-    const lockedUntil = attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null;
+    const lockedUntil =
+      attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null;
     await this.userRepo.updateLoginAttempts(user.id, attempts, lockedUntil);
   }
 

@@ -9,11 +9,19 @@ export class TeamService {
     private eventEmitter: AppEventEmitter,
   ) {}
 
-  async createTeam(name: string, captainId: string, size: number): Promise<Team> {
+  async createTeam(
+    name: string,
+    captainId: string,
+    size: number,
+  ): Promise<Team> {
     if (size < 1) throw new Error("El tamaño del equipo debe ser al menos 1.");
-    
-    const team = await this.teamRepo.create({ name, captain_id: captainId, size });
-    
+
+    const team = await this.teamRepo.create({
+      name,
+      captain_id: captainId,
+      size,
+    });
+
     // Automatically add the captain as the first member
     await this.teamRepo.addMember(team.id, captainId);
 
@@ -22,13 +30,13 @@ export class TeamService {
     if (user && user.role === "PLAYER") {
       await this.userRepo.updateRole(captainId, "CAPTAIN");
     }
-    
+
     await this.eventEmitter.emit("team:created", {
       teamId: team.id,
       captainId,
-      name
+      name,
     });
-    
+
     return team;
   }
 
