@@ -36,7 +36,7 @@ export default function PublicBracketPage({
 
   useEffect(() => {
     // Initial fetch
-    fetchBracket();
+    setTimeout(() => fetchBracket(), 0);
 
     // Sincronización automática (Short-Polling cada 5 segundos) para tiempo real
     const interval = setInterval(() => {

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { updateProfileAction } from "./actions";
 
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 export default function ProfileForm({ user }: { user: any }) {
   const [isPending, startTransition] = useTransition();
   const [themeColor, setThemeColor] = useState(user.theme_color || "#00ffff");
@@ -142,7 +143,8 @@ export default function ProfileForm({ user }: { user: any }) {
           {/* Banner */}
           <div className="h-36 w-full bg-zinc-800 relative">
             {banner ? (
-              <img
+              /* eslint-disable-next-line @next/next/no-img-element */
+<img
                 src={banner}
                 alt="Banner"
                 className="w-full h-full object-cover"
@@ -161,7 +163,8 @@ export default function ProfileForm({ user }: { user: any }) {
                 style={{ borderColor: themeColor }}
               >
                 {avatar ? (
-                  <img
+                  /* eslint-disable-next-line @next/next/no-img-element */
+<img
                     src={avatar}
                     alt="Avatar"
                     className="w-full h-full object-cover"
