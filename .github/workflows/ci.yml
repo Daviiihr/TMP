@@ -1,0 +1,48 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Profundidad 0 es obligatoria para el análisis correcto de SonarQube
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 1. LINTING
+      - name: Run ESLint (Lint)
+        run: npm run lint
+
+      # 2. FORMAT
+      - name: Check Formatting (Format)
+        run: npm run format
+
+      # 3. TESTING (Unit, Integration, E2E) + Coverage
+      # Descomenta las siguientes líneas cuando configures tu framework de testing (ej. Vitest)
+      # - name: Run Tests with Coverage
+      #   run: npm run test:coverage
+
+      # 4. SONARQUBE / SONARCLOUD
+      # Para que esto funcione, debes registrar el proyecto en SonarCloud o tu propio servidor SonarQube,
+      # y configurar los secretos GITHUB_TOKEN y SONAR_TOKEN en los "Secrets" de tu repositorio en GitHub.
+      # - name: SonarCloud Scan
+      #   uses: SonarSource/sonarcloud-github-action@master
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Proveído automáticamente por GitHub
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # Tienes que agregarlo tú en los settings del repo
