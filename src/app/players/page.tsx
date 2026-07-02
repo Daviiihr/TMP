@@ -61,7 +61,7 @@ export default async function PlayersSearchPage({
             {users.map((user) => {
               const themeColor = user.theme_color || "#00ffff";
               return (
-                <a
+                <Link
                   key={user.id}
                   href={`/player/${user.username}`}
                   className="group block bg-zinc-900 border rounded-2xl overflow-hidden hover:scale-105 transition-all duration-300 shadow-lg relative"

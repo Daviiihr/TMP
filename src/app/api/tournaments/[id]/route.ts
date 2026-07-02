@@ -22,7 +22,7 @@ export async function PATCH(
       ok: true,
       message: result.message,
     });
-  } catch (_error) {
+  } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown";
     const status = message.includes("Sesion no iniciada")
       ? 401
