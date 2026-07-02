@@ -57,7 +57,8 @@ export async function PUT(
       // Extendimos la interfaz en getLiveBracket para tener winnerId y status
       if (
         finalMatch &&
-        (finalMatch as unknown as Record<string, unknown>).status === "FINISHED" &&
+        (finalMatch as unknown as Record<string, unknown>).status ===
+          "FINISHED" &&
         (finalMatch as unknown as Record<string, unknown>).winnerId
       ) {
         const tournamentRepo = appFactory.createTournamentRepository();
@@ -78,6 +79,9 @@ export async function PUT(
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error("Error updating match:", error);
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 },
+    );
   }
 }

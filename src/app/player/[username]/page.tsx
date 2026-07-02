@@ -41,7 +41,7 @@ export default async function PlayerProfilePage({
           <div className="h-48 md:h-64 w-full bg-zinc-800 relative">
             {banner ? (
               /* eslint-disable-next-line @next/next/no-img-element */
-<img
+              <img
                 src={banner}
                 alt="Banner"
                 className="w-full h-full object-cover"
@@ -61,7 +61,7 @@ export default async function PlayerProfilePage({
               >
                 {avatar ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
-<img
+                  <img
                     src={avatar}
                     alt="Avatar"
                     className="w-full h-full object-cover"

@@ -134,7 +134,8 @@ export default function BracketView({
     if (result.rounds.length > 0) {
       const finalRound = result.rounds[result.rounds.length - 1];
       const finalMatch = finalRound.matches[0];
-      const winnerId = (finalMatch as unknown as Record<string, unknown>).winnerId;
+      const winnerId = (finalMatch as unknown as Record<string, unknown>)
+        .winnerId;
 
       if (winnerId) {
         if (finalMatch.player1?.id === winnerId) {
@@ -157,7 +158,9 @@ export default function BracketView({
     setSelectedMatch(match);
     setScore1(match.score1?.toString() || "");
     setScore2(match.score2?.toString() || "");
-    setSelectedWinnerId((match as unknown as Record<string, unknown>).winnerId as string || "");
+    setSelectedWinnerId(
+      ((match as unknown as Record<string, unknown>).winnerId as string) || "",
+    );
   };
 
   useEffect(() => {
@@ -165,7 +168,11 @@ export default function BracketView({
       const s1 = parseInt(score1);
       const s2 = parseInt(score2);
       if (!isNaN(s1) && !isNaN(s2)) {
-        setTimeout(() => { if (s1 > s2) setSelectedWinnerId(selectedMatch.player1?.id || ""); else if (s2 > s1) setSelectedWinnerId(selectedMatch.player2?.id || ""); }, 0);
+        setTimeout(() => {
+          if (s1 > s2) setSelectedWinnerId(selectedMatch.player1?.id || "");
+          else if (s2 > s1)
+            setSelectedWinnerId(selectedMatch.player2?.id || "");
+        }, 0);
       }
     }
   }, [score1, score2, selectedMatch]);
@@ -375,22 +382,25 @@ export default function BracketView({
               >
                 Cancelar
               </button>
-              {(selectedMatch as unknown as Record<string, unknown>).status === "FINISHED" && onMatchUndo && (
-                <button
-                  className="flex-1 py-2 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
-                  onClick={undoMatchResult}
-                  disabled={isSubmitting}
-                >
-                  Deshacer
-                </button>
-              )}
+              {(selectedMatch as unknown as Record<string, unknown>).status ===
+                "FINISHED" &&
+                onMatchUndo && (
+                  <button
+                    className="flex-1 py-2 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                    onClick={undoMatchResult}
+                    disabled={isSubmitting}
+                  >
+                    Deshacer
+                  </button>
+                )}
               <button
                 className="flex-1 py-2 rounded bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-50"
                 onClick={submitMatchResult}
                 disabled={
                   isSubmitting ||
                   !selectedWinnerId ||
-                  (selectedMatch as unknown as Record<string, unknown>).status === "FINISHED"
+                  (selectedMatch as unknown as Record<string, unknown>)
+                    .status === "FINISHED"
                 }
               >
                 Guardar

@@ -13,7 +13,6 @@ export default function TournamentPanelPage({
 }) {
   const resolvedParams = use(params);
   const tournamentId = resolvedParams.id;
-  
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [eliminationMode, setEliminationMode] = useState<
@@ -65,8 +64,11 @@ export default function TournamentPanelPage({
     }
 
     // Fetch initial data
-    setTimeout(() => { fetchTournamentDetails(); fetchBracket(); }, 0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setTimeout(() => {
+      fetchTournamentDetails();
+      fetchBracket();
+    }, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tournamentId]);
 
   useEffect(() => {
