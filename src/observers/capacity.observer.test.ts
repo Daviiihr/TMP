@@ -3,7 +3,10 @@ import { CapacityObserver } from "./capacity.observer";
 
 describe("CapacityObserver", () => {
   let observer: CapacityObserver;
-  let tournamentRepoMock: { getById: ReturnType<typeof vi.fn>; getEnrollmentCount: ReturnType<typeof vi.fn> };
+  let tournamentRepoMock: {
+    getById: ReturnType<typeof vi.fn>;
+    getEnrollmentCount: ReturnType<typeof vi.fn>;
+  };
   let tournamentServiceMock: { changeStatus: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
@@ -14,7 +17,10 @@ describe("CapacityObserver", () => {
     tournamentServiceMock = {
       changeStatus: vi.fn(),
     };
-    observer = new CapacityObserver(tournamentRepoMock as never, tournamentServiceMock as never);
+    observer = new CapacityObserver(
+      tournamentRepoMock as never,
+      tournamentServiceMock as never,
+    );
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
@@ -49,7 +55,7 @@ describe("CapacityObserver", () => {
     expect(tournamentServiceMock.changeStatus).toHaveBeenCalledWith(
       "t1",
       "COMPLETED",
-      "org1"
+      "org1",
     );
   });
 
