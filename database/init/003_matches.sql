@@ -153,6 +153,10 @@ CREATE TABLE IF NOT EXISTS matches (
   next_match_id uuid REFERENCES matches(id) ON DELETE SET NULL,
   next_match_slot smallint,
   
+  -- Relación con la partida del bracket de perdedores
+  loser_next_match_id uuid REFERENCES matches(id) ON DELETE SET NULL,
+  loser_next_match_slot smallint,
+  
   -- Indica si uno de los participantes pasa automáticamente (Bye)
   is_bye boolean NOT NULL DEFAULT false,
   status varchar(30) NOT NULL DEFAULT 'PENDING',

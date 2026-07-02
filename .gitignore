@@ -55,3 +55,10 @@ CLAUDE.md
 # --- Misc ---
 *.pem
 .vercel
+
+# --- Temporary Scripts ---
+test_*.mjs
+test_*.ts
+seed_*.mjs
+fix_*.mjs
+fix_*.ts

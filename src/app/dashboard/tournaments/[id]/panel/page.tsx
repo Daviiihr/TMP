@@ -19,6 +19,7 @@ export default function TournamentPanelPage({
     "SINGLE_ELIMINATION" | "DOUBLE_ELIMINATION"
   >("SINGLE_ELIMINATION");
   const [tournamentName, setTournamentName] = useState<string>("");
+  const [tournamentStatus, setTournamentStatus] = useState<string>("DRAFT");
   const [bracketData, setBracketData] = useState<BracketResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +32,7 @@ export default function TournamentPanelPage({
         if (data.tournament.eliminationMode)
           setEliminationMode(data.tournament.eliminationMode);
         if (data.tournament.name) setTournamentName(data.tournament.name);
+        if (data.tournament.status) setTournamentStatus(data.tournament.status);
       }
     } catch (err) {
       console.error("Error al obtener detalles del torneo:", err);
@@ -194,6 +196,21 @@ export default function TournamentPanelPage({
     await fetchBracket();
   };
 
+  const updateTournamentStatus = async (newStatus: string) => {
+    try {
+      const res = await fetch(`/api/tournaments/${tournamentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Error al actualizar estado");
+      setTournamentStatus(newStatus);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#09090b] text-zinc-100 p-4 md:p-8 font-sans">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -212,9 +229,33 @@ export default function TournamentPanelPage({
           )}
 
           <p className="text-zinc-400 text-lg font-medium tracking-wide">
-            Carga los participantes y genera tu bracket dinámico al instante.
+            Administra el estado y los cruces de tu torneo de forma segura.
           </p>
         </header>
+
+        {/* Control de Estado */}
+        <section className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-700/50 p-6 md:p-8 rounded-[2rem] shadow-lg mb-8 relative flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h2 className="text-2xl font-bold uppercase text-white mb-2">Estado del Torneo</h2>
+            <p className="text-zinc-400 text-sm">El estado actual es <span className="font-bold text-[#00f2fe]">{tournamentStatus}</span>. Actualízalo para habilitar inscripciones o iniciar el torneo.</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {["DRAFT", "REGISTRATION", "IN_PROGRESS", "COMPLETED"].map((statusOption) => (
+              <button
+                key={statusOption}
+                onClick={() => updateTournamentStatus(statusOption)}
+                disabled={tournamentStatus === statusOption}
+                className={`px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-300 ${
+                  tournamentStatus === statusOption
+                    ? "bg-[#00f2fe] text-zinc-950 shadow-[0_0_15px_rgba(0,242,254,0.4)]"
+                    : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
+                }`}
+              >
+                {statusOption}
+              </button>
+            ))}
+          </div>
+        </section>
 
         <section className="bg-zinc-900/40 backdrop-blur-xl border border-zinc-700/50 p-6 md:p-10 rounded-[2rem] shadow-[0_0_50px_-12px_rgba(0,242,254,0.15)] relative overflow-hidden transition-all hover:shadow-[0_0_50px_-12px_rgba(0,242,254,0.25)]">
           {/* Decorative elements */}
