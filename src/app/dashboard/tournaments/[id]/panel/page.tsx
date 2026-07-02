@@ -184,8 +184,8 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Error al actualizar estado");
       setTournamentStatus(newStatus);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     }
   };
 
