@@ -19,7 +19,7 @@ export class RankingRepository {
     points: number,
     wins: number,
     losses: number,
-    lastMatchResultId: string | null
+    lastMatchResultId: string | null,
   ): Promise<void> {
     await this.pool.query(
       `INSERT INTO country_rankings (
@@ -50,7 +50,7 @@ export class RankingRepository {
          losses = EXCLUDED.losses,
          last_match_result_id = EXCLUDED.last_match_result_id,
          updated_at = NOW()`,
-      [userId, country, points, wins, losses, lastMatchResultId]
+      [userId, country, points, wins, losses, lastMatchResultId],
     );
   }
 
@@ -87,7 +87,7 @@ export class RankingRepository {
       ORDER BY points DESC, wins DESC, losses ASC
     `;
     const result = await this.pool.query<RankingRow>(query, [country || null]);
-    return result.rows.map(row => ({
+    return result.rows.map((row) => ({
       ...row,
       position: Number(row.position),
       points: Number(row.points),
@@ -96,7 +96,15 @@ export class RankingRepository {
     }));
   }
 
-  async getUserRanking(userId: string): Promise<{ position: number; points: number; wins: number; losses: number; country: string } | null> {
+  async getUserRanking(
+    userId: string,
+  ): Promise<{
+    position: number;
+    points: number;
+    wins: number;
+    losses: number;
+    country: string;
+  } | null> {
     const query = `
       WITH all_rankings AS (
         SELECT 
@@ -116,7 +124,13 @@ export class RankingRepository {
       FROM all_rankings 
       WHERE user_id = $1
     `;
-    const result = await this.pool.query<{ position: string; points: number; wins: number; losses: number; country: string }>(query, [userId]);
+    const result = await this.pool.query<{
+      position: string;
+      points: number;
+      wins: number;
+      losses: number;
+      country: string;
+    }>(query, [userId]);
     if (result.rows.length === 0) return null;
     const row = result.rows[0];
     return {

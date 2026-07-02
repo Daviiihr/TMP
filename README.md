@@ -117,10 +117,10 @@ docker compose up -d
 
 Servicios creados:
 
-| Servicio | Contenedor | Puerto local | Uso |
-|----------|------------|--------------|-----|
-| PostgreSQL | `tmp-postgres` | `5433` | Usuarios y datos principales |
-| Redis | `tmp-redis` | `6379` | Refresh tokens y cache |
+| Servicio   | Contenedor     | Puerto local | Uso                          |
+| ---------- | -------------- | ------------ | ---------------------------- |
+| PostgreSQL | `tmp-postgres` | `5433`       | Usuarios y datos principales |
+| Redis      | `tmp-redis`    | `6379`       | Refresh tokens y cache       |
 
 Comandos útiles:
 
@@ -158,12 +158,12 @@ Password: tmp_password
 
 Se agregaron endpoints locales en Next.js para conectar los formularios con PostgreSQL y Redis:
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `POST` | `/api/auth/register` | Crea usuario en PostgreSQL con contraseña hasheada |
-| `POST` | `/api/auth/login` | Valida credenciales, genera JWT y guarda refresh token en Redis |
-| `GET` | `/api/health/database` | Verifica conexión a PostgreSQL |
-| `GET` | `/api/health/redis` | Verifica conexión a Redis |
+| Método | Ruta                   | Descripción                                                     |
+| ------ | ---------------------- | --------------------------------------------------------------- |
+| `POST` | `/api/auth/register`   | Crea usuario en PostgreSQL con contraseña hasheada              |
+| `POST` | `/api/auth/login`      | Valida credenciales, genera JWT y guarda refresh token en Redis |
+| `GET`  | `/api/health/database` | Verifica conexión a PostgreSQL                                  |
+| `GET`  | `/api/health/redis`    | Verifica conexión a Redis                                       |
 
 `/api/auth/register` y `/api/auth/login` validan el dominio del correo. Por defecto solo se acepta `gmail.com`; puedes declararlo explicitamente con `ALLOWED_EMAIL_DOMAINS=gmail.com`.
 
@@ -229,38 +229,38 @@ TMP/
 
 ## 🛠️ Stack Tecnológico
 
-| Capa | Tecnología |
-|------|-----------|
-| **Framework** | Next.js 16 (App Router) |
-| **Lenguaje** | TypeScript 5 |
-| **Estilos** | TailwindCSS 4 |
-| **Animaciones** | GSAP 3 + ScrollTrigger |
-| **Base de datos** | PostgreSQL |
-| **Cache / sesiones** | Redis |
-| **Auth local** | bcrypt + JWT |
-| **Linting** | ESLint |
+| Capa                 | Tecnología              |
+| -------------------- | ----------------------- |
+| **Framework**        | Next.js 16 (App Router) |
+| **Lenguaje**         | TypeScript 5            |
+| **Estilos**          | TailwindCSS 4           |
+| **Animaciones**      | GSAP 3 + ScrollTrigger  |
+| **Base de datos**    | PostgreSQL              |
+| **Cache / sesiones** | Redis                   |
+| **Auth local**       | bcrypt + JWT            |
+| **Linting**          | ESLint                  |
 
 ### Stack completo del sistema (backend — en desarrollo)
 
-| Capa | Tecnología |
-|------|-----------|
-| **Backend** | NestJS, TypeScript, Bull Queue |
-| **Base de datos** | PostgreSQL, Redis |
-| **ORM** | TypeORM |
-| **Autenticación** | JWT (access + refresh tokens) |
-| **Tiempo real** | Socket.io |
-| **Infraestructura** | Docker, GitHub Actions |
+| Capa                | Tecnología                     |
+| ------------------- | ------------------------------ |
+| **Backend**         | NestJS, TypeScript, Bull Queue |
+| **Base de datos**   | PostgreSQL, Redis              |
+| **ORM**             | TypeORM                        |
+| **Autenticación**   | JWT (access + refresh tokens)  |
+| **Tiempo real**     | Socket.io                      |
+| **Infraestructura** | Docker, GitHub Actions         |
 
 ---
 
 ## 📜 Scripts Disponibles
 
-| Script | Descripción |
-|--------|------------|
-| `npm run dev` | Servidor de desarrollo con hot reload |
-| `npm run build` | Build de producción optimizado |
-| `npm run start` | Servidor de producción |
-| `npm run lint` | Análisis estático con ESLint |
+| Script          | Descripción                           |
+| --------------- | ------------------------------------- |
+| `npm run dev`   | Servidor de desarrollo con hot reload |
+| `npm run build` | Build de producción optimizado        |
+| `npm run start` | Servidor de producción                |
+| `npm run lint`  | Análisis estático con ESLint          |
 
 Validaciones recomendadas antes de subir cambios:
 

@@ -6,7 +6,7 @@ const tournamentRepo = new TournamentRepository();
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getSession();
@@ -15,15 +15,21 @@ export async function GET(
     }
 
     const { id } = await params;
-    
+
     // Verify tournament exists and belongs to the organizer
     const tournament = await tournamentRepo.getById(id);
     if (!tournament) {
-      return NextResponse.json({ error: "Torneo no encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Torneo no encontrado" },
+        { status: 404 },
+      );
     }
 
     if (tournament.organizer_id !== session.id) {
-      return NextResponse.json({ error: "No tienes permiso para ver esto" }, { status: 403 });
+      return NextResponse.json(
+        { error: "No tienes permiso para ver esto" },
+        { status: 403 },
+      );
     }
 
     let participants = [];
@@ -33,11 +39,14 @@ export async function GET(
       participants = await tournamentRepo.getEnrolledTeams(id);
     }
 
-    // El frontend espera { players: [...] } por compatibilidad, 
+    // El frontend espera { players: [...] } por compatibilidad,
     // pero internamente son participantes (ya sea jugadores o equipos)
     return NextResponse.json({ players: participants });
   } catch (error) {
     console.error("Error fetching enrolled players:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

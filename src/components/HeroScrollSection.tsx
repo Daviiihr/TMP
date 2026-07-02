@@ -21,7 +21,9 @@ const PARTICLES = Array.from({ length: 15 }, (_, i) => {
 });
 
 export default function HeroScrollSection() {
-  const [activeTournaments, setActiveTournaments] = useState<number | null>(null);
+  const [activeTournaments, setActiveTournaments] = useState<number | null>(
+    null,
+  );
   const sectionRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<HTMLDivElement>(null);
@@ -37,7 +39,7 @@ export default function HeroScrollSection() {
   useEffect(() => {
     async function fetchTournaments() {
       try {
-        const res = await fetch('/api/tournaments');
+        const res = await fetch("/api/tournaments");
         const data = await res.json();
         if (data.ok) {
           setActiveTournaments(data.count);
@@ -76,7 +78,7 @@ export default function HeroScrollSection() {
             duration: 3,
             ease: "power2.in",
           },
-          0
+          0,
         );
 
         tl.to(
@@ -87,7 +89,7 @@ export default function HeroScrollSection() {
             duration: 3,
             ease: "power2.in",
           },
-          0.5
+          0.5,
         );
 
         tl.to(
@@ -98,7 +100,7 @@ export default function HeroScrollSection() {
             duration: 2.5,
             ease: "power2.in",
           },
-          1
+          1,
         );
 
         // Phase 2: Controller fades in and scales down (30% → 80%)
@@ -117,7 +119,7 @@ export default function HeroScrollSection() {
             duration: 7,
             ease: "power1.inOut",
           },
-          3
+          3,
         );
 
         // Phase 3: Peripherals float in from sides (10% → 70%)
@@ -142,7 +144,7 @@ export default function HeroScrollSection() {
             duration: 6,
             ease: "power2.out",
           },
-          1
+          1,
         );
 
         // Trophy from the right
@@ -166,7 +168,7 @@ export default function HeroScrollSection() {
             duration: 6,
             ease: "power2.out",
           },
-          2
+          2,
         );
 
         // Phase 3b: subtle blur only after peripherals have settled,
@@ -178,7 +180,7 @@ export default function HeroScrollSection() {
             duration: 3,
             ease: "power1.out",
           },
-          8
+          8,
         );
 
         tl.to(
@@ -188,7 +190,7 @@ export default function HeroScrollSection() {
             duration: 3,
             ease: "power1.out",
           },
-          8.5
+          8.5,
         );
 
         // Phase 4: Info badges appear
@@ -196,14 +198,14 @@ export default function HeroScrollSection() {
           badgeLeftRef.current,
           { x: -100, opacity: 0 },
           { x: 0, opacity: 1, duration: 3, ease: "power2.out" },
-          5
+          5,
         );
 
         tl.fromTo(
           badgeRightRef.current,
           { x: 100, opacity: 0 },
           { x: 0, opacity: 1, duration: 3, ease: "power2.out" },
-          5.5
+          5.5,
         );
 
         // Phase 5: Features title enters from below
@@ -211,7 +213,7 @@ export default function HeroScrollSection() {
           featuresTitleRef.current,
           { y: 100, opacity: 0 },
           { y: 0, opacity: 1, duration: 3, ease: "power2.out" },
-          7
+          7,
         );
 
         // ── Peripheral movement is managed by the main timeline only.
@@ -230,42 +232,65 @@ export default function HeroScrollSection() {
           },
         });
 
-        tl.to(titleRef.current, {
-          y: -100,
-          opacity: 0,
-          duration: 3,
-        }, 0);
+        tl.to(
+          titleRef.current,
+          {
+            y: -100,
+            opacity: 0,
+            duration: 3,
+          },
+          0,
+        );
 
-        tl.to(subtitleRef.current, {
-          y: -80,
-          opacity: 0,
-          duration: 3,
-        }, 0.5);
+        tl.to(
+          subtitleRef.current,
+          {
+            y: -80,
+            opacity: 0,
+            duration: 3,
+          },
+          0.5,
+        );
 
-        tl.to(ctaRef.current, {
-          y: -60,
-          opacity: 0,
-          duration: 2,
-        }, 1);
+        tl.to(
+          ctaRef.current,
+          {
+            y: -60,
+            opacity: 0,
+            duration: 2,
+          },
+          1,
+        );
 
-        tl.to(controllerRef.current, {
-          scale: 0.6,
-          y: -20,
-          duration: 5,
-        }, 2);
+        tl.to(
+          controllerRef.current,
+          {
+            scale: 0.6,
+            y: -20,
+            duration: 5,
+          },
+          2,
+        );
 
         tl.fromTo(
           keyboardRef.current,
           { x: -300, opacity: 0, scale: 0.3 },
           { x: 0, opacity: 1, scale: 0.7, rotation: -8, duration: 4 },
-          2
+          2,
         );
 
         tl.fromTo(
           trophyRef.current,
           { x: 300, opacity: 0, scale: 0.3, filter: "blur(0px)" },
-          { x: 0, opacity: 1, scale: 0.7, rotation: 5, filter: "blur(0px)", duration: 4 },
-          3
+          {
+            x: 0,
+            opacity: 1,
+            scale: 0.7,
+            rotation: 5,
+            filter: "blur(0px)",
+            duration: 4,
+          },
+          3,
         );
 
         tl.to(
@@ -275,26 +300,22 @@ export default function HeroScrollSection() {
             duration: 2.5,
             ease: "power1.out",
           },
-          7
+          7,
         );
 
         tl.fromTo(
           featuresTitleRef.current,
           { y: 60, opacity: 0 },
           { y: 0, opacity: 1, duration: 3 },
-          6
+          6,
         );
       });
     },
-    { scope: sectionRef }
+    { scope: sectionRef },
   );
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative"
-      id="hero-scroll"
-    >
+    <section ref={sectionRef} className="relative" id="hero-scroll">
       {/* Background effects */}
       <div className="glow-orb w-[600px] h-[600px] bg-arena-cyan top-[-200px] left-[-200px] animate-[pulse-glow_6s_ease-in-out_infinite]" />
       <div className="glow-orb w-[500px] h-[500px] bg-arena-magenta bottom-[-100px] right-[-150px] animate-[pulse-glow_8s_ease-in-out_infinite_1s]" />
@@ -333,7 +354,9 @@ export default function HeroScrollSection() {
 
           <div ref={ctaRef} className="mt-8 pointer-events-auto">
             <button className="group relative px-8 py-3.5 bg-gradient-to-r from-arena-cyan to-arena-cyan-dim text-zinc-950 font-bold text-sm uppercase tracking-widest rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,240,255,0.3)] hover:scale-105">
-              <a href="login" className="relative z-10">Únete ahora</a>
+              <a href="login" className="relative z-10">
+                Únete ahora
+              </a>
               <div className="absolute inset-0 bg-gradient-to-r from-arena-cyan via-white to-arena-cyan opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
             </button>
           </div>
@@ -403,8 +426,10 @@ export default function HeroScrollSection() {
               </span>
             </div>
             <p className="text-xs text-zinc-300">
-              <span className="text-white font-bold">{activeTournaments ?? '...'} torneos</span> activos
-              ahora mismo
+              <span className="text-white font-bold">
+                {activeTournaments ?? "..."} torneos
+              </span>{" "}
+              activos ahora mismo
             </p>
           </div>
         </div>
@@ -471,7 +496,6 @@ export default function HeroScrollSection() {
       </div>
 
       {/* Scroll hint */}
-      
     </section>
   );
 }

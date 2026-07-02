@@ -5,7 +5,7 @@ import { BracketRepository } from "@/repositories/bracket.repository";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string; matchId: string }> }
+  { params }: { params: Promise<{ id: string; matchId: string }> },
 ) {
   try {
     const user = await getSession();
@@ -21,39 +21,55 @@ export async function PUT(
     const { winnerId, score1, score2 } = body;
 
     if (!winnerId) {
-      return NextResponse.json({ error: "Faltan datos del ganador" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Faltan datos del ganador" },
+        { status: 400 },
+      );
     }
 
     const bracketRepo = new BracketRepository();
-    
+
     // 1. Actualizar el partido actual usando el repositorio robusto del bracket
-    await bracketRepo.updateMatchWinner(tournamentId, matchId, winnerId, score1, score2);
+    await bracketRepo.updateMatchWinner(
+      tournamentId,
+      matchId,
+      winnerId,
+      score1,
+      score2,
+    );
 
     // 2. Emitir evento de partido completado para ranking y logs
     await appFactory.getEventEmitter().emit("match:resultApproved", {
       matchId,
-      tournamentId
+      tournamentId,
     });
 
     // 3. Obtener el bracket actualizado para ver si el torneo ya finalizó (no hay más partidos pendientes)
     // Para simplificar, revisaremos si la final ya tiene ganador, pero lo haremos de forma segura:
     const liveBracketData = await bracketRepo.getLiveBracket(tournamentId);
     if (liveBracketData) {
-      const finalRound = liveBracketData.bracketData.rounds[liveBracketData.bracketData.rounds.length - 1];
+      const finalRound =
+        liveBracketData.bracketData.rounds[
+          liveBracketData.bracketData.rounds.length - 1
+        ];
       const finalMatch = finalRound?.matches[0];
-      
+
       // Extendimos la interfaz en getLiveBracket para tener winnerId y status
-      if (finalMatch && (finalMatch as any).status === 'FINISHED' && (finalMatch as any).winnerId) {
+      if (
+        finalMatch &&
+        (finalMatch as any).status === "FINISHED" &&
+        (finalMatch as any).winnerId
+      ) {
         const tournamentRepo = appFactory.createTournamentRepository();
         const tournament = await tournamentRepo.getById(tournamentId);
-        
-        if (tournament && tournament.status !== 'COMPLETED') {
-          await tournamentRepo.updateStatus(tournamentId, 'COMPLETED');
+
+        if (tournament && tournament.status !== "COMPLETED") {
+          await tournamentRepo.updateStatus(tournamentId, "COMPLETED");
           appFactory.getEventEmitter().emit("tournament:statusChanged", {
             tournamentId,
             oldStatus: tournament.status,
-            newStatus: 'COMPLETED',
-            userId: user.id
+            newStatus: "COMPLETED",
+            userId: user.id,
           });
         }
       }
