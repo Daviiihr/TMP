@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
 import BracketView from "@/components/BracketView";
 import { Participant, BracketResult } from "@/lib/algorithms/brackets";
 import "./panel.css";
@@ -39,7 +38,7 @@ export default function TournamentPanelPage({
     }
   };
 
-  const fetchBracket = async () => {
+  const fetchBracket = React.useCallback(async () => {
     try {
       const res = await fetch(`/api/tournaments/${tournamentId}/brackets`);
       const data = await res.json();
@@ -50,7 +49,7 @@ export default function TournamentPanelPage({
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [tournamentId]);
 
   useEffect(() => {
     // Cargar participantes guardados localmente
@@ -93,7 +92,7 @@ export default function TournamentPanelPage({
       fetchBracket();
     }, 5000);
     return () => clearInterval(interval);
-  }, [tournamentId, bracketData]);
+  }, [tournamentId, bracketData, fetchBracket]);
 
   const removeParticipant = (id: string) => {
     setParticipants(participants.filter((p) => p.id !== id));

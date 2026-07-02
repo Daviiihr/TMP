@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { UserRepository } from "@/repositories/user.repository";
+import Link from "next/link";
 
 export default async function PlayersSearchPage({
   searchParams,
@@ -123,7 +124,7 @@ export default async function PlayersSearchPage({
                       </span>
                     </div>
                   </div>
-                </a>
+                </Link>
               );
             })}
           </div>
