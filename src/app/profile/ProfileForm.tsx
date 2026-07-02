@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { updateProfileAction } from "./actions";
 
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 export default function ProfileForm({ user }: { user: any }) {
   const [isPending, startTransition] = useTransition();
   const [themeColor, setThemeColor] = useState(user.theme_color || "#00ffff");
@@ -80,7 +81,8 @@ export default function ProfileForm({ user }: { user: any }) {
           {/* Banner */}
           <div className="h-36 w-full bg-zinc-800 relative">
             {banner ? (
-              <img src={banner} alt="Banner" className="w-full h-full object-cover" />
+              /* eslint-disable-next-line @next/next/no-img-element */
+<img src={banner} alt="Banner" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900" />
             )}
@@ -92,7 +94,8 @@ export default function ProfileForm({ user }: { user: any }) {
             <div className="flex justify-between items-end -mt-14 mb-4">
               <div className="w-28 h-28 rounded-2xl border-4 border-zinc-900 overflow-hidden bg-zinc-800 shadow-xl" style={{ borderColor: themeColor }} >
                 {avatar ? (
-                  <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  /* eslint-disable-next-line @next/next/no-img-element */
+<img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-5xl font-bold font-[var(--font-display)] uppercase" style={{ backgroundColor: themeColor, color: '#000' }}>
                     {user.username.charAt(0)}

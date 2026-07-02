@@ -9,7 +9,7 @@ import "./panel.css";
 export default function TournamentPanelPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const tournamentId = resolvedParams.id;
-  const router = useRouter();
+  
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [eliminationMode, setEliminationMode] = useState<"SINGLE_ELIMINATION" | "DOUBLE_ELIMINATION">("SINGLE_ELIMINATION");
@@ -49,15 +49,18 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
     const saved = localStorage.getItem(`tournament_${tournamentId}_participants`);
     if (saved) {
       try {
-        setParticipants(JSON.parse(saved));
+        setTimeout(() => setParticipants(JSON.parse(saved)), 0);
       } catch (e) {
         console.error("Error al cargar participantes", e);
       }
     }
     
     // Fetch initial data
-    fetchTournamentDetails();
-    fetchBracket();
+    setTimeout(() => {
+      fetchTournamentDetails();
+      fetchBracket();
+    }, 0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tournamentId]);
 
   useEffect(() => {
@@ -128,8 +131,8 @@ export default function TournamentPanelPage({ params }: { params: Promise<{ id: 
       if (!res.ok) throw new Error(data.error || "Error al generar bracket");
       
       setBracketData(data.bracketData);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsGenerating(false);
     }

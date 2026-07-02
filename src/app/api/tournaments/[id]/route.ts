@@ -22,7 +22,7 @@ export async function PATCH(
       ok: true,
       message: result.message,
     });
-  } catch (error) {
+  } catch (_error) {
     const message = error instanceof Error ? error.message : "Unknown";
     const status = message.includes("Sesion no iniciada") ? 401 : message.includes("administradores") ? 403 : 500;
 
@@ -47,7 +47,7 @@ export async function GET(
     }
 
     return NextResponse.json({ ok: true, tournament });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { ok: false, message: "Error al obtener el torneo." },
       { status: 500 }

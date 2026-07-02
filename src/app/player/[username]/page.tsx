@@ -34,7 +34,8 @@ export default async function PlayerProfilePage({
           {/* Banner */}
           <div className="h-48 md:h-64 w-full bg-zinc-800 relative">
             {banner ? (
-              <img src={banner} alt="Banner" className="w-full h-full object-cover" />
+              /* eslint-disable-next-line @next/next/no-img-element */
+<img src={banner} alt="Banner" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900" />
             )}
@@ -46,7 +47,8 @@ export default async function PlayerProfilePage({
             <div className="flex justify-between items-end -mt-20 mb-6 relative z-10">
               <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl border-4 border-zinc-900 overflow-hidden bg-zinc-800 shadow-2xl" style={{ borderColor: themeColor }} >
                 {avatar ? (
-                  <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  /* eslint-disable-next-line @next/next/no-img-element */
+<img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-6xl md:text-7xl font-bold font-[var(--font-display)] uppercase" style={{ backgroundColor: themeColor, color: '#000' }}>
                     {user.username.charAt(0)}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { UserRepository } from "@/repositories/user.repository";
 
 export default async function PlayersSearchPage({
@@ -37,9 +38,9 @@ export default async function PlayersSearchPage({
           </form>
 
           <li className="mt-4 text-sm text-zinc-500">
-            <a href="/" className="hover:text-arena-cyan transition-colors duration-300">
+            <Link href="/" className="hover:text-arena-cyan transition-colors duration-300">
               Volver al inicio
-            </a>
+            </Link>
           </li>
         </header>
 
@@ -60,7 +61,8 @@ export default async function PlayersSearchPage({
                 >
                   <div className="h-24 w-full bg-zinc-800 relative">
                     {user.banner_url ? (
-                      <img src={user.banner_url} alt="Banner" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                      /* eslint-disable-next-line @next/next/no-img-element */
+<img src={user.banner_url} alt="Banner" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900" />
                     )}
@@ -70,7 +72,8 @@ export default async function PlayersSearchPage({
                   <div className="px-5 pb-5 relative -mt-10">
                     <div className="w-16 h-16 rounded-xl border-2 border-zinc-900 overflow-hidden bg-zinc-800 shadow-lg mb-3" style={{ borderColor: themeColor }} >
                       {user.avatar_url ? (
-                        <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                        /* eslint-disable-next-line @next/next/no-img-element */
+<img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-2xl font-bold font-[var(--font-display)] uppercase" style={{ backgroundColor: themeColor, color: '#000' }}>
                           {user.username.charAt(0)}

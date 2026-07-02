@@ -60,7 +60,7 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
 
       // If the API doesn't redirect but returns success
       router.push("/dashboard");
-    } catch (err) {
+    } catch (_err) {
       setError("Error de red. Por favor intenta nuevamente.");
       setIsLoading(false);
     }

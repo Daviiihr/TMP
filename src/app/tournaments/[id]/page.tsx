@@ -63,7 +63,7 @@ export default function TournamentDetailsPage({ params }: { params: Promise<{ id
         } else {
           setMessage({ text: data.message || "Error al cargar torneo", type: "error" });
         }
-      } catch (err) {
+      } catch (_err) {
         setMessage({ text: "Error de conexión", type: "error" });
       } finally {
         setIsLoading(false);
@@ -89,7 +89,7 @@ export default function TournamentDetailsPage({ params }: { params: Promise<{ id
         setMessage({ text: data.message || "Error al inscribirse", type: "error" });
         if (data.status === 401) router.push("/login");
       }
-    } catch (err) {
+    } catch (_err) {
       setMessage({ text: "Error de conexión", type: "error" });
     } finally {
       setIsEnrolling(false);
@@ -120,7 +120,7 @@ export default function TournamentDetailsPage({ params }: { params: Promise<{ id
       } else {
         setMessage({ text: data.message || "Error al inscribir el equipo", type: "error" });
       }
-    } catch (err) {
+    } catch (_err) {
       setMessage({ text: "Error de conexión", type: "error" });
     } finally {
       setIsEnrolling(false);

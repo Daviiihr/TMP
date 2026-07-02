@@ -16,8 +16,8 @@ export async function GET(req: NextRequest) {
     const users = await repo.searchUsers(query);
 
     return NextResponse.json({ users: users.map(u => ({ id: u.id, name: u.username })) });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error searching users:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
