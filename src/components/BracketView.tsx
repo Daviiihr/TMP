@@ -118,6 +118,8 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
   const [score2, setScore2] = useState("");
   const [selectedWinnerId, setSelectedWinnerId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localResult, setLocalResult] = useState<BracketResult>(result);
+  const [champion, setChampion] = useState<Participant | null>(null);
 
   // Sincronizar si cambia el prop
   useEffect(() => {
@@ -144,8 +146,7 @@ export default function BracketView({ result, onMatchUpdate, onMatchUndo }: Brac
     } else {
       setTimeout(() => setChampion(null), 0);
     }
-    return null;
-  })();
+  }, [result]);
 
   const handleScore1Change = (val: string) => {
     setScore1(val);

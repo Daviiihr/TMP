@@ -1,5 +1,5 @@
-import { getPostgresPool } from "../src/lib/database";
-import { appFactory } from "../src/factories/app.factory";
+import { getPostgresPool } from "../../src/lib/database";
+import { appFactory } from "../../src/factories/app.factory";
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unknown error";
