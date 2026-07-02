@@ -30,7 +30,7 @@ export class TournamentRepository {
         data.endDate,
         data.registrationClosesAt,
         data.organizerId,
-      ]
+      ],
     );
     return result.rows[0];
   }
@@ -38,7 +38,7 @@ export class TournamentRepository {
   async existsByName(name: string): Promise<boolean> {
     const result = await this.pool.query(
       `SELECT 1 FROM tournaments WHERE lower(name) = lower($1) LIMIT 1`,
-      [name]
+      [name],
     );
     return result.rows.length > 0;
   }
@@ -47,7 +47,7 @@ export class TournamentRepository {
   async getById(id: string) {
     const result = await this.pool.query(
       `SELECT id, name, type, elimination_mode, min_players_per_team, max_players_per_team, max_players, organizer_id, status FROM tournaments WHERE id = $1`,
-      [id]
+      [id],
     );
     return result.rows[0] || null;
   }
@@ -60,13 +60,13 @@ export class TournamentRepository {
     if (tournament.type === "INDIVIDUAL") {
       const result = await this.pool.query(
         `SELECT COUNT(*) as count FROM individual_enrollments WHERE tournament_id = $1`,
-        [tournamentId]
+        [tournamentId],
       );
       return parseInt(result.rows[0].count);
     } else {
       const result = await this.pool.query(
         `SELECT COUNT(*) as count FROM teams WHERE tournament_id = $1`,
-        [tournamentId]
+        [tournamentId],
       );
       return parseInt(result.rows[0].count);
     }
@@ -76,7 +76,7 @@ export class TournamentRepository {
   async getEnrolledPlayers(tournamentId: string) {
     const result = await this.pool.query(
       `SELECT u.id, u.username as name FROM individual_enrollments e JOIN users u ON e.user_id = u.id WHERE e.tournament_id = $1`,
-      [tournamentId]
+      [tournamentId],
     );
     return result.rows;
   }
@@ -84,7 +84,7 @@ export class TournamentRepository {
   async getEnrolledTeams(tournamentId: string) {
     const result = await this.pool.query(
       `SELECT id, name FROM teams WHERE tournament_id = $1`,
-      [tournamentId]
+      [tournamentId],
     );
     return result.rows;
   }
@@ -97,7 +97,7 @@ export class TournamentRepository {
        WHERE status NOT IN ('CANCELLED', 'COMPLETED') 
        ORDER BY created_at DESC 
        LIMIT $1`,
-      [limit]
+      [limit],
     );
     return result.rows;
   }
@@ -109,17 +109,17 @@ export class TournamentRepository {
        FROM tournaments 
        WHERE organizer_id = $1 
        ORDER BY created_at DESC`,
-      [organizerId]
+      [organizerId],
     );
     return result.rows;
   }
 
   /** CRUD — Update: Cambiar estado del torneo */
   async updateStatus(id: string, status: string) {
-    await this.pool.query(
-      `UPDATE tournaments SET status = $1 WHERE id = $2`,
-      [status, id]
-    );
+    await this.pool.query(`UPDATE tournaments SET status = $1 WHERE id = $2`, [
+      status,
+      id,
+    ]);
   }
 
   /** CRUD — Read: Historial de Participación de un usuario */
@@ -133,7 +133,7 @@ export class TournamentRepository {
        LEFT JOIN team_members tmem ON tm.id = tmem.team_id
        WHERE (ie.user_id = $1) OR (tmem.user_id = $1)
        ORDER BY t.created_at DESC`,
-      [userId]
+      [userId],
     );
     return result.rows;
   }

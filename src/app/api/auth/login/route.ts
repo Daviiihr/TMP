@@ -31,7 +31,10 @@ export async function POST(request: Request) {
     }
 
     // 3. Verificar contraseña (delegado al servicio)
-    const passwordResult = await authService.verifyPassword(user, body.password);
+    const passwordResult = await authService.verifyPassword(
+      user,
+      body.password,
+    );
     if (!passwordResult.ok) {
       return NextResponse.json(
         { ok: false, message: passwordResult.message },

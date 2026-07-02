@@ -9,7 +9,9 @@ export default function proxy(request: NextRequest) {
   const token = request.cookies.get("accessToken")?.value;
 
   // Si intenta acceder a una ruta protegida sin token
-  const isProtected = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
+  const isProtected = protectedPrefixes.some((prefix) =>
+    pathname.startsWith(prefix),
+  );
   if (isProtected && !token) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -28,5 +30,11 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/tournaments/:path*", "/login", "/register"],
+  matcher: [
+    "/dashboard/:path*",
+    "/admin/:path*",
+    "/tournaments/:path*",
+    "/login",
+    "/register",
+  ],
 };

@@ -18,10 +18,12 @@ export default async function CreateTeamPage() {
             <h1 className="text-4xl font-bold font-[var(--font-display)] uppercase tracking-tighter text-white">
               Crear Equipo
             </h1>
-            <p className="text-zinc-400">Registra tu escuadra para competir en los torneos</p>
+            <p className="text-zinc-400">
+              Registra tu escuadra para competir en los torneos
+            </p>
           </div>
-          <Link 
-            href="/dashboard" 
+          <Link
+            href="/dashboard"
             className="text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
           >
             ← Volver

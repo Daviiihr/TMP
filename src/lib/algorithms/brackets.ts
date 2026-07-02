@@ -11,7 +11,7 @@ export interface Match {
   matchNumber: number;
   player1: Participant | null;
   player2: Participant | null;
-  isBye: boolean;       // true = player1 avanza automáticamente (contrincante vacío)
+  isBye: boolean; // true = player1 avanza automáticamente (contrincante vacío)
   nextMatchId?: string; // reference to next match
   nextMatchSlot?: 1 | 2; // slot in next match
   loserNextMatchId?: string; // where the loser goes (for double elimination)
@@ -21,9 +21,9 @@ export interface Match {
 }
 
 export interface BracketResult {
-  rounds: RoundData[];         // Todas las rondas del bracket de ganadores (R1, R2... Final)
-  loserRounds?: RoundData[];   // Rondas del bracket de perdedores
-  bracketSize: number;         // Potencia de 2 usada
+  rounds: RoundData[]; // Todas las rondas del bracket de ganadores (R1, R2... Final)
+  loserRounds?: RoundData[]; // Rondas del bracket de perdedores
+  bracketSize: number; // Potencia de 2 usada
   totalParticipants: number;
   totalRounds: number;
 }
@@ -37,7 +37,10 @@ export interface RoundData {
 /**
  * Ordena participantes según su seed en un formato 1 vs N, 2 vs N-1, etc.
  */
-function applySeeding(participants: Participant[], bracketSize: number): (Participant | null)[] {
+function applySeeding(
+  participants: Participant[],
+  bracketSize: number,
+): (Participant | null)[] {
   // Sort participants by seed (if available, otherwise random/original order)
   const sorted = [...participants].sort((a, b) => {
     if (a.seed !== undefined && b.seed !== undefined) return a.seed - b.seed;
@@ -45,7 +48,7 @@ function applySeeding(participants: Participant[], bracketSize: number): (Partic
   });
 
   const slots: (Participant | null)[] = new Array(bracketSize).fill(null);
-  
+
   // Fill the first positions using standard bracket seeding pattern
   const seedPattern = generateSeedPattern(bracketSize);
   for (let i = 0; i < bracketSize; i++) {
@@ -56,7 +59,7 @@ function applySeeding(participants: Participant[], bracketSize: number): (Partic
       slots[i] = null; // BYE
     }
   }
-  
+
   return slots;
 }
 
@@ -81,8 +84,8 @@ function generateSeedPattern(size: number): number[] {
  * Genera la estructura de un bracket.
  */
 export function generateBracket(
-  participants: Participant[], 
-  type: 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION' = 'SINGLE_ELIMINATION'
+  participants: Participant[],
+  type: "SINGLE_ELIMINATION" | "DOUBLE_ELIMINATION" = "SINGLE_ELIMINATION",
 ): BracketResult {
   const empty: BracketResult = {
     rounds: [],
@@ -104,7 +107,7 @@ export function generateBracket(
   // --- Bracket de Ganadores (Winners) ---
   const rounds: RoundData[] = [];
   const r1Matches: Match[] = [];
-  
+
   // Ronda 1
   for (let i = 0; i < slots.length; i += 2) {
     const p1 = slots[i];
@@ -121,7 +124,11 @@ export function generateBracket(
       isBye,
     });
   }
-  rounds.push({ roundNumber: 1, label: getRoundLabel(bracketSize, 1), matches: r1Matches });
+  rounds.push({
+    roundNumber: 1,
+    label: getRoundLabel(bracketSize, 1),
+    matches: r1Matches,
+  });
 
   // Rondas siguientes (Winners)
   for (let r = 2; r <= totalRounds; r++) {
@@ -132,11 +139,11 @@ export function generateBracket(
       const feederA = prevMatches[i];
       const feederB = prevMatches[i + 1];
 
-      const winnerA = feederA.isBye ? (feederA.player1 || feederA.player2) : null;
-      const winnerB = feederB.isBye ? (feederB.player1 || feederB.player2) : null;
-      
+      const winnerA = feederA.isBye ? feederA.player1 || feederA.player2 : null;
+      const winnerB = feederB.isBye ? feederB.player1 || feederB.player2 : null;
+
       const newMatchId = `w_r${r}_m${i / 2 + 1}`;
-      
+
       // Update feeders
       feederA.nextMatchId = newMatchId;
       feederA.nextMatchSlot = 1;
@@ -154,7 +161,11 @@ export function generateBracket(
       });
     }
 
-    rounds.push({ roundNumber: r, label: getRoundLabel(bracketSize, r), matches: currentMatches });
+    rounds.push({
+      roundNumber: r,
+      label: getRoundLabel(bracketSize, r),
+      matches: currentMatches,
+    });
   }
 
   const result: BracketResult = {
@@ -164,48 +175,50 @@ export function generateBracket(
     totalRounds,
   };
 
-  if (type === 'DOUBLE_ELIMINATION') {
+  if (type === "DOUBLE_ELIMINATION") {
     // Basic Losers Bracket structure (Simplified for this MVP)
     const loserRounds: RoundData[] = [];
     const totalLoserRounds = (totalRounds - 1) * 2;
-    
+
     // We create placeholder matches for losers
     let matchCount = bracketSize / 4;
     for (let r = 1; r <= totalLoserRounds; r++) {
       const matches: Match[] = [];
-      
-      for(let i=0; i<matchCount; i++) {
+
+      for (let i = 0; i < matchCount; i++) {
         matches.push({
-          id: `l_r${r}_m${i+1}`,
+          id: `l_r${r}_m${i + 1}`,
           round: r,
           roundLabel: `Losers Ronda ${r}`,
           matchNumber: i + 1,
           player1: null,
           player2: null,
-          isBye: false
+          isBye: false,
         });
       }
       loserRounds.push({ roundNumber: r, label: `Losers Ronda ${r}`, matches });
-      
+
       // Adjust match count dynamically based on the round type (minor/major)
       if (r % 2 === 0 && matchCount > 1) {
-         matchCount /= 2;
+        matchCount /= 2;
       }
     }
-    
+
     // Grand final
     rounds.push({
       roundNumber: totalRounds + 1,
       label: "Gran Final",
-      matches: [{
-        id: "grand_final",
-        round: totalRounds + 1,
-        roundLabel: "Gran Final",
-        matchNumber: 1,
-        player1: null, // Winner bracket winner
-        player2: null, // Loser bracket winner
-        isBye: false
-      }]
+      matches: [
+        {
+          id: "grand_final",
+          round: totalRounds + 1,
+          roundLabel: "Gran Final",
+          matchNumber: 1,
+          player1: null, // Winner bracket winner
+          player2: null, // Loser bracket winner
+          isBye: false,
+        },
+      ],
     });
 
     result.loserRounds = loserRounds;
