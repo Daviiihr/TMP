@@ -11,11 +11,11 @@ Sistema profesional de gestión de torneos de videojuegos tipo esports. No es un
 
 ### Actores del sistema
 
-| Actor | Descripción |
-|---|---|
-| **Jugador** | Usuario base. Puede registrarse, ver torneos, verificar su elegibilidad, consultar historial y ranking. |
-| **Capitán** | Extiende al Jugador. Puede crear y gestionar equipos, inscribirlos en torneos y confirmar participación. |
-| **Administrador** | Control total: crea torneos, genera brackets, inicia partidas, aplica sanciones y distribuye premios. |
+| Actor                    | Descripción                                                                                                     |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| **Jugador**              | Usuario base. Puede registrarse, ver torneos, verificar su elegibilidad, consultar historial y ranking.         |
+| **Capitán**              | Extiende al Jugador. Puede crear y gestionar equipos, inscribirlos en torneos y confirmar participación.        |
+| **Administrador**        | Control total: crea torneos, genera brackets, inicia partidas, aplica sanciones y distribuye premios.           |
 | **Sistema (automático)** | Actor no humano. Ejecuta triggers, recalcula validez, versiona brackets, propaga resultados y escala sanciones. |
 
 ---
@@ -23,6 +23,7 @@ Sistema profesional de gestión de torneos de videojuegos tipo esports. No es un
 ## 2. Stack tecnológico
 
 ### Frontend
+
 - **Framework:** Next.js 14 (App Router) + TypeScript
 - **Estilos:** TailwindCSS + shadcn/ui
 - **Estado servidor:** React Query (TanStack Query)
@@ -31,22 +32,26 @@ Sistema profesional de gestión de torneos de videojuegos tipo esports. No es un
 - **Autenticación:** JWT con refresh token (manejado desde el frontend con interceptores)
 
 ### Backend
+
 - **Runtime:** Node.js + NestJS + TypeScript
 - **Arquitectura:** Modular por dominio (tournaments, teams, matches, players, sanctions, audit)
 - **Tiempo real:** Socket.io (servidor)
 - **Jobs en background:** Bull Queue + Redis
 
 ### Base de datos
+
 - **Principal:** PostgreSQL — soporte nativo de transacciones, triggers, CTEs recursivos, row-level locking
 - **Caché:** Redis — ranking en tiempo real, sesiones, estado de partidas en vivo
 - **ORM:** TypeORM
 
 ### Infraestructura
+
 - Docker + Docker Compose para desarrollo local
 - GitHub Actions para CI/CD
 - Variables de entorno separadas por ambiente (dev / staging / prod)
 
 ### Autenticación y seguridad
+
 - Contraseñas: bcrypt (cost factor 12)
 - Tokens: JWT access token (15 min) + refresh token (7 días)
 - Roles: `PLAYER`, `CAPTAIN`, `ADMIN`
@@ -280,12 +285,12 @@ Al validar un resultado, el sistema automáticamente:
 
 Las sanciones persisten entre torneos y escalan por reincidencia:
 
-| Reincidencia | Nivel | Tipo |
-|---|---|---|
-| 1ª infracción | severity 1 | Advertencia |
-| 2ª infracción | severity 2 | Pérdida de partida |
-| 3ª infracción | severity 3 | Descalificación del torneo |
-| 4ª o más | severity 4+ | Ban temporal o permanente |
+| Reincidencia  | Nivel       | Tipo                       |
+| ------------- | ----------- | -------------------------- |
+| 1ª infracción | severity 1  | Advertencia                |
+| 2ª infracción | severity 2  | Pérdida de partida         |
+| 3ª infracción | severity 3  | Descalificación del torneo |
+| 4ª o más      | severity 4+ | Ban temporal o permanente  |
 
 El escalamiento es automático al registrar una nueva sanción.
 
@@ -312,56 +317,56 @@ En empates múltiples se aplican los criterios jerárquicamente hasta resolver c
 
 ### Actor: Jugador (10 UC)
 
-| ID | Nombre | Descripción breve |
-|---|---|---|
-| UC-J01 | Registrarse | Crear cuenta con verificación por email |
-| UC-J02 | Iniciar sesión | Autenticación con JWT y manejo de intentos fallidos |
-| UC-J03 | Recuperar contraseña | Reset seguro con token de 1 hora |
-| UC-J04 | Ver torneos disponibles | Lista filtrada por región con indicador de elegibilidad |
-| UC-J05 | Verificar elegibilidad | Reporte de los 5 criterios para un torneo específico |
-| UC-J06 | Ver historial de partidas | Historial paginado con estadísticas agregadas |
-| UC-J07 | Ver ranking personal | Score, posición global/regional y desglose de factores |
-| UC-J08 | Confirmar presencia | Confirmación pre-partida con validación de sanciones nuevas |
+| ID     | Nombre                     | Descripción breve                                           |
+| ------ | -------------------------- | ----------------------------------------------------------- |
+| UC-J01 | Registrarse                | Crear cuenta con verificación por email                     |
+| UC-J02 | Iniciar sesión             | Autenticación con JWT y manejo de intentos fallidos         |
+| UC-J03 | Recuperar contraseña       | Reset seguro con token de 1 hora                            |
+| UC-J04 | Ver torneos disponibles    | Lista filtrada por región con indicador de elegibilidad     |
+| UC-J05 | Verificar elegibilidad     | Reporte de los 5 criterios para un torneo específico        |
+| UC-J06 | Ver historial de partidas  | Historial paginado con estadísticas agregadas               |
+| UC-J07 | Ver ranking personal       | Score, posición global/regional y desglose de factores      |
+| UC-J08 | Confirmar presencia        | Confirmación pre-partida con validación de sanciones nuevas |
 | UC-J09 | Reportar evento en partida | Registro de incidentes con evaluación automática de impacto |
-| UC-J10 | Ver resultado de partida | Resultado validado con línea de tiempo de eventos |
+| UC-J10 | Ver resultado de partida   | Resultado validado con línea de tiempo de eventos           |
 
 ### Actor: Capitán (8 UC, extiende Jugador)
 
-| ID | Nombre | Descripción breve |
-|---|---|---|
-| UC-C01 | Crear equipo | Crear equipo en torneo; validez inicial false |
-| UC-C02 | Agregar jugadores | Adición con verificación en tiempo real de elegibilidad |
-| UC-C03 | Eliminar jugadores | Remoción con recalculo de validez; bloqueada si partida activa |
-| UC-C04 | Ver validez del equipo | Panel de indicadores y tiempo restante al cierre |
-| UC-C05 | Inscribir equipo | Transacción completa todo-o-nada con bloqueo pesimista |
-| UC-C06 | Confirmar participación | captain_confirmed=true; habilita is_valid final |
-| UC-C07 | Solicitar reprogramación | Requiere acuerdo de ambos equipos y no romper dependencias |
-| UC-C08 | Ver bracket del torneo | Vista del árbol con equipo propio resaltado |
+| ID     | Nombre                   | Descripción breve                                              |
+| ------ | ------------------------ | -------------------------------------------------------------- |
+| UC-C01 | Crear equipo             | Crear equipo en torneo; validez inicial false                  |
+| UC-C02 | Agregar jugadores        | Adición con verificación en tiempo real de elegibilidad        |
+| UC-C03 | Eliminar jugadores       | Remoción con recalculo de validez; bloqueada si partida activa |
+| UC-C04 | Ver validez del equipo   | Panel de indicadores y tiempo restante al cierre               |
+| UC-C05 | Inscribir equipo         | Transacción completa todo-o-nada con bloqueo pesimista         |
+| UC-C06 | Confirmar participación  | captain_confirmed=true; habilita is_valid final                |
+| UC-C07 | Solicitar reprogramación | Requiere acuerdo de ambos equipos y no romper dependencias     |
+| UC-C08 | Ver bracket del torneo   | Vista del árbol con equipo propio resaltado                    |
 
 ### Actor: Administrador (10 UC)
 
-| ID | Nombre | Descripción breve |
-|---|---|---|
-| UC-A01 | Crear torneo | Creación en estado DRAFT con publicación explícita |
-| UC-A02 | Configurar reglas | Modificación de parámetros con recalculo de validez de equipos |
-| UC-A03 | Cerrar inscripciones | Automático o manual; descarta equipos inválidos |
-| UC-A04 | Generar bracket | Seeding + separación regional + byes + BFS + versionado |
-| UC-A05 | Iniciar partida | Verifica 4 prerrequisitos y bloquea modificaciones |
-| UC-A06 | Revisar evento crítico | Decisión administrativa sobre incidentes en partida |
-| UC-A07 | Validar resultado | Verifica 3 condiciones y propaga al bracket |
-| UC-A08 | Aplicar sanción | Escalamiento automático por reincidencia |
-| UC-A09 | Distribuir premios | Cálculo con redistribución automática por descalificaciones |
-| UC-A10 | Consultar auditoría | Log filtrable con reconstrucción de estado en cualquier punto |
+| ID     | Nombre                 | Descripción breve                                              |
+| ------ | ---------------------- | -------------------------------------------------------------- |
+| UC-A01 | Crear torneo           | Creación en estado DRAFT con publicación explícita             |
+| UC-A02 | Configurar reglas      | Modificación de parámetros con recalculo de validez de equipos |
+| UC-A03 | Cerrar inscripciones   | Automático o manual; descarta equipos inválidos                |
+| UC-A04 | Generar bracket        | Seeding + separación regional + byes + BFS + versionado        |
+| UC-A05 | Iniciar partida        | Verifica 4 prerrequisitos y bloquea modificaciones             |
+| UC-A06 | Revisar evento crítico | Decisión administrativa sobre incidentes en partida            |
+| UC-A07 | Validar resultado      | Verifica 3 condiciones y propaga al bracket                    |
+| UC-A08 | Aplicar sanción        | Escalamiento automático por reincidencia                       |
+| UC-A09 | Distribuir premios     | Cálculo con redistribución automática por descalificaciones    |
+| UC-A10 | Consultar auditoría    | Log filtrable con reconstrucción de estado en cualquier punto  |
 
 ### Actor: Sistema — automático (5 UC)
 
-| ID | Nombre | Descripción breve |
-|---|---|---|
-| UC-S01 | Asignar byes | Cuando equipos no es potencia de 2; top-N pasan a ronda 2 |
-| UC-S02 | Versionar bracket | Trigger que desactiva versiones anteriores al crear una nueva |
-| UC-S03 | Propagar resultado | Asigna ganador al siguiente slot del bracket automáticamente |
-| UC-S04 | Escalar sanción | Calcula severity_level por reincidencia al registrar sanción nueva |
-| UC-S05 | Recalcular validez equipo | Trigger que evalúa is_valid ante cualquier cambio en team_members |
+| ID     | Nombre                    | Descripción breve                                                  |
+| ------ | ------------------------- | ------------------------------------------------------------------ |
+| UC-S01 | Asignar byes              | Cuando equipos no es potencia de 2; top-N pasan a ronda 2          |
+| UC-S02 | Versionar bracket         | Trigger que desactiva versiones anteriores al crear una nueva      |
+| UC-S03 | Propagar resultado        | Asigna ganador al siguiente slot del bracket automáticamente       |
+| UC-S04 | Escalar sanción           | Calcula severity_level por reincidencia al registrar sanción nueva |
+| UC-S05 | Recalcular validez equipo | Trigger que evalúa is_valid ante cualquier cambio en team_members  |
 
 ---
 
@@ -597,17 +602,17 @@ async enrollTeam(dto: EnrollTeamDto, captainId: string): Promise<Team> {
 
 ## 10. Decisiones de diseño ya tomadas
 
-| Decisión | Elección | Motivo |
-|---|---|---|
-| ORM | TypeORM | Soporte nativo de transacciones y query builder para JOINs complejos |
-| Locking | `SELECT FOR UPDATE` (pesimista) | Previene condiciones de carrera en inscripciones concurrentes |
-| Validez de equipo | Trigger de BD, no lógica de aplicación | Garantiza consistencia sin importar qué proceso modifique team_members |
-| Versionado de bracket | Trigger automático en INSERT | Elimina la posibilidad de múltiples brackets activos por error de código |
-| Inscripción | Transacción única (todo o nada) | Impide estados parciales como equipo inscrito con jugadores inelegibles |
-| Auditoría | before_state + after_state en jsonb | Permite reconstruir el estado del sistema en cualquier punto temporal |
-| Sanciones | Persistentes entre torneos | Evita que jugadores evadan sanciones creando nuevas cuentas o participando en otros torneos |
-| Premios | Redistribución automática | Evitar estados donde un puesto sin equipo válido quede sin premio asignado |
-| Ranking | Calculado en background (Bull Queue) | El cálculo con desempate jerárquico es costoso; no debe bloquear flujos síncronos |
+| Decisión              | Elección                               | Motivo                                                                                      |
+| --------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------- |
+| ORM                   | TypeORM                                | Soporte nativo de transacciones y query builder para JOINs complejos                        |
+| Locking               | `SELECT FOR UPDATE` (pesimista)        | Previene condiciones de carrera en inscripciones concurrentes                               |
+| Validez de equipo     | Trigger de BD, no lógica de aplicación | Garantiza consistencia sin importar qué proceso modifique team_members                      |
+| Versionado de bracket | Trigger automático en INSERT           | Elimina la posibilidad de múltiples brackets activos por error de código                    |
+| Inscripción           | Transacción única (todo o nada)        | Impide estados parciales como equipo inscrito con jugadores inelegibles                     |
+| Auditoría             | before_state + after_state en jsonb    | Permite reconstruir el estado del sistema en cualquier punto temporal                       |
+| Sanciones             | Persistentes entre torneos             | Evita que jugadores evadan sanciones creando nuevas cuentas o participando en otros torneos |
+| Premios               | Redistribución automática              | Evitar estados donde un puesto sin equipo válido quede sin premio asignado                  |
+| Ranking               | Calculado en background (Bull Queue)   | El cálculo con desempate jerárquico es costoso; no debe bloquear flujos síncronos           |
 
 ---
 
@@ -627,19 +632,19 @@ Estas condiciones deben ser verdaderas en todo momento. Cualquier operación que
 
 ## 12. Glosario
 
-| Término | Definición |
-|---|---|
-| **Bracket** | Árbol de eliminación directa que estructura las partidas de un torneo |
-| **Bye** | Pase automático a la siguiente ronda cuando el número de equipos no es potencia de 2 |
-| **Seeding** | Asignación de posiciones en el bracket basada en ranking para separar a los mejores equipos |
-| **bo1 / bo3 / bo5** | Formato de partida: mejor de 1, 3 o 5 mapas/rondas |
-| **is_valid** | Campo booleano de Teams que indica si el equipo cumple todos los requisitos para participar. Calculado automáticamente por trigger |
-| **captain_confirmed** | El capitán ha aceptado formalmente participar en el torneo antes del cierre de inscripciones |
-| **parent_match_id** | Referencia a la partida siguiente del bracket (la que se desbloquea cuando esta termina) |
-| **severity_level** | Nivel numérico de gravedad de una sanción (1=advertencia, 2=pérdida, 3=descalificación, 4+=ban) |
-| **affects_validity** | Campo de match_events que indica si un evento en partida impacta la validez del resultado |
-| **PENDING_REVIEW** | Estado de partida cuando los eventos superan el umbral y requieren revisión administrativa |
+| Término               | Definición                                                                                                                         |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Bracket**           | Árbol de eliminación directa que estructura las partidas de un torneo                                                              |
+| **Bye**               | Pase automático a la siguiente ronda cuando el número de equipos no es potencia de 2                                               |
+| **Seeding**           | Asignación de posiciones en el bracket basada en ranking para separar a los mejores equipos                                        |
+| **bo1 / bo3 / bo5**   | Formato de partida: mejor de 1, 3 o 5 mapas/rondas                                                                                 |
+| **is_valid**          | Campo booleano de Teams que indica si el equipo cumple todos los requisitos para participar. Calculado automáticamente por trigger |
+| **captain_confirmed** | El capitán ha aceptado formalmente participar en el torneo antes del cierre de inscripciones                                       |
+| **parent_match_id**   | Referencia a la partida siguiente del bracket (la que se desbloquea cuando esta termina)                                           |
+| **severity_level**    | Nivel numérico de gravedad de una sanción (1=advertencia, 2=pérdida, 3=descalificación, 4+=ban)                                    |
+| **affects_validity**  | Campo de match_events que indica si un evento en partida impacta la validez del resultado                                          |
+| **PENDING_REVIEW**    | Estado de partida cuando los eventos superan el umbral y requieren revisión administrativa                                         |
 
 ---
 
-*Este documento fue generado como referencia completa del proyecto. Actualizar cuando se tomen nuevas decisiones de arquitectura, se agreguen casos de uso o cambien reglas de negocio.*
+_Este documento fue generado como referencia completa del proyecto. Actualizar cuando se tomen nuevas decisiones de arquitectura, se agreguen casos de uso o cambien reglas de negocio._

@@ -8,26 +8,27 @@ Este documento identifica y justifica los principios de diseño de software apli
 
 ### S — Single Responsibility Principle (Responsabilidad Única)
 
-> *Cada módulo tiene una sola razón para cambiar.*
+> _Cada módulo tiene una sola razón para cambiar._
 
-| Capa | Clase/Archivo | Responsabilidad única |
-|------|--------------|----------------------|
-| Repositorio | `UserRepository` | CRUD exclusivo de la tabla `users` |
-| Repositorio | `TeamRepository` | CRUD exclusivo de la tabla `teams` y `team_members` |
-| Repositorio | `TournamentRepository` | CRUD exclusivo de la tabla `tournaments` |
-| Servicio | `AuthValidator` | Solo validar inputs de login/registro |
-| Servicio | `AuthService` | Solo manejar autenticación (tokens, sesiones, intentos) |
-| Servicio | `TeamService` | Solo lógica de negocio de equipos |
-| Servicio | `EnrollmentService` | Solo lógica de inscripción a torneos |
-| Algoritmo | `brackets.ts` | Solo generar la estructura del bracket |
-| Componente | `BracketView.tsx` | Solo renderizar el bracket visualmente |
-| Lib | `env.ts` | Solo acceso a variables de entorno |
-| Lib | `database.ts` | Solo conexión a PostgreSQL |
-| Lib | `redis.ts` | Solo conexión a Redis |
+| Capa        | Clase/Archivo          | Responsabilidad única                                   |
+| ----------- | ---------------------- | ------------------------------------------------------- |
+| Repositorio | `UserRepository`       | CRUD exclusivo de la tabla `users`                      |
+| Repositorio | `TeamRepository`       | CRUD exclusivo de la tabla `teams` y `team_members`     |
+| Repositorio | `TournamentRepository` | CRUD exclusivo de la tabla `tournaments`                |
+| Servicio    | `AuthValidator`        | Solo validar inputs de login/registro                   |
+| Servicio    | `AuthService`          | Solo manejar autenticación (tokens, sesiones, intentos) |
+| Servicio    | `TeamService`          | Solo lógica de negocio de equipos                       |
+| Servicio    | `EnrollmentService`    | Solo lógica de inscripción a torneos                    |
+| Algoritmo   | `brackets.ts`          | Solo generar la estructura del bracket                  |
+| Componente  | `BracketView.tsx`      | Solo renderizar el bracket visualmente                  |
+| Lib         | `env.ts`               | Solo acceso a variables de entorno                      |
+| Lib         | `database.ts`          | Solo conexión a PostgreSQL                              |
+| Lib         | `redis.ts`             | Solo conexión a Redis                                   |
 
 **Justificación:** Cada archivo tiene **una sola razón para cambiar**. Si cambia la base de datos, solo se toca `database.ts`. Si cambian las reglas de inscripción, solo se toca `EnrollmentService`. Si cambia el diseño visual del bracket, solo se toca `BracketView.tsx`. Esto reduce el riesgo de errores en cascada.
 
 **Ejemplo concreto — `login/route.ts`:**
+
 ```typescript
 // El route handler solo ORQUESTA, no hace lógica:
 const validation = validator.validateLogin(body);     // → AuthValidator
@@ -40,7 +41,7 @@ return authService.createSession(user);               // → AuthService
 
 ### O — Open/Closed Principle (Abierto/Cerrado)
 
-> *Abierto para extensión, cerrado para modificación.*
+> _Abierto para extensión, cerrado para modificación._
 
 **Dónde se aplica:**
 
@@ -54,7 +55,7 @@ return authService.createSession(user);               // → AuthService
 
 ### L — Liskov Substitution Principle (Sustitución de Liskov)
 
-> *Las interfaces se respetan consistentemente.*
+> _Las interfaces se respetan consistentemente._
 
 **Dónde se aplica:**
 
@@ -75,7 +76,7 @@ export interface Participant {
 
 ### I — Interface Segregation Principle (Segregación de Interfaces)
 
-> *No obligar a depender de cosas que no se necesitan.*
+> _No obligar a depender de cosas que no se necesitan._
 
 **Dónde se aplica:**
 
@@ -90,7 +91,7 @@ export interface Participant {
 
 ### D — Dependency Inversion Principle (Inversión de Dependencias)
 
-> *Depender de abstracciones, no de implementaciones concretas.*
+> _Depender de abstracciones, no de implementaciones concretas._
 
 **Dónde se aplica:**
 
@@ -111,15 +112,16 @@ Route Handler → Servicio → Repositorio → Base de datos
 
 ## 2. Patrón Repository (CRUD)
 
-> *Encapsular toda la lógica de acceso a datos en clases dedicadas.*
+> _Encapsular toda la lógica de acceso a datos en clases dedicadas._
 
-| Repositorio | Create | Read | Update | Delete |
-|-------------|--------|------|--------|--------|
-| `UserRepository` | `create()` | `findByEmail()`, `findById()` | `updateLoginAttempts()`, `resetLoginAttempts()`, `updateRole()` | — |
-| `TeamRepository` | `create()`, `addMember()` | `findById()`, `findByCaptain()`, `searchTeams()`, `getMemberCount()`, `isUserInTeam()` | `assignToTournament()` | — |
-| `TournamentRepository` | — | `getById()`, `findActive()`, `findByOrganizer()`, `getEnrollmentCount()` | — | — |
+| Repositorio            | Create                    | Read                                                                                   | Update                                                          | Delete |
+| ---------------------- | ------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------ |
+| `UserRepository`       | `create()`                | `findByEmail()`, `findById()`                                                          | `updateLoginAttempts()`, `resetLoginAttempts()`, `updateRole()` | —      |
+| `TeamRepository`       | `create()`, `addMember()` | `findById()`, `findByCaptain()`, `searchTeams()`, `getMemberCount()`, `isUserInTeam()` | `assignToTournament()`                                          | —      |
+| `TournamentRepository` | —                         | `getById()`, `findActive()`, `findByOrganizer()`, `getEnrollmentCount()`               | —                                                               | —      |
 
 **Justificación:** El patrón Repository:
+
 1. **Centraliza el SQL** en un solo lugar por entidad
 2. **Evita duplicación** — la misma query no se escribe en 4 archivos distintos
 3. **Facilita testing** — se puede mockear el repositorio sin necesitar la BD
@@ -129,16 +131,17 @@ Route Handler → Servicio → Repositorio → Base de datos
 
 ## 3. Patrón Service Layer (Capa de Servicios)
 
-> *Encapsular la lógica de negocio compleja en clases de servicio.*
+> _Encapsular la lógica de negocio compleja en clases de servicio._
 
-| Servicio | Responsabilidad | Repositorios que usa |
-|----------|----------------|---------------------|
-| `AuthService` | Verificar contraseñas, manejar bloqueos, crear sesiones JWT | `UserRepository` |
-| `AuthValidator` | Validar formato de inputs (email, password, username) | Ninguno (pura lógica) |
-| `TeamService` | Crear equipos, buscar, unirse a equipos, promover a CAPTAIN | `TeamRepository`, `UserRepository` |
+| Servicio            | Responsabilidad                                              | Repositorios que usa                     |
+| ------------------- | ------------------------------------------------------------ | ---------------------------------------- |
+| `AuthService`       | Verificar contraseñas, manejar bloqueos, crear sesiones JWT  | `UserRepository`                         |
+| `AuthValidator`     | Validar formato de inputs (email, password, username)        | Ninguno (pura lógica)                    |
+| `TeamService`       | Crear equipos, buscar, unirse a equipos, promover a CAPTAIN  | `TeamRepository`, `UserRepository`       |
 | `EnrollmentService` | Inscribir jugadores/equipos en torneos con reglas de negocio | `TeamRepository`, `TournamentRepository` |
 
 **Justificación:** Los servicios contienen las **reglas de negocio** que son más complejas que un simple CRUD:
+
 - "Si un jugador crea un equipo, su rol debe cambiar de PLAYER a CAPTAIN" → `TeamService`
 - "Si fallan 5 intentos de login, bloquear la cuenta 15 minutos" → `AuthService`
 - "Un equipo solo puede inscribirse si tiene exactamente N jugadores" → `EnrollmentService`
@@ -150,10 +153,11 @@ Route Handler → Servicio → Repositorio → Base de datos
 ### Encapsulamiento
 
 Cada clase encapsula su estado interno:
+
 ```typescript
 export class UserRepository {
   private pool = getPostgresPool();  // ← encapsulado, no accesible desde fuera
-  
+
   async findByEmail(email: string) { ... }  // ← interfaz pública
 }
 ```
@@ -161,9 +165,10 @@ export class UserRepository {
 ### Composición sobre Herencia
 
 Los servicios **componen** repositorios en vez de heredar de ellos:
+
 ```typescript
 export class EnrollmentService {
-  private teamRepo = new TeamRepository();        // ← composición
+  private teamRepo = new TeamRepository(); // ← composición
   private tournamentRepo = new TournamentRepository(); // ← composición
 }
 ```
@@ -174,7 +179,7 @@ export class EnrollmentService {
 
 ## 5. Patrón Singleton
 
-> *Una sola instancia de recursos costosos compartida globalmente.*
+> _Una sola instancia de recursos costosos compartida globalmente._
 
 ```typescript
 // database.ts — Pool de conexiones PostgreSQL
@@ -242,27 +247,27 @@ export default function proxy(request: NextRequest) {
 
 ## 8. DRY (Don't Repeat Yourself)
 
-| Antes (duplicado) | Después (centralizado) |
-|---|---|
-| Validación de email repetida en `login` y `register` | `AuthValidator` con `validateLogin()` y `validateRegister()` |
-| Query de torneos activos en `page.tsx` y `dashboard.tsx` | `TournamentRepository.findActive()` y `findByOrganizer()` |
-| `process.env.DATABASE_URL` accedido en múltiples archivos | `env.ts` con `databaseUrl()` |
+| Antes (duplicado)                                         | Después (centralizado)                                       |
+| --------------------------------------------------------- | ------------------------------------------------------------ |
+| Validación de email repetida en `login` y `register`      | `AuthValidator` con `validateLogin()` y `validateRegister()` |
+| Query de torneos activos en `page.tsx` y `dashboard.tsx`  | `TournamentRepository.findActive()` y `findByOrganizer()`    |
+| `process.env.DATABASE_URL` accedido en múltiples archivos | `env.ts` con `databaseUrl()`                                 |
 
 ---
 
 ## Resumen
 
-| Principio | Dónde se aplica | Beneficio |
-|-----------|----------------|-----------|
-| **SOLID (S)** | Repos, Services, Components | Cambios aislados, sin efectos secundarios |
-| **SOLID (O)** | Interfaces, Services | Se puede extender sin modificar |
-| **SOLID (L)** | `Participant`, `AuthUser` | Sustitución segura de implementaciones |
-| **SOLID (I)** | `TournamentSummary`, Props de componentes | Sin dependencias innecesarias |
-| **SOLID (D)** | Capas, `env.ts` | Desacoplamiento total entre capas |
-| **Repository (CRUD)** | 3 repositorios | SQL centralizado y testeable |
-| **Service Layer** | 4 servicios | Lógica de negocio organizada |
-| **POO** | Clases con encapsulamiento y composición | Estado controlado y reutilizable |
-| **Singleton** | DB Pool, Redis Client | Eficiencia en recursos |
-| **Middleware** | `proxy.ts` | Auth centralizada, DRY |
-| **Arquitectura en Capas** | Presentación → API → Servicio → Repo | Separación total de responsabilidades |
-| **DRY** | Validators, Repos, env.ts | Cero duplicación |
+| Principio                 | Dónde se aplica                           | Beneficio                                 |
+| ------------------------- | ----------------------------------------- | ----------------------------------------- |
+| **SOLID (S)**             | Repos, Services, Components               | Cambios aislados, sin efectos secundarios |
+| **SOLID (O)**             | Interfaces, Services                      | Se puede extender sin modificar           |
+| **SOLID (L)**             | `Participant`, `AuthUser`                 | Sustitución segura de implementaciones    |
+| **SOLID (I)**             | `TournamentSummary`, Props de componentes | Sin dependencias innecesarias             |
+| **SOLID (D)**             | Capas, `env.ts`                           | Desacoplamiento total entre capas         |
+| **Repository (CRUD)**     | 3 repositorios                            | SQL centralizado y testeable              |
+| **Service Layer**         | 4 servicios                               | Lógica de negocio organizada              |
+| **POO**                   | Clases con encapsulamiento y composición  | Estado controlado y reutilizable          |
+| **Singleton**             | DB Pool, Redis Client                     | Eficiencia en recursos                    |
+| **Middleware**            | `proxy.ts`                                | Auth centralizada, DRY                    |
+| **Arquitectura en Capas** | Presentación → API → Servicio → Repo      | Separación total de responsabilidades     |
+| **DRY**                   | Validators, Repos, env.ts                 | Cero duplicación                          |

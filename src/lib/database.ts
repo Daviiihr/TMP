@@ -35,16 +35,20 @@ export async function assertDatabaseConnection() {
       `SELECT EXISTS (
          SELECT FROM information_schema.tables 
          WHERE table_name = 'country_rankings'
-       );`
+       );`,
     );
     const rankingsTableExists = tableCheck.rows[0]?.exists;
 
     if (!rankingsTableExists) {
-      console.log("🛠️ Base de datos: Creando tabla 'country_rankings' y agregando columna 'country' en 'users'...");
-      
+      console.log(
+        "🛠️ Base de datos: Creando tabla 'country_rankings' y agregando columna 'country' en 'users'...",
+      );
+
       // 1. Agregar columna country si no existe
-      await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS country varchar(50) NOT NULL DEFAULT 'Chile';`);
-      
+      await pool.query(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS country varchar(50) NOT NULL DEFAULT 'Chile';`,
+      );
+
       // 2. Crear tabla country_rankings
       await pool.query(`
         CREATE TABLE IF NOT EXISTS country_rankings (
@@ -96,15 +100,22 @@ export async function assertDatabaseConnection() {
       `SELECT EXISTS (
          SELECT FROM information_schema.tables 
          WHERE table_name = 'matches'
-       );`
+       );`,
     );
     if (matchesTableCheck.rows[0]?.exists) {
-      await pool.query(`ALTER TABLE matches ADD COLUMN IF NOT EXISTS score1 INT DEFAULT 0;`);
-      await pool.query(`ALTER TABLE matches ADD COLUMN IF NOT EXISTS score2 INT DEFAULT 0;`);
-      await pool.query(`ALTER TABLE matches ADD COLUMN IF NOT EXISTS loser_next_match_id UUID;`);
-      await pool.query(`ALTER TABLE matches ADD COLUMN IF NOT EXISTS loser_next_match_slot SMALLINT;`);
+      await pool.query(
+        `ALTER TABLE matches ADD COLUMN IF NOT EXISTS score1 INT DEFAULT 0;`,
+      );
+      await pool.query(
+        `ALTER TABLE matches ADD COLUMN IF NOT EXISTS score2 INT DEFAULT 0;`,
+      );
+      await pool.query(
+        `ALTER TABLE matches ADD COLUMN IF NOT EXISTS loser_next_match_id UUID;`,
+      );
+      await pool.query(
+        `ALTER TABLE matches ADD COLUMN IF NOT EXISTS loser_next_match_slot SMALLINT;`,
+      );
     }
-
   } catch (error) {
     console.error("❌ Error en migración dinámica de base de datos:", error);
   }
