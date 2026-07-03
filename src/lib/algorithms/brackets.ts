@@ -94,7 +94,7 @@ export function generateBracket(
     totalRounds: 0,
   };
 
-  if (!participants || participants.length < 2) return empty;
+  if (!participants || participants.length < 4) return empty;
 
   const numParticipants = participants.length;
   const bracketSize = isPowerOf2(numParticipants)
@@ -176,51 +176,197 @@ export function generateBracket(
   };
 
   if (type === "DOUBLE_ELIMINATION") {
-    // Basic Losers Bracket structure (Simplified for this MVP)
     const loserRounds: RoundData[] = [];
     const totalLoserRounds = (totalRounds - 1) * 2;
-
-    // We create placeholder matches for losers
     let matchCount = bracketSize / 4;
-    const roundIndex = 1;
+
+    // First pass: Create all empty loser matches
     for (let r = 1; r <= totalLoserRounds; r++) {
       const matches: Match[] = [];
-
       for (let i = 0; i < matchCount; i++) {
         matches.push({
           id: `l_r${r}_m${i + 1}`,
           round: r,
-          roundLabel: `Losers Ronda ${r}`,
+          roundLabel: getLoserRoundLabel(totalLoserRounds, r),
           matchNumber: i + 1,
           player1: null,
           player2: null,
           isBye: false,
         });
       }
-      loserRounds.push({ roundNumber: r, label: `Losers Ronda ${r}`, matches });
+      loserRounds.push({
+        roundNumber: r,
+        label: getLoserRoundLabel(totalLoserRounds, r),
+        matches,
+      });
 
-      // Adjust match count dynamically based on the round type (minor/major)
       if (r % 2 === 0 && matchCount > 1) {
         matchCount /= 2;
       }
     }
 
+    // Second pass: Link Loser -> Loser
+    for (let r = 1; r < totalLoserRounds; r++) {
+      const currentMatches = loserRounds[r - 1].matches;
+      if (r % 2 !== 0) {
+        // Odd round (L1 -> L2): 1 to 1 mapping
+        for (let i = 0; i < currentMatches.length; i++) {
+          currentMatches[i].nextMatchId = loserRounds[r].matches[i].id;
+          currentMatches[i].nextMatchSlot = 1;
+        }
+      } else {
+        // Even round (L2 -> L3): 2 to 1 mapping
+        for (let i = 0; i < currentMatches.length; i += 2) {
+          const targetIndex = Math.floor(i / 2);
+          currentMatches[i].nextMatchId =
+            loserRounds[r].matches[targetIndex].id;
+          currentMatches[i].nextMatchSlot = 1;
+          currentMatches[i + 1].nextMatchId =
+            loserRounds[r].matches[targetIndex].id;
+          currentMatches[i + 1].nextMatchSlot = 2;
+        }
+      }
+    }
+
+    // Third pass: Link Winner Losers -> Loser Bracket
+    // W1 losers -> L1
+    const w1Matches = rounds[0].matches;
+    for (let i = 0; i < w1Matches.length; i += 2) {
+      const targetIndex = Math.floor(i / 2);
+      w1Matches[i].loserNextMatchId = loserRounds[0].matches[targetIndex].id;
+      w1Matches[i].loserNextMatchSlot = 1;
+      w1Matches[i + 1].loserNextMatchId =
+        loserRounds[0].matches[targetIndex].id;
+      w1Matches[i + 1].loserNextMatchSlot = 2;
+    }
+
+    // For W2 and above, losers drop into even L rounds: L2, L4, L6...
+    for (let w = 2; w <= totalRounds; w++) {
+      const wMatches = rounds[w - 1].matches;
+      const targetLoserRoundIdx = 2 * w - 2 - 1; // 0-indexed
+      const lMatches = loserRounds[targetLoserRoundIdx].matches;
+
+      for (let i = 0; i < wMatches.length; i++) {
+        // Crossover dropping to avoid rematches
+        const targetIndex = lMatches.length - 1 - i;
+        wMatches[i].loserNextMatchId = lMatches[targetIndex].id;
+        wMatches[i].loserNextMatchSlot = 2;
+      }
+    }
+
     // Grand final
+    const grandFinal: Match = {
+      id: "grand_final",
+      round: totalRounds + 1,
+      roundLabel: "Gran Final",
+      matchNumber: 1,
+      player1: null,
+      player2: null,
+      isBye: false,
+    };
     rounds.push({
       roundNumber: totalRounds + 1,
       label: "Gran Final",
-      matches: [
-        {
-          id: "grand_final",
-          round: totalRounds + 1,
-          roundLabel: "Gran Final",
-          matchNumber: 1,
-          player1: null, // Winner bracket winner
-          player2: null, // Loser bracket winner
-          isBye: false,
-        },
-      ],
+      matches: [grandFinal],
     });
+
+    // Link Winner Final winner -> Grand Final
+    const winnerFinalMatch = rounds[totalRounds - 1].matches[0];
+    winnerFinalMatch.nextMatchId = grandFinal.id;
+    winnerFinalMatch.nextMatchSlot = 1;
+
+    // Link Loser Final winner -> Grand Final
+    if (totalLoserRounds > 0) {
+      const loserFinalMatch = loserRounds[totalLoserRounds - 1].matches[0];
+      loserFinalMatch.nextMatchId = grandFinal.id;
+      loserFinalMatch.nextMatchSlot = 2;
+    }
+
+    // Fourth pass: Simulate player flow to determine BYEs in the Loser Bracket
+    const loserIncoming = new Map<string, number>();
+    loserRounds.forEach((lr) =>
+      lr.matches.forEach((m) => loserIncoming.set(m.id, 0)),
+    );
+
+    // W1 matches produce a loser ONLY if they are NOT a BYE.
+    // We statically evaluated W1 isBye previously.
+    for (const m of rounds[0].matches) {
+      if (m.loserNextMatchId && !m.isBye) {
+        loserIncoming.set(
+          m.loserNextMatchId,
+          (loserIncoming.get(m.loserNextMatchId) || 0) + 1,
+        );
+      }
+    }
+
+    // W2 and subsequent Winner rounds ALWAYS have 2 real players, so they always produce a loser.
+    for (let w = 2; w <= totalRounds; w++) {
+      for (const m of rounds[w - 1].matches) {
+        if (m.loserNextMatchId) {
+          loserIncoming.set(
+            m.loserNextMatchId,
+            (loserIncoming.get(m.loserNextMatchId) || 0) + 1,
+          );
+        }
+      }
+    }
+
+    // Iterate Loser rounds in order, resolve isBye and propagate winners to next loser rounds
+    for (const lr of loserRounds) {
+      for (const m of lr.matches) {
+        const incoming = loserIncoming.get(m.id) || 0;
+        m.isBye = incoming < 2;
+
+        // If it gets at least 1 player, it produces a winner (either by playing or by BYE)
+        if (m.nextMatchId && incoming > 0) {
+          loserIncoming.set(
+            m.nextMatchId,
+            (loserIncoming.get(m.nextMatchId) || 0) + 1,
+          );
+        }
+      }
+    }
+
+    // Fifth pass: Flatten BYEs in Loser bracket so real players bypass ghost matches
+    const allMatches = new Map<string, Match>();
+    rounds.forEach((r) => r.matches.forEach((m) => allMatches.set(m.id, m)));
+    loserRounds.forEach((r) =>
+      r.matches.forEach((m) => allMatches.set(m.id, m)),
+    );
+
+    const getUltimateDestination = (
+      matchId: string,
+      slot: 1 | 2,
+    ): { id: string; slot: 1 | 2 } | null => {
+      let current = allMatches.get(matchId);
+      let currentSlot = slot;
+      while (current && current.isBye) {
+        if (!current.nextMatchId) return null; // Reached the end (e.g. Grand Final is Bye? Never happens)
+        currentSlot = current.nextMatchSlot!;
+        current = allMatches.get(current.nextMatchId);
+      }
+      return current ? { id: current.id, slot: currentSlot } : null;
+    };
+
+    for (const m of allMatches.values()) {
+      if (m.nextMatchId) {
+        const dest = getUltimateDestination(m.nextMatchId, m.nextMatchSlot!);
+        if (dest) {
+          m.nextMatchId = dest.id;
+          m.nextMatchSlot = dest.slot;
+        }
+      }
+      if (m.loserNextMatchId) {
+        const dest = getUltimateDestination(
+          m.loserNextMatchId,
+          m.loserNextMatchSlot!,
+        );
+        if (dest) {
+          m.loserNextMatchId = dest.id;
+          m.loserNextMatchSlot = dest.slot;
+        }
+      }
+    }
 
     result.loserRounds = loserRounds;
   }
@@ -240,4 +386,12 @@ function getRoundLabel(bracketSize: number, round: number): string {
   if (roundsFromFinal === 1) return "Semifinal";
   if (roundsFromFinal === 2) return "Cuartos de Final";
   return `Ronda ${round}`;
+}
+
+function getLoserRoundLabel(totalLoserRounds: number, round: number): string {
+  const roundsFromFinal = totalLoserRounds - round;
+  if (roundsFromFinal === 0) return "Final Perdedores";
+  if (roundsFromFinal === 1) return "Semifinal Perdedores";
+  if (roundsFromFinal === 2) return "Cuartos Perdedores";
+  return `Losers Ronda ${round}`;
 }

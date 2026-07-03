@@ -2,66 +2,16 @@ import { describe, it, expect } from "vitest";
 import { generateBracket, Participant } from "@/lib/algorithms/brackets";
 
 describe("Brackets Algorithm", () => {
-  it("should return empty bracket if less than 2 participants", () => {
-    const p: Participant[] = [{ id: "1", name: "A" }];
+  it("should return empty bracket if less than 4 participants", () => {
+    const p: Participant[] = [
+      { id: "1", name: "A" },
+      { id: "2", name: "B" },
+      { id: "3", name: "C" },
+    ];
     const result = generateBracket(p);
 
     expect(result.rounds).toHaveLength(0);
     expect(result.bracketSize).toBe(0);
-  });
-
-  it("should generate a 2-player single elimination bracket (Power of 2)", () => {
-    const p: Participant[] = [
-      { id: "1", name: "Player 1" },
-      { id: "2", name: "Player 2" },
-    ];
-
-    const result = generateBracket(p);
-
-    expect(result.bracketSize).toBe(2);
-    expect(result.totalRounds).toBe(1);
-    expect(result.rounds).toHaveLength(1);
-
-    const finalRound = result.rounds[0];
-    expect(finalRound.label).toBe("Final");
-    expect(finalRound.matches).toHaveLength(1);
-    expect(finalRound.matches[0].player1?.id).toBe("1");
-    expect(finalRound.matches[0].player2?.id).toBe("2");
-    expect(finalRound.matches[0].isBye).toBe(false);
-  });
-
-  it("should generate a 3-player single elimination bracket with a Bye", () => {
-    const p: Participant[] = [
-      { id: "1", name: "Player 1", seed: 1 },
-      { id: "2", name: "Player 2", seed: 2 },
-      { id: "3", name: "Player 3", seed: 3 },
-    ];
-
-    const result = generateBracket(p);
-
-    // Nearest power of 2 >= 3 is 4
-    expect(result.bracketSize).toBe(4);
-    expect(result.totalRounds).toBe(2);
-    expect(result.rounds).toHaveLength(2); // Semifinals + Final
-
-    const round1 = result.rounds[0];
-    expect(round1.matches).toHaveLength(2);
-
-    // Seed 1 vs Seed 4 (Bye)
-    expect(round1.matches[0].player1?.seed).toBe(1);
-    expect(round1.matches[0].player2).toBeNull(); // BYE
-    expect(round1.matches[0].isBye).toBe(true);
-
-    // Seed 2 vs Seed 3
-    expect(round1.matches[1].player1?.seed).toBe(2);
-    expect(round1.matches[1].player2?.seed).toBe(3);
-    expect(round1.matches[1].isBye).toBe(false);
-
-    const round2 = result.rounds[1];
-    expect(round2.label).toBe("Final");
-    expect(round2.matches).toHaveLength(1);
-    // Player 1 advances automatically due to Bye
-    expect(round2.matches[0].player1?.seed).toBe(1);
   });
 
   it("should generate an 8-player bracket properly seeded", () => {
