@@ -249,22 +249,26 @@ export default function TournamentPanelPage({
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            {["DRAFT", "REGISTRATION", "IN_PROGRESS", "COMPLETED"].map(
-              (statusOption) => (
-                <button
-                  key={statusOption}
-                  onClick={() => updateTournamentStatus(statusOption)}
-                  disabled={tournamentStatus === statusOption}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-300 ${
-                    tournamentStatus === statusOption
-                      ? "bg-[#00f2fe] text-zinc-950 shadow-[0_0_15px_rgba(0,242,254,0.4)]"
-                      : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
-                  }`}
-                >
-                  {statusOption}
-                </button>
-              ),
-            )}
+            {[
+              "DRAFT",
+              "REGISTRATION",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED",
+            ].map((statusOption) => (
+              <button
+                key={statusOption}
+                onClick={() => updateTournamentStatus(statusOption)}
+                disabled={tournamentStatus === statusOption}
+                className={`px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-300 ${
+                  tournamentStatus === statusOption
+                    ? "bg-[#00f2fe] text-zinc-950 shadow-[0_0_15px_rgba(0,242,254,0.4)]"
+                    : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
+                }`}
+              >
+                {statusOption}
+              </button>
+            ))}
           </div>
         </section>
 

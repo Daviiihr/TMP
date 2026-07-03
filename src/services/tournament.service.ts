@@ -65,6 +65,35 @@ export class TournamentService {
       }
     }
 
+    // RN16: Cancelación Controlada
+    if (newStatus === "CANCELLED") {
+      // Verificar si hay partidos de segunda ronda o mayor ya finalizados
+      const advancedMatches = await this.pool.query(
+        "SELECT id FROM matches WHERE tournament_id = $1 AND round_number > 1 AND status = 'FINISHED' AND is_bye = false LIMIT 1",
+        [tournamentId],
+      );
+      if (advancedMatches.rows.length > 0) {
+        throw new Error(
+          "No se puede cancelar el torneo porque ya ha superado la primera ronda de enfrentamientos (RN16).",
+        );
+      }
+
+      // Liberar cupos eliminando las inscripciones
+      await this.pool.query(
+        "DELETE FROM team_enrollments WHERE tournament_id = $1",
+        [tournamentId],
+      );
+      await this.pool.query(
+        "DELETE FROM individual_enrollments WHERE tournament_id = $1",
+        [tournamentId],
+      );
+
+      // Simulación de envío de notificaciones (RF14 - Pendiente por falta de servicio de mailing)
+      console.log(
+        `[Notification Mock] Notificando a todos los inscritos que el torneo ${tournamentId} ha sido cancelado y sus cupos liberados.`,
+      );
+    }
+
     await this.pool.query("UPDATE tournaments SET status = $1 WHERE id = $2", [
       newStatus,
       tournamentId,
