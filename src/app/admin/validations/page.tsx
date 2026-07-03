@@ -26,12 +26,10 @@ export default function ValidationsPage() {
 
   // Modal de rechazo
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
-  const [rejectingValidationId, setRejectingValidationId] = useState<string | null>(null);
+  const [rejectingValidationId, setRejectingValidationId] = useState<
+    string | null
+  >(null);
   const [rejectionReason, setRejectionReason] = useState("");
-
-  useEffect(() => {
-    fetchValidations();
-  }, []);
 
   const fetchValidations = async () => {
     try {
@@ -40,30 +38,40 @@ export default function ValidationsPage() {
       if (!res.ok) throw new Error("Error al obtener las validaciones");
       const data = await res.json();
       setValidations(data.validations || []);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    const t = setTimeout(() => fetchValidations(), 0);
+    return () => clearTimeout(t);
+  }, []);
+
   const handleApprove = async (id: string) => {
-    if (!confirm("¿Estás seguro de aprobar este resultado? El bracket avanzará automáticamente.")) return;
-    
+    if (
+      !confirm(
+        "¿Estás seguro de aprobar este resultado? El bracket avanzará automáticamente.",
+      )
+    )
+      return;
+
     try {
       setProcessingId(id);
       const res = await fetch(`/api/admin/validations/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "APPROVED" })
+        body: JSON.stringify({ status: "APPROVED" }),
       });
       const data = await res.json();
-      
+
       if (!res.ok) throw new Error(data.error || "Error al aprobar");
-      
+
       setValidations((prev) => prev.filter((v) => v.validation_id !== id));
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : String(err));
     } finally {
       setProcessingId(null);
     }
@@ -87,19 +95,24 @@ export default function ValidationsPage() {
 
     try {
       setProcessingId(rejectingValidationId);
-      const res = await fetch(`/api/admin/validations/${rejectingValidationId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "REJECTED", rejectionReason })
-      });
+      const res = await fetch(
+        `/api/admin/validations/${rejectingValidationId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "REJECTED", rejectionReason }),
+        },
+      );
       const data = await res.json();
-      
+
       if (!res.ok) throw new Error(data.error || "Error al rechazar");
-      
-      setValidations((prev) => prev.filter((v) => v.validation_id !== rejectingValidationId));
+
+      setValidations((prev) =>
+        prev.filter((v) => v.validation_id !== rejectingValidationId),
+      );
       closeRejectModal();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : String(err));
     } finally {
       setProcessingId(null);
     }
@@ -113,7 +126,9 @@ export default function ValidationsPage() {
             <h1 className="text-4xl font-bold font-[var(--font-display)] uppercase tracking-tighter text-white">
               Validar <span className="text-arena-magenta">Resultados</span>
             </h1>
-            <p className="text-zinc-400">Revisa los resultados pendientes reportados por los jugadores.</p>
+            <p className="text-zinc-400">
+              Revisa los resultados pendientes reportados por los jugadores.
+            </p>
           </div>
           <Link
             href="/admin/dashboard"
@@ -133,11 +148,23 @@ export default function ValidationsPage() {
           </div>
         ) : validations.length === 0 ? (
           <div className="bg-zinc-900/50 border-2 border-dashed border-zinc-800 rounded-2xl py-20 text-center">
-            <svg className="w-16 h-16 text-zinc-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-16 h-16 text-zinc-700 mx-auto mb-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <h2 className="text-xl font-bold text-white mb-2">Todo al día</h2>
-            <p className="text-zinc-500">No hay resultados pendientes de validación en este momento.</p>
+            <p className="text-zinc-500">
+              No hay resultados pendientes de validación en este momento.
+            </p>
           </div>
         ) : (
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden">
@@ -148,16 +175,33 @@ export default function ValidationsPage() {
                     <th className="px-6 py-4 font-semibold">Torneo</th>
                     <th className="px-6 py-4 font-semibold">Partido</th>
                     <th className="px-6 py-4 font-semibold">Participantes</th>
-                    <th className="px-6 py-4 font-semibold">Resultado Reportado</th>
-                    <th className="px-6 py-4 font-semibold text-right">Acciones</th>
+                    <th className="px-6 py-4 font-semibold">
+                      Resultado Reportado
+                    </th>
+                    <th className="px-6 py-4 font-semibold text-right">
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800">
                   {validations.map((val) => (
-                    <tr key={val.validation_id} className="hover:bg-zinc-800/30 transition-colors">
+                    <tr
+                      key={val.validation_id}
+                      className="hover:bg-zinc-800/30 transition-colors"
+                    >
                       <td className="px-6 py-4">
-                        <div className="font-medium text-white">{val.tournament_name}</div>
-                        <div className="text-xs text-zinc-500">{new Date(val.created_at).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+                        <div className="font-medium text-white">
+                          {val.tournament_name}
+                        </div>
+                        <div className="text-xs text-zinc-500">
+                          {new Date(val.created_at).toLocaleString("es-ES", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center px-2 py-1 rounded-md bg-zinc-800 text-xs font-medium text-zinc-300">
@@ -166,22 +210,48 @@ export default function ValidationsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1">
-                          <span className={val.score_participant1 > val.score_participant2 ? "text-arena-cyan font-bold" : "text-zinc-300"}>
+                          <span
+                            className={
+                              val.score_participant1 > val.score_participant2
+                                ? "text-arena-cyan font-bold"
+                                : "text-zinc-300"
+                            }
+                          >
                             {val.participant1_name || "TBD"}
                           </span>
-                          <span className="text-zinc-600 text-[10px] uppercase font-bold">vs</span>
-                          <span className={val.score_participant2 > val.score_participant1 ? "text-arena-cyan font-bold" : "text-zinc-300"}>
+                          <span className="text-zinc-600 text-[10px] uppercase font-bold">
+                            vs
+                          </span>
+                          <span
+                            className={
+                              val.score_participant2 > val.score_participant1
+                                ? "text-arena-cyan font-bold"
+                                : "text-zinc-300"
+                            }
+                          >
                             {val.participant2_name || "TBD"}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2 font-mono text-lg font-black">
-                          <span className={val.score_participant1 > val.score_participant2 ? "text-arena-cyan" : "text-zinc-400"}>
+                          <span
+                            className={
+                              val.score_participant1 > val.score_participant2
+                                ? "text-arena-cyan"
+                                : "text-zinc-400"
+                            }
+                          >
                             {val.score_participant1}
                           </span>
                           <span className="text-zinc-600">-</span>
-                          <span className={val.score_participant2 > val.score_participant1 ? "text-arena-cyan" : "text-zinc-400"}>
+                          <span
+                            className={
+                              val.score_participant2 > val.score_participant1
+                                ? "text-arena-cyan"
+                                : "text-zinc-400"
+                            }
+                          >
                             {val.score_participant2}
                           </span>
                         </div>
@@ -199,7 +269,9 @@ export default function ValidationsPage() {
                           disabled={processingId === val.validation_id}
                           className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-zinc-900 bg-arena-cyan rounded hover:bg-white transition-colors shadow-[0_0_10px_rgba(0,240,255,0.3)] hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] disabled:opacity-50"
                         >
-                          {processingId === val.validation_id ? "..." : "Aprobar"}
+                          {processingId === val.validation_id
+                            ? "..."
+                            : "Aprobar"}
                         </button>
                       </td>
                     </tr>
@@ -216,9 +288,14 @@ export default function ValidationsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
             <div className="p-6">
-              <h3 className="text-xl font-bold text-white mb-2">Rechazar Resultado</h3>
-              <p className="text-sm text-zinc-400 mb-6">Indica el motivo por el cual estás rechazando este resultado reportado. Los jugadores podrán volver a reportarlo.</p>
-              
+              <h3 className="text-xl font-bold text-white mb-2">
+                Rechazar Resultado
+              </h3>
+              <p className="text-sm text-zinc-400 mb-6">
+                Indica el motivo por el cual estás rechazando este resultado
+                reportado. Los jugadores podrán volver a reportarlo.
+              </p>
+
               <form onSubmit={handleReject}>
                 <div className="space-y-4 mb-8">
                   <div>
@@ -233,7 +310,7 @@ export default function ValidationsPage() {
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex gap-3 justify-end">
                   <button
                     type="button"
@@ -247,7 +324,9 @@ export default function ValidationsPage() {
                     disabled={processingId === rejectingValidationId}
                     className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-500 rounded-lg transition-colors disabled:opacity-50"
                   >
-                    {processingId === rejectingValidationId ? "Rechazando..." : "Confirmar Rechazo"}
+                    {processingId === rejectingValidationId
+                      ? "Rechazando..."
+                      : "Confirmar Rechazo"}
                   </button>
                 </div>
               </form>

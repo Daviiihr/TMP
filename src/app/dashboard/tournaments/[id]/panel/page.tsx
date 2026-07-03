@@ -69,7 +69,7 @@ export default function TournamentPanelPage({
 
     // Fetch initial data
     fetchTournamentDetails();
-    // eslint-disable-next-line
+
     fetchBracket();
   }, [tournamentId]);
 
@@ -90,7 +90,6 @@ export default function TournamentPanelPage({
     // Sincronización automática (Short-Polling cada 5 segundos)
     if (!bracketData) return;
     const interval = setInterval(() => {
-      // eslint-disable-next-line
       fetchBracket();
     }, 5000);
     return () => clearInterval(interval);
@@ -176,8 +175,7 @@ export default function TournamentPanelPage({
     }
 
     // Refrescar el bracket completo
-    await // eslint-disable-next-line
-    fetchBracket();
+    await fetchBracket();
   };
 
   const handleMatchUndo = async (matchId: string) => {
@@ -195,8 +193,7 @@ export default function TournamentPanelPage({
     }
 
     // Refrescar el bracket completo
-    await // eslint-disable-next-line
-    fetchBracket();
+    await fetchBracket();
   };
 
   const updateTournamentStatus = async (newStatus: string) => {

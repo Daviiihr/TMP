@@ -44,8 +44,9 @@ export async function POST(
       success: true,
       message: "Resultado deshecho exitosamente",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error undoing match:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -33,7 +33,7 @@ export class MatchResultRepository {
   async reportResult(
     matchId: string,
     score1: number,
-    score2: number
+    score2: number,
   ): Promise<MatchResultRow> {
     const res = await this.pool.query<MatchResultRow>(
       `INSERT INTO match_results (match_id, score_participant1, score_participant2, status)
@@ -45,12 +45,12 @@ export class MatchResultRepository {
          rejection_reason = NULL,
          updated_at = now()
        RETURNING *`,
-      [matchId, score1, score2]
+      [matchId, score1, score2],
     );
 
     await this.pool.query(
       `UPDATE matches SET status = 'PENDING_REVIEW', updated_at = now() WHERE id = $1`,
-      [matchId]
+      [matchId],
     );
 
     return res.rows[0];
@@ -75,7 +75,7 @@ export class MatchResultRepository {
        JOIN matches m ON mr.match_id = m.id
        JOIN tournaments t ON m.tournament_id = t.id
        WHERE mr.status = 'PENDING'
-       ORDER BY mr.created_at ASC`
+       ORDER BY mr.created_at ASC`,
     );
     return res.rows;
   }
@@ -83,20 +83,20 @@ export class MatchResultRepository {
   async updateStatus(
     validationId: string,
     status: "APPROVED" | "REJECTED",
-    rejectionReason?: string
+    rejectionReason?: string,
   ): Promise<MatchResultRow | null> {
     const res = await this.pool.query<MatchResultRow>(
       `UPDATE match_results 
        SET status = $1, rejection_reason = $2, updated_at = now() 
        WHERE id = $3 
        RETURNING *`,
-      [status, rejectionReason || null, validationId]
+      [status, rejectionReason || null, validationId],
     );
 
     if (res.rows.length > 0 && status === "REJECTED") {
       await this.pool.query(
         `UPDATE matches SET status = 'IN_PROGRESS', updated_at = now() WHERE id = $1`,
-        [res.rows[0].match_id]
+        [res.rows[0].match_id],
       );
     }
 

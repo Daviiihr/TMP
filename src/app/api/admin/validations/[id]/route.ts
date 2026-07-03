@@ -32,16 +32,23 @@ export async function PATCH(
        FROM match_results mr
        JOIN matches m ON mr.match_id = m.id
        WHERE mr.id = $1`,
-      [validationId]
+      [validationId],
     );
 
     if (mrRes.rows.length === 0) {
-      return NextResponse.json({ error: "Validación no encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Validación no encontrada" },
+        { status: 404 },
+      );
     }
 
     const matchData = mrRes.rows[0];
 
-    const updated = await repository.updateStatus(validationId, status, rejectionReason);
+    const updated = await repository.updateStatus(
+      validationId,
+      status,
+      rejectionReason,
+    );
 
     if (status === "APPROVED") {
       // Determinar ganador
@@ -53,7 +60,10 @@ export async function PATCH(
       } else {
         // En caso de empate, si las reglas del negocio lo prohíben esto no debería ocurrir.
         // Asignaremos null o devolveremos error.
-        return NextResponse.json({ error: "Empate no soportado para definir ganador" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Empate no soportado para definir ganador" },
+          { status: 400 },
+        );
       }
 
       if (winnerId) {
@@ -63,7 +73,7 @@ export async function PATCH(
           matchData.match_id,
           winnerId,
           matchData.score_participant1,
-          matchData.score_participant2
+          matchData.score_participant2,
         );
 
         await appFactory.getEventEmitter().emit("match:resultApproved", {
@@ -74,8 +84,9 @@ export async function PATCH(
     }
 
     return NextResponse.json({ success: true, validation: updated });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating validation status:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

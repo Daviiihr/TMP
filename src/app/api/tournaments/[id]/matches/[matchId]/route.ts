@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { appFactory } from "@/factories/app.factory";
 import { BracketRepository } from "@/repositories/bracket.repository";
+import { MatchResultRepository } from "@/repositories/matchResult.repository";
 
 export async function PUT(
   req: NextRequest,
@@ -31,11 +32,11 @@ export async function PUT(
     // Si es un jugador, se deja PENDING_REVIEW.
     // Para simplificar según requerimientos, todo reporte vía este endpoint
     // se ingresará primero a match_results. Si es ADMIN, se aprueba.
-    const isDirectApprove = user.role === "ADMIN" || (user.role as string) === "ORGANIZER";
+    const isDirectApprove =
+      user.role === "ADMIN" || (user.role as string) === "ORGANIZER";
 
     const bracketRepo = new BracketRepository();
-    const matchResultRepo = require("@/repositories/matchResult.repository").MatchResultRepository;
-    const mrRepo = new matchResultRepo();
+    const mrRepo = new MatchResultRepository();
 
     if (isDirectApprove) {
       // Direct approval behavior (Admin / Organizer)
@@ -51,10 +52,14 @@ export async function PUT(
         matchId,
         tournamentId,
       });
-      
+
       // Update match_results as well for history
       try {
-        const reported = await mrRepo.reportResult(matchId, score1 || 0, score2 || 0);
+        const reported = await mrRepo.reportResult(
+          matchId,
+          score1 || 0,
+          score2 || 0,
+        );
         await mrRepo.updateStatus(reported.id, "APPROVED");
       } catch (e) {
         console.error("No se pudo registrar en match_results", e);
@@ -82,8 +87,9 @@ export async function PUT(
       // Extendimos la interfaz en getLiveBracket para tener winnerId y status
       if (
         finalMatch &&
-        (finalMatch as any).status === "FINISHED" &&
-        (finalMatch as any).winnerId
+        (finalMatch as { status?: string; winnerId?: string }).status ===
+          "FINISHED" &&
+        (finalMatch as { status?: string; winnerId?: string }).winnerId
       ) {
         const tournamentRepo = appFactory.createTournamentRepository();
         const tournament = await tournamentRepo.getById(tournamentId);
@@ -101,8 +107,9 @@ export async function PUT(
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating match:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

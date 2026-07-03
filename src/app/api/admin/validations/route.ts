@@ -13,8 +13,9 @@ export async function GET() {
     const pendingValidations = await repository.getPendingResults();
 
     return NextResponse.json({ validations: pendingValidations });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching validations:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
