@@ -41,7 +41,6 @@ export default function PublicBracketPage({
 
     // Sincronización automática (Short-Polling cada 5 segundos) para tiempo real
     const interval = setInterval(() => {
-      // eslint-disable-next-line
       fetchBracket();
     }, 5000);
 

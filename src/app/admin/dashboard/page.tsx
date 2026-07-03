@@ -57,11 +57,40 @@ export default async function AdminDashboardPage() {
             <h2 className="text-xl font-bold uppercase tracking-tight text-white mb-6">
               Gestión Global
             </h2>
-            <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-950/50">
-              <p className="text-zinc-500 font-medium italic">
-                Sección en construcción. Aquí podrás banear usuarios, eliminar
-                torneos y gestionar el sistema.
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Link
+                href="/admin/validations"
+                className="flex flex-col p-6 rounded-xl border border-zinc-800 bg-zinc-950/50 hover:border-arena-magenta/50 hover:bg-zinc-900/80 transition-all duration-300 group"
+              >
+                <div className="w-12 h-12 rounded-lg bg-arena-magenta/10 flex items-center justify-center mb-4 group-hover:bg-arena-magenta/20 transition-colors">
+                  <svg
+                    className="w-6 h-6 text-arena-magenta"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">
+                  Validar Resultados
+                </h3>
+                <p className="text-sm text-zinc-400">
+                  Revisa y aprueba o rechaza los resultados de las partidas
+                  subidos por los jugadores.
+                </p>
+              </Link>
+
+              <div className="flex flex-col p-6 rounded-xl border border-zinc-800 border-dashed bg-zinc-950/50 items-center justify-center text-center">
+                <p className="text-zinc-500 font-medium italic text-sm">
+                  Más opciones en construcción...
+                </p>
+              </div>
             </div>
           </section>,
         ),

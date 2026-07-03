@@ -383,22 +383,23 @@ export default function BracketView({
               >
                 Cancelar
               </button>
-              {(selectedMatch as any).status === "FINISHED" && onMatchUndo && (
-                <button
-                  className="flex-1 py-2 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
-                  onClick={undoMatchResult}
-                  disabled={isSubmitting}
-                >
-                  Deshacer
-                </button>
-              )}
+              {(selectedMatch as { status?: string }).status === "FINISHED" &&
+                onMatchUndo && (
+                  <button
+                    className="flex-1 py-2 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                    onClick={undoMatchResult}
+                    disabled={isSubmitting}
+                  >
+                    Deshacer
+                  </button>
+                )}
               <button
                 className="flex-1 py-2 rounded bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-50"
                 onClick={submitMatchResult}
                 disabled={
                   isSubmitting ||
                   !selectedWinnerId ||
-                  (selectedMatch as any).status === "FINISHED"
+                  (selectedMatch as { status?: string }).status === "FINISHED"
                 }
               >
                 Guardar
