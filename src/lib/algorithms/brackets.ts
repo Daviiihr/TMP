@@ -282,6 +282,73 @@ export function generateBracket(
       loserFinalMatch.nextMatchSlot = 2;
     }
 
+    // Fourth pass: Simulate player flow to determine BYEs in the Loser Bracket
+    const loserIncoming = new Map<string, number>();
+    loserRounds.forEach(lr => lr.matches.forEach(m => loserIncoming.set(m.id, 0)));
+
+    // W1 matches produce a loser ONLY if they are NOT a BYE.
+    // We statically evaluated W1 isBye previously.
+    for (const m of rounds[0].matches) {
+      if (m.loserNextMatchId && !m.isBye) {
+        loserIncoming.set(m.loserNextMatchId, (loserIncoming.get(m.loserNextMatchId) || 0) + 1);
+      }
+    }
+
+    // W2 and subsequent Winner rounds ALWAYS have 2 real players, so they always produce a loser.
+    for (let w = 2; w <= totalRounds; w++) {
+      for (const m of rounds[w - 1].matches) {
+        if (m.loserNextMatchId) {
+          loserIncoming.set(m.loserNextMatchId, (loserIncoming.get(m.loserNextMatchId) || 0) + 1);
+        }
+      }
+    }
+
+    // Iterate Loser rounds in order, resolve isBye and propagate winners to next loser rounds
+    for (const lr of loserRounds) {
+      for (const m of lr.matches) {
+        const incoming = loserIncoming.get(m.id) || 0;
+        m.isBye = incoming < 2;
+        
+        // If it gets at least 1 player, it produces a winner (either by playing or by BYE)
+        if (m.nextMatchId && incoming > 0) {
+          loserIncoming.set(m.nextMatchId, (loserIncoming.get(m.nextMatchId) || 0) + 1);
+        }
+      }
+    }
+
+    // Fifth pass: Flatten BYEs in Loser bracket so real players bypass ghost matches
+    const allMatches = new Map<string, Match>();
+    rounds.forEach(r => r.matches.forEach(m => allMatches.set(m.id, m)));
+    loserRounds.forEach(r => r.matches.forEach(m => allMatches.set(m.id, m)));
+
+    const getUltimateDestination = (matchId: string, slot: 1 | 2): { id: string, slot: 1 | 2 } | null => {
+      let current = allMatches.get(matchId);
+      let currentSlot = slot;
+      while (current && current.isBye) {
+        if (!current.nextMatchId) return null; // Reached the end (e.g. Grand Final is Bye? Never happens)
+        currentSlot = current.nextMatchSlot!;
+        current = allMatches.get(current.nextMatchId);
+      }
+      return current ? { id: current.id, slot: currentSlot } : null;
+    };
+
+    for (const m of allMatches.values()) {
+      if (m.nextMatchId) {
+        const dest = getUltimateDestination(m.nextMatchId, m.nextMatchSlot!);
+        if (dest) {
+          m.nextMatchId = dest.id;
+          m.nextMatchSlot = dest.slot;
+        }
+      }
+      if (m.loserNextMatchId) {
+        const dest = getUltimateDestination(m.loserNextMatchId, m.loserNextMatchSlot!);
+        if (dest) {
+          m.loserNextMatchId = dest.id;
+          m.loserNextMatchSlot = dest.slot;
+        }
+      }
+    }
+
     result.loserRounds = loserRounds;
   }
 
