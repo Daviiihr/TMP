@@ -94,7 +94,7 @@ export function generateBracket(
     totalRounds: 0,
   };
 
-  if (!participants || participants.length < 2) return empty;
+  if (!participants || participants.length < 4) return empty;
 
   const numParticipants = participants.length;
   const bracketSize = isPowerOf2(numParticipants)

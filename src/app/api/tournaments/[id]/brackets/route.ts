@@ -22,9 +22,9 @@ export async function POST(
       eliminationMode: "SINGLE_ELIMINATION" | "DOUBLE_ELIMINATION";
     };
 
-    if (!participants || participants.length < 2) {
+    if (!participants || participants.length < 4) {
       return NextResponse.json(
-        { error: "Se requieren al menos 2 participantes" },
+        { error: "Se requieren al menos 4 participantes" },
         { status: 400 },
       );
     }

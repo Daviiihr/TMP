@@ -62,7 +62,7 @@ export default function BracketsTestClient() {
   };
 
   const handleGenerate = () => {
-    if (participants.length < 2) return;
+    if (participants.length < 4) return;
     const res = generateBracket(participants);
     setResult(res);
   };
@@ -196,7 +196,7 @@ export default function BracketsTestClient() {
               <div className="flex gap-3">
                 <button
                   onClick={handleGenerate}
-                  disabled={participants.length < 2}
+                  disabled={participants.length < 4}
                   className="flex-1 py-3 bg-gradient-to-r from-arena-cyan to-arena-cyan-dim text-zinc-950 font-bold text-sm uppercase tracking-widest rounded-xl hover:shadow-[0_0_40px_rgba(0,240,255,0.25)] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   Generar Bracket

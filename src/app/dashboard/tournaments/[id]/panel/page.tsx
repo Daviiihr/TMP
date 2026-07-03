@@ -129,8 +129,8 @@ export default function TournamentPanelPage({
   };
 
   const generateBracket = async () => {
-    if (participants.length < 2) {
-      setError("Se requieren al menos 2 jugadores para generar el bracket.");
+    if (participants.length < 4) {
+      setError("Se requieren al menos 4 jugadores para generar el bracket.");
       return;
     }
     setError(null);
@@ -415,9 +415,9 @@ export default function TournamentPanelPage({
           )}
 
           <button
-            className={`relative overflow-hidden w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] transition-all duration-500 z-10 ${isGenerating || participants.length < 2 ? "bg-zinc-900 border border-zinc-800 text-zinc-600 cursor-not-allowed shadow-none" : "bg-gradient-to-r from-[#00f2fe] to-[#4facfe] text-zinc-950 hover:shadow-[0_0_40px_rgba(0,242,254,0.4)] hover:-translate-y-1 hover:scale-[1.01]"}`}
+            className={`relative overflow-hidden w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] transition-all duration-500 z-10 ${isGenerating || participants.length < 4 ? "bg-zinc-900 border border-zinc-800 text-zinc-600 cursor-not-allowed shadow-none" : "bg-gradient-to-r from-[#00f2fe] to-[#4facfe] text-zinc-950 hover:shadow-[0_0_40px_rgba(0,242,254,0.4)] hover:-translate-y-1 hover:scale-[1.01]"}`}
             onClick={generateBracket}
-            disabled={isGenerating || participants.length < 2}
+            disabled={isGenerating || participants.length < 4}
           >
             {isGenerating ? (
               <span className="flex items-center justify-center gap-3">
