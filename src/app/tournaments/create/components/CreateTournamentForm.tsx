@@ -166,7 +166,7 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
       }
 
       router.push("/dashboard");
-    } catch (err) {
+    } catch {
       setError("Error de red. Por favor intenta nuevamente.");
       setIsLoading(false);
     }
