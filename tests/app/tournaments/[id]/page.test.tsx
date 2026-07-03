@@ -23,7 +23,7 @@ describe("TournamentDetailsPage", () => {
     // Return an unresolved promise to keep it in loading state
     (global.fetch as any).mockImplementation(() => new Promise(() => {}));
 
-    // @ts-ignore
+    // @ts-expect-error: mock params type
     render(<TournamentDetailsPage params={mockParams} />);
 
     // We expect the loading spinner to be there (it doesn't have text, just a div with animate-spin class)
@@ -38,7 +38,7 @@ describe("TournamentDetailsPage", () => {
       json: async () => ({ ok: false, message: "Not found error message" }),
     });
 
-    // @ts-ignore
+    // @ts-expect-error: mock params type
     render(<TournamentDetailsPage params={mockParams} />);
 
     await waitFor(() => {
@@ -75,7 +75,7 @@ describe("TournamentDetailsPage", () => {
       return Promise.resolve({ ok: true, json: async () => ({}) });
     });
 
-    // @ts-ignore
+    // @ts-expect-error: mock params type
     render(<TournamentDetailsPage params={mockParams} />);
 
     await waitFor(() => {
@@ -145,7 +145,7 @@ describe("TournamentDetailsPage", () => {
       return Promise.resolve({ ok: true, json: async () => ({}) });
     });
 
-    // @ts-ignore
+    // @ts-expect-error: mock params type
     render(<TournamentDetailsPage params={mockParams} />);
 
     await waitFor(() => {
