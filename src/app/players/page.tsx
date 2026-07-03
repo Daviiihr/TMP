@@ -69,7 +69,6 @@ export default async function PlayersSearchPage({
                 >
                   <div className="h-24 w-full bg-zinc-800 relative">
                     {user.banner_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={user.banner_url}
                         alt="Banner"
@@ -87,7 +86,6 @@ export default async function PlayersSearchPage({
                       style={{ borderColor: themeColor }}
                     >
                       {user.avatar_url ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img
                           src={user.avatar_url}
                           alt="Avatar"

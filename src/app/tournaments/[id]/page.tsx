@@ -74,7 +74,7 @@ export default function TournamentDetailsPage({
             type: "error",
           });
         }
-      } catch (_err) {
+      } catch (err) {
         setMessage({ text: "Error de conexión", type: "error" });
       } finally {
         setIsLoading(false);
@@ -106,7 +106,7 @@ export default function TournamentDetailsPage({
         });
         if (data.status === 401) router.push("/login");
       }
-    } catch (_err) {
+    } catch (err) {
       setMessage({ text: "Error de conexión", type: "error" });
     } finally {
       setIsEnrolling(false);
@@ -143,7 +143,7 @@ export default function TournamentDetailsPage({
           type: "error",
         });
       }
-    } catch (_err) {
+    } catch (err) {
       setMessage({ text: "Error de conexión", type: "error" });
     } finally {
       setIsEnrolling(false);

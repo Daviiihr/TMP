@@ -40,7 +40,6 @@ export default async function PlayerProfilePage({
           {/* Banner */}
           <div className="h-48 md:h-64 w-full bg-zinc-800 relative">
             {banner ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 src={banner}
                 alt="Banner"
@@ -60,7 +59,6 @@ export default async function PlayerProfilePage({
                 style={{ borderColor: themeColor }}
               >
                 {avatar ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={avatar}
                     alt="Avatar"

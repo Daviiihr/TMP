@@ -29,7 +29,7 @@ export default function BracketsTestClient() {
       }, 300);
       return () => clearTimeout(delayFn);
     } else {
-      setTimeout(() => setSearchResults([]), 0);
+      setSearchResults([]);
     }
   }, [playerName]);
 
