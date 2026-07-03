@@ -11,6 +11,50 @@ export class EnrollmentService {
     private eventEmitter: AppEventEmitter,
   ) {}
 
+  private async checkScheduleConflict(
+    userIds: string[],
+    tournament: {
+      id: string;
+      start_date: Date | string | null;
+      end_date: Date | string | null;
+    },
+  ) {
+    if (!tournament.start_date || !tournament.end_date) return;
+
+    const query = `
+      SELECT DISTINCT t.name, u.username
+      FROM users u
+      LEFT JOIN individual_enrollments ie ON ie.user_id = u.id
+      LEFT JOIN team_members tm ON tm.user_id = u.id
+      LEFT JOIN teams team ON team.id = tm.team_id
+      JOIN tournaments t ON (t.id = ie.tournament_id OR t.id = team.tournament_id)
+      WHERE u.id = ANY($1)
+        AND t.status IN ('REGISTRATION', 'IN_PROGRESS')
+        AND t.id != $2
+        AND t.start_date < $4
+        AND t.end_date > $3
+    `;
+
+    const result = await this.pool.query(query, [
+      userIds,
+      tournament.id,
+      tournament.start_date,
+      tournament.end_date,
+    ]);
+
+    if (result.rows.length > 0) {
+      const conflicts = result.rows
+        .map(
+          (r: { username: string; name: string }) =>
+            `${r.username} (en '${r.name}')`,
+        )
+        .join(", ");
+      throw new Error(
+        `Conflicto de horarios (RN06): Los siguientes jugadores ya participan activamente en torneos simultáneos: ${conflicts}.`,
+      );
+    }
+  }
+
   async enrollPlayerInTournament(userId: string, tournamentId: string) {
     const tournament = await this.tournamentRepo.getById(tournamentId);
     if (!tournament) throw new Error("Torneo no encontrado.");
@@ -24,6 +68,8 @@ export class EnrollmentService {
     if (tournament.type !== "INDIVIDUAL") {
       throw new Error("Este torneo es solo para equipos.");
     }
+
+    await this.checkScheduleConflict([userId], tournament);
 
     // Verificar si el jugador ya está inscrito
     const isEnrolled = await this.pool.query(
@@ -78,6 +124,15 @@ export class EnrollmentService {
     }
     if (team.tournament_id) {
       throw new Error("Tu equipo ya está participando en otro torneo.");
+    }
+
+    const members = await this.pool.query(
+      "SELECT user_id FROM team_members WHERE team_id = $1",
+      [teamId],
+    );
+    const userIds = members.rows.map((r) => r.user_id);
+    if (userIds.length > 0) {
+      await this.checkScheduleConflict(userIds, tournament);
     }
 
     const currentCount =
