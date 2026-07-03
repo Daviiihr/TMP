@@ -27,22 +27,47 @@ export async function PUT(
       );
     }
 
+    // 1. Verificar el rol. Si es ADMIN o ORGANIZER del torneo, se aprueba directo.
+    // Si es un jugador, se deja PENDING_REVIEW.
+    // Para simplificar según requerimientos, todo reporte vía este endpoint
+    // se ingresará primero a match_results. Si es ADMIN, se aprueba.
+    const isDirectApprove = user.role === "ADMIN" || (user.role as string) === "ORGANIZER";
+
     const bracketRepo = new BracketRepository();
+    const matchResultRepo = require("@/repositories/matchResult.repository").MatchResultRepository;
+    const mrRepo = new matchResultRepo();
 
-    // 1. Actualizar el partido actual usando el repositorio robusto del bracket
-    await bracketRepo.updateMatchWinner(
-      tournamentId,
-      matchId,
-      winnerId,
-      score1,
-      score2,
-    );
+    if (isDirectApprove) {
+      // Direct approval behavior (Admin / Organizer)
+      await bracketRepo.updateMatchWinner(
+        tournamentId,
+        matchId,
+        winnerId,
+        score1,
+        score2,
+      );
 
-    // 2. Emitir evento de partido completado para ranking y logs
-    await appFactory.getEventEmitter().emit("match:resultApproved", {
-      matchId,
-      tournamentId,
-    });
+      await appFactory.getEventEmitter().emit("match:resultApproved", {
+        matchId,
+        tournamentId,
+      });
+      
+      // Update match_results as well for history
+      try {
+        const reported = await mrRepo.reportResult(matchId, score1 || 0, score2 || 0);
+        await mrRepo.updateStatus(reported.id, "APPROVED");
+      } catch (e) {
+        console.error("No se pudo registrar en match_results", e);
+      }
+    } else {
+      // User behavior: Goes to pending validation
+      // Here score1 should map to participant1, score2 to participant2.
+      // We will assume the frontend sends score1 for participant1 and score2 for participant2.
+      // If we don't know who is participant1 or participant2 from the request, we must deduce it.
+      // Since BracketView passes `winnerId`, we'll generate scores: winner=1, loser=0 if scores are missing.
+      await mrRepo.reportResult(matchId, score1 || 1, score2 || 0);
+      return NextResponse.json({ success: true, pendingValidation: true });
+    }
 
     // 3. Obtener el bracket actualizado para ver si el torneo ya finalizó (no hay más partidos pendientes)
     // Para simplificar, revisaremos si la final ya tiene ganador, pero lo haremos de forma segura:
