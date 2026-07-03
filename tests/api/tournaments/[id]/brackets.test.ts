@@ -67,10 +67,10 @@ describe("/api/tournaments/[id]/brackets", () => {
       expect(res.init).toEqual({ status: 401 });
     });
 
-    it("should return 400 if less than 2 participants", async () => {
+    it("should return 400 if less than 4 participants", async () => {
       vi.mocked(getSession).mockResolvedValue({ id: "user-1" } as any);
       const req = createRequest({
-        participants: [{ id: "1" }],
+        participants: [{ id: "1" }, { id: "2" }, { id: "3" }],
         eliminationMode: "SINGLE_ELIMINATION",
       });
 
@@ -79,14 +79,14 @@ describe("/api/tournaments/[id]/brackets", () => {
       })) as any;
 
       expect(res.body).toEqual({
-        error: "Se requieren al menos 2 participantes",
+        error: "Se requieren al menos 4 participantes",
       });
       expect(res.init).toEqual({ status: 400 });
     });
 
     it("should generate and save bracket, update tournament status", async () => {
       vi.mocked(getSession).mockResolvedValue({ id: "user-1" } as any);
-      const participants = [{ id: "1" }, { id: "2" }];
+      const participants = [{ id: "1" }, { id: "2" }, { id: "3" }, { id: "4" }];
       vi.mocked(generateBracket).mockReturnValue({ rounds: [] });
       mocks.mockSaveBracket.mockResolvedValue("bracket-1");
       mocks.mockTournamentRepo.getById.mockResolvedValue({ status: "DRAFT" });
@@ -132,7 +132,7 @@ describe("/api/tournaments/[id]/brackets", () => {
       });
 
       const req = createRequest({
-        participants: [{}, {}],
+        participants: [{}, {}, {}, {}],
         eliminationMode: "SINGLE_ELIMINATION",
       });
       const res = (await POST(req, {
