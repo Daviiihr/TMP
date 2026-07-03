@@ -22,9 +22,11 @@ export default function SearchTeamsClient({
     text: string;
   } | null>(null);
 
-  const loadTeams = async (searchTerm = "") => {
+  const loadTeams = async (searchTerm = "", preserveMessage = false) => {
     setLoading(true);
-    setMessage(null);
+    if (!preserveMessage) {
+      setMessage(null);
+    }
     try {
       const url = searchTerm.trim()
         ? `/api/teams/search?q=${encodeURIComponent(searchTerm)}`
@@ -68,7 +70,7 @@ export default function SearchTeamsClient({
           type: "success",
           text: data.message ?? "Te has unido al equipo exitosamente.",
         });
-        await loadTeams(query);
+        await loadTeams(query, true);
       } else {
         setMessage({
           type: "error",

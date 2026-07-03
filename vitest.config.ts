@@ -3,7 +3,8 @@ import path from "path";
 
 export default defineConfig({
   test: {
-    environment: "node",
+    environment: "jsdom",
+    setupFiles: ["./tests/setup.ts"],
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov", "html"],
@@ -14,12 +15,6 @@ export default defineConfig({
         "**/*.d.ts",
         "**/*.test.ts",
         "**/*.spec.ts",
-        "src/app/**/*.tsx",
-        "src/components/**/*.tsx",
-        "src/app/layout.tsx",
-        "src/app/page.tsx",
-        "src/app/**/page.tsx",
-        "src/app/api/**/*.ts",
       ],
     },
     alias: {
