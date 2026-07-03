@@ -89,7 +89,7 @@ export default function ValidationsPage() {
     setRejectionReason("");
   };
 
-  const handleReject = async (e: React.FormEvent) => {
+  const handleReject = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!rejectingValidationId) return;
 
@@ -138,149 +138,162 @@ export default function ValidationsPage() {
           </Link>
         </header>
 
-        {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="w-10 h-10 border-4 border-arena-magenta border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        ) : error ? (
-          <div className="bg-red-900/20 border border-red-500/50 p-6 rounded-xl text-red-400 text-center">
-            {error}
-          </div>
-        ) : validations.length === 0 ? (
-          <div className="bg-zinc-900/50 border-2 border-dashed border-zinc-800 rounded-2xl py-20 text-center">
-            <svg
-              className="w-16 h-16 text-zinc-700 mx-auto mb-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <h2 className="text-xl font-bold text-white mb-2">Todo al día</h2>
-            <p className="text-zinc-500">
-              No hay resultados pendientes de validación en este momento.
-            </p>
-          </div>
-        ) : (
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-zinc-950/80 border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
-                  <tr>
-                    <th className="px-6 py-4 font-semibold">Torneo</th>
-                    <th className="px-6 py-4 font-semibold">Partido</th>
-                    <th className="px-6 py-4 font-semibold">Participantes</th>
-                    <th className="px-6 py-4 font-semibold">
-                      Resultado Reportado
-                    </th>
-                    <th className="px-6 py-4 font-semibold text-right">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-800">
-                  {validations.map((val) => (
-                    <tr
-                      key={val.validation_id}
-                      className="hover:bg-zinc-800/30 transition-colors"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-white">
-                          {val.tournament_name}
-                        </div>
-                        <div className="text-xs text-zinc-500">
-                          {new Date(val.created_at).toLocaleString("es-ES", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2 py-1 rounded-md bg-zinc-800 text-xs font-medium text-zinc-300">
-                          {val.round_label || `Ronda ${val.round_number}`}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1">
-                          <span
-                            className={
-                              val.score_participant1 > val.score_participant2
-                                ? "text-arena-cyan font-bold"
-                                : "text-zinc-300"
-                            }
-                          >
-                            {val.participant1_name || "TBD"}
-                          </span>
-                          <span className="text-zinc-600 text-[10px] uppercase font-bold">
-                            vs
-                          </span>
-                          <span
-                            className={
-                              val.score_participant2 > val.score_participant1
-                                ? "text-arena-cyan font-bold"
-                                : "text-zinc-300"
-                            }
-                          >
-                            {val.participant2_name || "TBD"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 font-mono text-lg font-black">
-                          <span
-                            className={
-                              val.score_participant1 > val.score_participant2
-                                ? "text-arena-cyan"
-                                : "text-zinc-400"
-                            }
-                          >
-                            {val.score_participant1}
-                          </span>
-                          <span className="text-zinc-600">-</span>
-                          <span
-                            className={
-                              val.score_participant2 > val.score_participant1
-                                ? "text-arena-cyan"
-                                : "text-zinc-400"
-                            }
-                          >
-                            {val.score_participant2}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right space-x-2">
-                        <button
-                          onClick={() => openRejectModal(val.validation_id)}
-                          disabled={processingId === val.validation_id}
-                          className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white bg-zinc-800 border border-zinc-700 rounded hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 transition-colors disabled:opacity-50"
-                        >
-                          Rechazar
-                        </button>
-                        <button
-                          onClick={() => handleApprove(val.validation_id)}
-                          disabled={processingId === val.validation_id}
-                          className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-zinc-900 bg-arena-cyan rounded hover:bg-white transition-colors shadow-[0_0_10px_rgba(0,240,255,0.3)] hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] disabled:opacity-50"
-                        >
-                          {processingId === val.validation_id
-                            ? "..."
-                            : "Aprobar"}
-                        </button>
-                      </td>
+        {(() => {
+          if (loading) {
+            return (
+              <div className="flex justify-center items-center py-20">
+                <div className="w-10 h-10 border-4 border-arena-magenta border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            );
+          }
+          if (error) {
+            return (
+              <div className="bg-red-900/20 border border-red-500/50 p-6 rounded-xl text-red-400 text-center">
+                {error}
+              </div>
+            );
+          }
+          if (validations.length === 0) {
+            return (
+              <div className="bg-zinc-900/50 border-2 border-dashed border-zinc-800 rounded-2xl py-20 text-center">
+                <svg
+                  className="w-16 h-16 text-zinc-700 mx-auto mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <h2 className="text-xl font-bold text-white mb-2">
+                  Todo al día
+                </h2>
+                <p className="text-zinc-500">
+                  No hay resultados pendientes de validación en este momento.
+                </p>
+              </div>
+            );
+          }
+          return (
+            <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm whitespace-nowrap">
+                  <thead className="bg-zinc-950/80 border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
+                    <tr>
+                      <th className="px-6 py-4 font-semibold">Torneo</th>
+                      <th className="px-6 py-4 font-semibold">Partido</th>
+                      <th className="px-6 py-4 font-semibold">Participantes</th>
+                      <th className="px-6 py-4 font-semibold">
+                        Resultado Reportado
+                      </th>
+                      <th className="px-6 py-4 font-semibold text-right">
+                        Acciones
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800">
+                    {validations.map((val) => (
+                      <tr
+                        key={val.validation_id}
+                        className="hover:bg-zinc-800/30 transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-white">
+                            {val.tournament_name}
+                          </div>
+                          <div className="text-xs text-zinc-500">
+                            {new Date(val.created_at).toLocaleString("es-ES", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-zinc-800 text-xs font-medium text-zinc-300">
+                            {val.round_label || `Ronda ${val.round_number}`}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col gap-1">
+                            <span
+                              className={
+                                val.score_participant1 > val.score_participant2
+                                  ? "text-arena-cyan font-bold"
+                                  : "text-zinc-300"
+                              }
+                            >
+                              {val.participant1_name || "TBD"}
+                            </span>
+                            <span className="text-zinc-600 text-[10px] uppercase font-bold">
+                              vs
+                            </span>
+                            <span
+                              className={
+                                val.score_participant2 > val.score_participant1
+                                  ? "text-arena-cyan font-bold"
+                                  : "text-zinc-300"
+                              }
+                            >
+                              {val.participant2_name || "TBD"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2 font-mono text-lg font-black">
+                            <span
+                              className={
+                                val.score_participant1 > val.score_participant2
+                                  ? "text-arena-cyan"
+                                  : "text-zinc-400"
+                              }
+                            >
+                              {val.score_participant1}
+                            </span>
+                            <span className="text-zinc-600">{" - "}</span>
+                            <span
+                              className={
+                                val.score_participant2 > val.score_participant1
+                                  ? "text-arena-cyan"
+                                  : "text-zinc-400"
+                              }
+                            >
+                              {val.score_participant2}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-2">
+                          <button
+                            onClick={() => openRejectModal(val.validation_id)}
+                            disabled={processingId === val.validation_id}
+                            className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white bg-zinc-800 border border-zinc-700 rounded hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 transition-colors disabled:opacity-50"
+                          >
+                            Rechazar
+                          </button>
+                          <button
+                            onClick={() => handleApprove(val.validation_id)}
+                            disabled={processingId === val.validation_id}
+                            className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-zinc-900 bg-arena-cyan rounded hover:bg-white transition-colors shadow-[0_0_10px_rgba(0,240,255,0.3)] hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] disabled:opacity-50"
+                          >
+                            {processingId === val.validation_id
+                              ? "..."
+                              : "Aprobar"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Modal Rechazo */}
@@ -299,10 +312,14 @@ export default function ValidationsPage() {
               <form onSubmit={handleReject}>
                 <div className="space-y-4 mb-8">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">
+                    <label
+                      htmlFor="rejectionReason"
+                      className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2"
+                    >
                       Motivo (Opcional)
                     </label>
                     <textarea
+                      id="rejectionReason"
                       value={rejectionReason}
                       onChange={(e) => setRejectionReason(e.target.value)}
                       className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-white placeholder-zinc-600 focus:outline-none focus:border-arena-magenta transition-colors resize-none h-24"

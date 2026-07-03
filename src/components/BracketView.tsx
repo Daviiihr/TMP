@@ -131,7 +131,7 @@ export default function BracketView({
 
   // Sincronizar si cambia el prop
   useEffect(() => {
-    // eslint-disable-next-line
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocalResult(result);
 
     // Determinar al campeón si el último partido de la llave principal tiene ganador
@@ -161,7 +161,7 @@ export default function BracketView({
       const s1 = parseInt(score1);
       const s2 = parseInt(score2);
       if (!Number.isNaN(s1) && !Number.isNaN(s2)) {
-        // eslint-disable-next-line
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (s1 > s2) setSelectedWinnerId(selectedMatch.player1?.id || "");
         else if (s2 > s1) setSelectedWinnerId(selectedMatch.player2?.id || "");
       }

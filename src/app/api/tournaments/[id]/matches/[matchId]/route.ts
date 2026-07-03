@@ -30,7 +30,7 @@ export async function PUT(
 
     // 1. Verificar el rol. Si es ADMIN o ORGANIZER del torneo, se aprueba directo.
     // Si es un jugador, se deja PENDING_REVIEW.
-    // Para simplificar según requerimientos, todo reporte vía este endpoint
+    // Para simplificar según requerimientos, cualquier reporte vía este endpoint
     // se ingresará primero a match_results. Si es ADMIN, se aprueba.
     const isDirectApprove =
       user.role === "ADMIN" || (user.role as string) === "ORGANIZER";
@@ -76,40 +76,48 @@ export async function PUT(
 
     // 3. Obtener el bracket actualizado para ver si el torneo ya finalizó (no hay más partidos pendientes)
     // Para simplificar, revisaremos si la final ya tiene ganador, pero lo haremos de forma segura:
-    const liveBracketData = await bracketRepo.getLiveBracket(tournamentId);
-    if (liveBracketData) {
-      const finalRound =
-        liveBracketData.bracketData.rounds[
-          liveBracketData.bracketData.rounds.length - 1
-        ];
-      const finalMatch = finalRound?.matches[0];
-
-      // Extendimos la interfaz en getLiveBracket para tener winnerId y status
-      if (
-        finalMatch &&
-        (finalMatch as { status?: string; winnerId?: string }).status ===
-          "FINISHED" &&
-        (finalMatch as { status?: string; winnerId?: string }).winnerId
-      ) {
-        const tournamentRepo = appFactory.createTournamentRepository();
-        const tournament = await tournamentRepo.getById(tournamentId);
-
-        if (tournament && tournament.status !== "COMPLETED") {
-          await tournamentRepo.updateStatus(tournamentId, "COMPLETED");
-          appFactory.getEventEmitter().emit("tournament:statusChanged", {
-            tournamentId,
-            oldStatus: tournament.status,
-            newStatus: "COMPLETED",
-            userId: user.id,
-          });
-        }
-      }
-    }
+    await checkAndCompleteTournament(tournamentId, user, bracketRepo);
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error("Error updating match:", error);
     const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+async function checkAndCompleteTournament(
+  tournamentId: string,
+  user: { id: string },
+  bracketRepo: BracketRepository,
+) {
+  const liveBracketData = await bracketRepo.getLiveBracket(tournamentId);
+  if (liveBracketData) {
+    const finalRound =
+      liveBracketData.bracketData.rounds[
+        liveBracketData.bracketData.rounds.length - 1
+      ];
+    const finalMatch = finalRound?.matches[0];
+
+    // Extendimos la interfaz en getLiveBracket para tener winnerId y status
+    if (
+      finalMatch &&
+      (finalMatch as { status?: string; winnerId?: string }).status ===
+        "FINISHED" &&
+      (finalMatch as { status?: string; winnerId?: string }).winnerId
+    ) {
+      const tournamentRepo = appFactory.createTournamentRepository();
+      const tournament = await tournamentRepo.getById(tournamentId);
+
+      if (tournament && tournament.status !== "COMPLETED") {
+        await tournamentRepo.updateStatus(tournamentId, "COMPLETED");
+        appFactory.getEventEmitter().emit("tournament:statusChanged", {
+          tournamentId,
+          oldStatus: tournament.status,
+          newStatus: "COMPLETED",
+          userId: user.id,
+        });
+      }
+    }
   }
 }

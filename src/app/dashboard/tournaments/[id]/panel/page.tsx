@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
+import { use, useEffect, useState, useCallback } from "react";
 import BracketView from "@/components/BracketView";
 import { Participant, BracketResult } from "@/lib/algorithms/brackets";
 import "./panel.css";
@@ -13,7 +12,6 @@ export default function TournamentPanelPage({
 }) {
   const resolvedParams = use(params);
   const tournamentId = resolvedParams.id;
-  const router = useRouter();
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [eliminationMode, setEliminationMode] = useState<
@@ -25,7 +23,7 @@ export default function TournamentPanelPage({
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTournamentDetails = async () => {
+  const fetchTournamentDetails = useCallback(async () => {
     try {
       const res = await fetch(`/api/tournaments/${tournamentId}`);
       const data = await res.json();
@@ -38,9 +36,9 @@ export default function TournamentPanelPage({
     } catch (err) {
       console.error("Error al obtener detalles del torneo:", err);
     }
-  };
+  }, [tournamentId]);
 
-  const fetchBracket = async () => {
+  const fetchBracket = useCallback(async () => {
     try {
       const res = await fetch(`/api/tournaments/${tournamentId}/brackets`);
       const data = await res.json();
@@ -51,7 +49,7 @@ export default function TournamentPanelPage({
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [tournamentId]);
 
   useEffect(() => {
     // Cargar participantes guardados localmente
@@ -60,7 +58,7 @@ export default function TournamentPanelPage({
     );
     if (saved) {
       try {
-        // eslint-disable-next-line
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setParticipants(JSON.parse(saved));
       } catch (e) {
         console.error("Error al cargar participantes", e);
@@ -71,7 +69,7 @@ export default function TournamentPanelPage({
     fetchTournamentDetails();
 
     fetchBracket();
-  }, [tournamentId]);
+  }, [fetchTournamentDetails, fetchBracket]);
 
   useEffect(() => {
     // Guardar participantes en localStorage cada vez que cambian
