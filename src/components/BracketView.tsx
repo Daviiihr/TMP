@@ -158,8 +158,8 @@ export default function BracketView({
 
   useEffect(() => {
     if (score1 && score2 && selectedMatch) {
-      const s1 = parseInt(score1);
-      const s2 = parseInt(score2);
+      const s1 = Number.parseInt(score1);
+      const s2 = Number.parseInt(score2);
       if (!Number.isNaN(s1) && !Number.isNaN(s2)) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         if (s1 > s2) setSelectedWinnerId(selectedMatch.player1?.id || "");

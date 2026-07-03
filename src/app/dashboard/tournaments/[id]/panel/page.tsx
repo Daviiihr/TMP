@@ -243,7 +243,9 @@ export default function TournamentPanelPage({
               <span className="font-bold text-[#00f2fe]">
                 {tournamentStatus}
               </span>
-              . Actualízalo para habilitar inscripciones o iniciar el torneo.
+              {
+                ". Actualízalo para habilitar inscripciones o iniciar el torneo."
+              }
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
