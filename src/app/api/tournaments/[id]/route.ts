@@ -60,7 +60,7 @@ export async function GET(
     return NextResponse.json({ ok: true, tournament });
   } catch (_error: unknown) {
     return NextResponse.json(
-      { error: "Error al actualizar el torneo" },
+      { ok: false, message: "Error al obtener el torneo." },
       { status: 500 },
     );
   }
