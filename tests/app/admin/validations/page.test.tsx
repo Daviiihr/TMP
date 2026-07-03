@@ -13,7 +13,7 @@ describe("ValidationsPage", () => {
   it("should render page skeleton initially", async () => {
     vi.mocked(global.fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ validations: [] })
+      json: async () => ({ validations: [] }),
     } as any);
 
     render(<ValidationsPage />);
@@ -22,31 +22,35 @@ describe("ValidationsPage", () => {
 
   it("should render error state", async () => {
     vi.mocked(global.fetch).mockResolvedValueOnce({
-      ok: false
+      ok: false,
     } as any);
 
     render(<ValidationsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Error al obtener las validaciones/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Error al obtener las validaciones/i),
+      ).toBeInTheDocument();
     });
   });
 
   it("should render validations", async () => {
     vi.mocked(global.fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ validations: [
-        {
-          validation_id: "v1",
-          match_id: "m1",
-          score_participant1: 2,
-          score_participant2: 1,
-          participant1_name: "P1",
-          participant2_name: "P2",
-          tournament_name: "T1",
-          round_label: "Final"
-        }
-      ] })
+      json: async () => ({
+        validations: [
+          {
+            validation_id: "v1",
+            match_id: "m1",
+            score_participant1: 2,
+            score_participant2: 1,
+            participant1_name: "P1",
+            participant2_name: "P2",
+            tournament_name: "T1",
+            round_label: "Final",
+          },
+        ],
+      }),
     } as any);
 
     render(<ValidationsPage />);
