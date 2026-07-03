@@ -11,7 +11,7 @@ export async function PATCH(
 ) {
   try {
     const user = await getSession();
-    if (!user || user.role !== "ADMIN") {
+    if (user?.role !== "ADMIN") {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 

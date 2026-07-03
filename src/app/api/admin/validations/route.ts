@@ -5,7 +5,7 @@ import { MatchResultRepository } from "@/repositories/matchResult.repository";
 export async function GET() {
   try {
     const user = await getSession();
-    if (!user || user.role !== "ADMIN") {
+    if (user?.role !== "ADMIN") {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 

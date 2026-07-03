@@ -179,33 +179,40 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
 
       {/* Stepper Header */}
       <div className="flex items-center justify-between mb-8 relative z-10">
-        {[1, 2, 3].map((num) => (
-          <div key={num} className="flex flex-col items-center flex-1 relative">
+        {[1, 2, 3].map((num) => {
+          const stepName =
+            num === 1 ? "Básicos" : num === 2 ? "Reglas" : "Fechas";
+          return (
             <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 z-10 ${
-                step >= num
-                  ? "bg-arena-cyan text-zinc-950 shadow-[0_0_15px_rgba(0,242,254,0.4)]"
-                  : "bg-zinc-800 text-zinc-500"
-              }`}
+              key={num}
+              className="flex flex-col items-center flex-1 relative"
             >
-              {num}
-            </div>
-            <span
-              className={`text-[10px] mt-2 uppercase tracking-widest font-bold hidden md:block ${
-                step >= num ? "text-arena-cyan" : "text-zinc-500"
-              }`}
-            >
-              {num === 1 ? "Básicos" : num === 2 ? "Reglas" : "Fechas"}
-            </span>
-            {num < 3 && (
               <div
-                className={`absolute top-5 left-[50%] w-full h-[2px] -z-0 transition-colors duration-500 ${
-                  step > num ? "bg-arena-cyan" : "bg-zinc-800"
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 z-10 ${
+                  step >= num
+                    ? "bg-arena-cyan text-zinc-950 shadow-[0_0_15px_rgba(0,242,254,0.4)]"
+                    : "bg-zinc-800 text-zinc-500"
                 }`}
-              />
-            )}
-          </div>
-        ))}
+              >
+                {num}
+              </div>
+              <span
+                className={`text-[10px] mt-2 uppercase tracking-widest font-bold hidden md:block ${
+                  step >= num ? "text-arena-cyan" : "text-zinc-500"
+                }`}
+              >
+                {stepName}
+              </span>
+              {num < 3 && (
+                <div
+                  className={`absolute top-5 left-[50%] w-full h-[2px] -z-0 transition-colors duration-500 ${
+                    step > num ? "bg-arena-cyan" : "bg-zinc-800"
+                  }`}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {error && (
@@ -241,10 +248,14 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <label
+                  htmlFor="name"
+                  className="text-xs font-bold uppercase tracking-wider text-zinc-400"
+                >
                   Nombre del Torneo
                 </label>
                 <input
+                  id="name"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
@@ -254,10 +265,14 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <label
+                  htmlFor="game"
+                  className="text-xs font-bold uppercase tracking-wider text-zinc-400"
+                >
                   Videojuego
                 </label>
                 <select
+                  id="game"
                   name="game"
                   value={formData.game}
                   onChange={handleChange}
@@ -275,10 +290,14 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <label
+                  htmlFor="regions"
+                  className="text-xs font-bold uppercase tracking-wider text-zinc-400"
+                >
                   Regiones Permitidas
                 </label>
                 <input
+                  id="regions"
                   name="regions"
                   value={formData.regions}
                   onChange={handleChange}
@@ -288,10 +307,14 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <label
+                  htmlFor="elimination_mode"
+                  className="text-xs font-bold uppercase tracking-wider text-zinc-400"
+                >
                   Formato del Bracket
                 </label>
                 <select
+                  id="elimination_mode"
                   name="elimination_mode"
                   value={formData.elimination_mode}
                   onChange={handleChange}
@@ -316,12 +339,16 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <label
+                  htmlFor="max_players"
+                  className="text-xs font-bold uppercase tracking-wider text-zinc-400"
+                >
                   {isTeamTournament
                     ? "Máximo de Equipos"
                     : "Máximo de Jugadores"}
                 </label>
                 <input
+                  id="max_players"
                   name="max_players"
                   type="number"
                   min="4"
@@ -333,10 +360,14 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
 
               {isTeamTournament && (
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                  <label
+                    htmlFor="players_per_team"
+                    className="text-xs font-bold uppercase tracking-wider text-zinc-400"
+                  >
                     Jugadores por Equipo
                   </label>
                   <input
+                    id="players_per_team"
                     name="players_per_team"
                     type="number"
                     min="1"
@@ -384,10 +415,14 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
 
             <div className="grid grid-cols-1 gap-6">
               <div className="space-y-2 bg-zinc-950/30 p-4 rounded-xl border border-zinc-800/50 transition-all focus-within:border-arena-cyan focus-within:bg-zinc-900/50">
-                <label className="text-xs font-bold uppercase tracking-wider text-arena-cyan">
+                <label
+                  htmlFor="registration_closes_at"
+                  className="text-xs font-bold uppercase tracking-wider text-arena-cyan"
+                >
                   Fase 1: Fin de Inscripciones
                 </label>
                 <input
+                  id="registration_closes_at"
                   name="registration_closes_at"
                   type="datetime-local"
                   value={formData.registration_closes_at}
@@ -398,10 +433,14 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
               </div>
 
               <div className="space-y-2 bg-zinc-950/30 p-4 rounded-xl border border-zinc-800/50 transition-all focus-within:border-[#9d4edd] focus-within:bg-zinc-900/50">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#9d4edd]">
+                <label
+                  htmlFor="start_date"
+                  className="text-xs font-bold uppercase tracking-wider text-[#9d4edd]"
+                >
                   Fase 2: Inicio de Partidas (Check-in)
                 </label>
                 <input
+                  id="start_date"
                   name="start_date"
                   type="datetime-local"
                   value={formData.start_date}
@@ -412,10 +451,14 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
               </div>
 
               <div className="space-y-2 bg-zinc-950/30 p-4 rounded-xl border border-zinc-800/50 transition-all focus-within:border-zinc-500 focus-within:bg-zinc-900/50">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <label
+                  htmlFor="end_date"
+                  className="text-xs font-bold uppercase tracking-wider text-zinc-400"
+                >
                   Fase 3: Gran Final (Estimada)
                 </label>
                 <input
+                  id="end_date"
                   name="end_date"
                   type="datetime-local"
                   value={formData.end_date}

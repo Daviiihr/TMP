@@ -6,15 +6,19 @@ import { updateProfileAction } from "./actions";
 
 export default function ProfileForm({
   user,
-}: {
+}: Readonly<{
   user: {
+    username: string;
+    email: string;
+    region?: string;
+    role: string;
     theme_color?: string;
     avatar_url?: string;
     banner_url?: string;
     bio?: string;
     competitive_rank?: string;
   };
-}) {
+}>) {
   const [isPending, startTransition] = useTransition();
   const [themeColor, setThemeColor] = useState(user.theme_color || "#00ffff");
   const [avatar, setAvatar] = useState(user.avatar_url || "");
