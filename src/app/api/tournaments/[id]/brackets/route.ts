@@ -55,12 +55,9 @@ export async function POST(
     }
 
     return NextResponse.json({ success: true, bracketId, bracketData });
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error("Error generating bracket:", error);
-    return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
@@ -83,11 +80,8 @@ export async function GET(
       bracketData: liveBracket.bracketData,
       eliminationMode: liveBracket.eliminationMode,
     });
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error("Error fetching bracket:", error);
-    return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

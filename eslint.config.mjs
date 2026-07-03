@@ -13,12 +13,6 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
-  {
-    files: ["tests/**/*.ts", "tests/**/*.tsx"],
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-    },
-  },
 ]);
 
 export default eslintConfig;

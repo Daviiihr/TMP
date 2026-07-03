@@ -60,7 +60,7 @@ export async function getAuthUser(req: NextRequest): Promise<AuthUser | null> {
   try {
     const decoded = jwt.verify(token, jwtAccessSecret()) as AuthUser;
     return decoded;
-  } catch (_error) {
+  } catch (error) {
     return null;
   }
 }

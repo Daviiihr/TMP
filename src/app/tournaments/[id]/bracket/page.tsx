@@ -19,7 +19,7 @@ export default function PublicBracketPage({
   >("SINGLE_ELIMINATION");
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchBracket = React.useCallback(async () => {
+  const fetchBracket = async () => {
     try {
       const res = await fetch(`/api/tournaments/${tournamentId}/brackets`);
       const data = await res.json();
@@ -32,19 +32,21 @@ export default function PublicBracketPage({
     } finally {
       setIsLoading(false);
     }
-  }, [tournamentId]);
+  };
 
   useEffect(() => {
     // Initial fetch
-    setTimeout(() => fetchBracket(), 0);
+    // eslint-disable-next-line
+    fetchBracket();
 
     // Sincronización automática (Short-Polling cada 5 segundos) para tiempo real
     const interval = setInterval(() => {
+      // eslint-disable-next-line
       fetchBracket();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [fetchBracket]);
+  }, [tournamentId]);
 
   return (
     <main className="min-h-screen bg-[#09090b] text-white px-4 py-20 md:px-8 relative overflow-hidden">

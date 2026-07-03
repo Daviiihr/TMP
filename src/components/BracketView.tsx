@@ -20,8 +20,6 @@ interface BracketViewProps {
   onMatchUndo?: (matchId: string) => Promise<void>;
 }
 
-type ExtendedMatch = Match & { status?: string; winnerId?: string };
-
 function MatchCard({
   match,
   onMatchClick,
@@ -33,7 +31,11 @@ function MatchCard({
   const p2 = match.player2;
   const isBye = match.isBye;
 
-  const extendedMatch = match as ExtendedMatch;
+  // Extend type to get extra properties dynamically added
+  const extendedMatch = match as Match & {
+    status?: string;
+    winnerId?: string | null;
+  };
   const status = extendedMatch.status || "PENDING";
   const winnerId = extendedMatch.winnerId || null;
 
@@ -46,6 +48,7 @@ function MatchCard({
     if (onMatchClick && !isBye && p1 && p2) {
       onMatchClick(match);
     } else if (onMatchClick && status === "FINISHED" && !isBye) {
+      // Also allow clicking finished matches to undo
       onMatchClick(match);
     }
   };
@@ -116,74 +119,65 @@ export default function BracketView({
   onMatchUpdate,
   onMatchUndo,
 }: BracketViewProps) {
+  const [localResult, setLocalResult] = useState<BracketResult>(result);
+  const [champion, setChampion] = useState<Participant | null>(null);
+
   // Modal State
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [score1, setScore1] = useState("");
   const [score2, setScore2] = useState("");
   const [selectedWinnerId, setSelectedWinnerId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [localResult, setLocalResult] = useState<BracketResult>(result);
-  const [champion, setChampion] = useState<Participant | null>(null);
 
   // Sincronizar si cambia el prop
   useEffect(() => {
-    setTimeout(() => setLocalResult(result), 0);
+    // eslint-disable-next-line
+    setLocalResult(result);
 
     // Determinar al campeón si el último partido de la llave principal tiene ganador
     if (result.rounds.length > 0) {
       const finalRound = result.rounds[result.rounds.length - 1];
       const finalMatch = finalRound.matches[0];
-      const winnerId = (finalMatch as unknown as Record<string, unknown>)
-        .winnerId;
+      const winnerId = (finalMatch as Match & { winnerId?: string }).winnerId;
 
       if (winnerId) {
         if (finalMatch.player1?.id === winnerId) {
-          setTimeout(() => setChampion(finalMatch.player1 || null), 0);
+          setChampion(finalMatch.player1);
         } else if (finalMatch.player2?.id === winnerId) {
-          setTimeout(() => setChampion(finalMatch.player2 || null), 0);
+          setChampion(finalMatch.player2);
         } else {
-          setTimeout(() => setChampion(null), 0);
+          setChampion(null);
         }
       } else {
-        setTimeout(() => setChampion(null), 0);
+        setChampion(null);
       }
     } else {
-      setTimeout(() => setChampion(null), 0);
+      setChampion(null);
     }
   }, [result]);
 
-  const handleScore1Change = (val: string) => {
-    setScore1(val);
-    autoSelectWinner(val, score2);
-  };
-
-  const handleScore2Change = (val: string) => {
-    setScore2(val);
-    autoSelectWinner(score1, val);
-  };
-
-  const autoSelectWinner = (s1Str: string, s2Str: string) => {
-    if (s1Str && s2Str && selectedMatch) {
-      const s1 = parseInt(s1Str);
-      const s2 = parseInt(s2Str);
-      if (!isNaN(s1) && !isNaN(s2)) {
-        setTimeout(() => {
-          if (s1 > s2) setSelectedWinnerId(selectedMatch.player1?.id || "");
-          else if (s2 > s1)
-            setSelectedWinnerId(selectedMatch.player2?.id || "");
-        }, 0);
+  useEffect(() => {
+    if (score1 && score2 && selectedMatch) {
+      const s1 = parseInt(score1);
+      const s2 = parseInt(score2);
+      if (!Number.isNaN(s1) && !Number.isNaN(s2)) {
+        // eslint-disable-next-line
+        if (s1 > s2) setSelectedWinnerId(selectedMatch.player1?.id || "");
+        else if (s2 > s1) setSelectedWinnerId(selectedMatch.player2?.id || "");
       }
     }
-  };
+  }, [score1, score2, selectedMatch]);
 
-  if (!result || result.rounds.length === 0) return null;
+  if (!localResult || localResult.rounds.length === 0) return null;
 
   const handleMatchClick = (match: Match) => {
     if (!onMatchUpdate) return;
     setSelectedMatch(match);
     setScore1(match.score1?.toString() || "");
     setScore2(match.score2?.toString() || "");
-    setSelectedWinnerId((match as ExtendedMatch).winnerId || "");
+    setSelectedWinnerId(
+      (match as Match & { winnerId?: string }).winnerId || "",
+    );
   };
 
   const submitMatchResult = async () => {
@@ -216,7 +210,7 @@ export default function BracketView({
     }
   };
 
-  const { rounds, totalRounds } = result;
+  const { rounds, totalRounds } = localResult;
 
   // Render para brackets de solo 1 ronda (ej. 2 jugadores)
   if (totalRounds === 1) {
@@ -299,14 +293,14 @@ export default function BracketView({
         </div>
       )}
 
-      {result.loserRounds && result.loserRounds.length > 0 && (
+      {localResult.loserRounds && localResult.loserRounds.length > 0 && (
         <>
           <div className="bracket-divider"></div>
           <div className="bracket-section-title loser-title">
             Llave de Perdedores
           </div>
           <div className="bracket-container loser-container">
-            {result.loserRounds.map((round, ri) => (
+            {localResult.loserRounds.map((round, ri) => (
               <RoundColumn
                 key={ri}
                 round={round}
@@ -350,7 +344,7 @@ export default function BracketView({
                   placeholder="Puntos"
                   className="w-20 bg-black/40 border border-white/10 rounded p-1 text-center"
                   value={score1}
-                  onChange={(e) => handleScore1Change(e.target.value)}
+                  onChange={(e) => setScore1(e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                 />
               </label>
@@ -375,7 +369,7 @@ export default function BracketView({
                   placeholder="Puntos"
                   className="w-20 bg-black/40 border border-white/10 rounded p-1 text-center"
                   value={score2}
-                  onChange={(e) => handleScore2Change(e.target.value)}
+                  onChange={(e) => setScore2(e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                 />
               </label>
@@ -389,23 +383,22 @@ export default function BracketView({
               >
                 Cancelar
               </button>
-              {(selectedMatch as ExtendedMatch).status === "FINISHED" &&
-                onMatchUndo && (
-                  <button
-                    className="flex-1 py-2 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
-                    onClick={undoMatchResult}
-                    disabled={isSubmitting}
-                  >
-                    Deshacer
-                  </button>
-                )}
+              {(selectedMatch as any).status === "FINISHED" && onMatchUndo && (
+                <button
+                  className="flex-1 py-2 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                  onClick={undoMatchResult}
+                  disabled={isSubmitting}
+                >
+                  Deshacer
+                </button>
+              )}
               <button
                 className="flex-1 py-2 rounded bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-50"
                 onClick={submitMatchResult}
                 disabled={
                   isSubmitting ||
                   !selectedWinnerId ||
-                  (selectedMatch as ExtendedMatch).status === "FINISHED"
+                  (selectedMatch as any).status === "FINISHED"
                 }
               >
                 Guardar

@@ -182,6 +182,7 @@ export function generateBracket(
 
     // We create placeholder matches for losers
     let matchCount = bracketSize / 4;
+    const roundIndex = 1;
     for (let r = 1; r <= totalLoserRounds; r++) {
       const matches: Match[] = [];
 

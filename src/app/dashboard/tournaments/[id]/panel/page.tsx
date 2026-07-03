@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, use } from "react";
+import { useRouter } from "next/navigation";
 import BracketView from "@/components/BracketView";
 import { Participant, BracketResult } from "@/lib/algorithms/brackets";
 import "./panel.css";
@@ -12,6 +13,7 @@ export default function TournamentPanelPage({
 }) {
   const resolvedParams = use(params);
   const tournamentId = resolvedParams.id;
+  const router = useRouter();
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [eliminationMode, setEliminationMode] = useState<
@@ -38,7 +40,7 @@ export default function TournamentPanelPage({
     }
   };
 
-  const fetchBracket = React.useCallback(async () => {
+  const fetchBracket = async () => {
     try {
       const res = await fetch(`/api/tournaments/${tournamentId}/brackets`);
       const data = await res.json();
@@ -49,7 +51,7 @@ export default function TournamentPanelPage({
     } catch (err) {
       console.error(err);
     }
-  }, [tournamentId]);
+  };
 
   useEffect(() => {
     // Cargar participantes guardados localmente
@@ -58,18 +60,17 @@ export default function TournamentPanelPage({
     );
     if (saved) {
       try {
-        setTimeout(() => setParticipants(JSON.parse(saved)), 0);
+        // eslint-disable-next-line
+        setParticipants(JSON.parse(saved));
       } catch (e) {
         console.error("Error al cargar participantes", e);
       }
     }
 
     // Fetch initial data
-    setTimeout(() => {
-      fetchTournamentDetails();
-      fetchBracket();
-    }, 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchTournamentDetails();
+    // eslint-disable-next-line
+    fetchBracket();
   }, [tournamentId]);
 
   useEffect(() => {
@@ -89,10 +90,11 @@ export default function TournamentPanelPage({
     // Sincronización automática (Short-Polling cada 5 segundos)
     if (!bracketData) return;
     const interval = setInterval(() => {
+      // eslint-disable-next-line
       fetchBracket();
     }, 5000);
     return () => clearInterval(interval);
-  }, [tournamentId, bracketData, fetchBracket]);
+  }, [tournamentId, bracketData]);
 
   const removeParticipant = (id: string) => {
     setParticipants(participants.filter((p) => p.id !== id));
@@ -174,7 +176,8 @@ export default function TournamentPanelPage({
     }
 
     // Refrescar el bracket completo
-    await fetchBracket();
+    await // eslint-disable-next-line
+    fetchBracket();
   };
 
   const handleMatchUndo = async (matchId: string) => {
@@ -192,7 +195,8 @@ export default function TournamentPanelPage({
     }
 
     // Refrescar el bracket completo
-    await fetchBracket();
+    await // eslint-disable-next-line
+    fetchBracket();
   };
 
   const updateTournamentStatus = async (newStatus: string) => {
@@ -207,7 +211,7 @@ export default function TournamentPanelPage({
         throw new Error(data.message || "Error al actualizar estado");
       setTournamentStatus(newStatus);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError((err as Error).message);
     }
   };
 

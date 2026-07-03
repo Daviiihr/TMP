@@ -96,7 +96,9 @@ export class RankingRepository {
     }));
   }
 
-  async getUserRanking(userId: string): Promise<{
+  async getUserRanking(
+    userId: string,
+  ): Promise<{
     position: number;
     points: number;
     wins: number;

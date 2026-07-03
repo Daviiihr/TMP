@@ -178,8 +178,14 @@ export class BracketRepository {
         else m.player2 = null;
 
         // Extending the Match interface dynamically to include status and winner in the JSON payload
-        (m as Match & { status?: string }).status = liveData.status;
-        (m as Match & { winnerId?: string }).winnerId = liveData.winner_id;
+        (
+          m as import("@/lib/algorithms/brackets").Match & { status?: string }
+        ).status = liveData.status;
+        (
+          m as import("@/lib/algorithms/brackets").Match & {
+            winnerId?: string | null;
+          }
+        ).winnerId = liveData.winner_id;
         m.score1 = liveData.score1 !== null ? liveData.score1 : undefined;
         m.score2 = liveData.score2 !== null ? liveData.score2 : undefined;
       }
