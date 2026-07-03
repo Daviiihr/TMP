@@ -10,9 +10,7 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "test": "vitest",
-    "test:cov": "vitest run --coverage",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:cov": "vitest run --coverage"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
