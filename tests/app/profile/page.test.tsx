@@ -9,13 +9,11 @@ vi.mock("@/lib/session", () => ({
 
 vi.mock("@/repositories/user.repository", () => {
   const UserRepository = vi.fn();
-  UserRepository.prototype.findById = vi
-    .fn()
-    .mockResolvedValue({
-      id: "1",
-      username: "TestUser",
-      email: "test@test.com",
-    });
+  UserRepository.prototype.findById = vi.fn().mockResolvedValue({
+    id: "1",
+    username: "TestUser",
+    email: "test@test.com",
+  });
   return { UserRepository };
 });
 
