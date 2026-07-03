@@ -208,13 +208,7 @@ export function generateBracket(
     // Second pass: Link Loser -> Loser
     for (let r = 1; r < totalLoserRounds; r++) {
       const currentMatches = loserRounds[r - 1].matches;
-      if (r % 2 !== 0) {
-        // Odd round (L1 -> L2): 1 to 1 mapping
-        for (let i = 0; i < currentMatches.length; i++) {
-          currentMatches[i].nextMatchId = loserRounds[r].matches[i].id;
-          currentMatches[i].nextMatchSlot = 1;
-        }
-      } else {
+      if (r % 2 === 0) {
         // Even round (L2 -> L3): 2 to 1 mapping
         for (let i = 0; i < currentMatches.length; i += 2) {
           const targetIndex = Math.floor(i / 2);
@@ -224,6 +218,12 @@ export function generateBracket(
           currentMatches[i + 1].nextMatchId =
             loserRounds[r].matches[targetIndex].id;
           currentMatches[i + 1].nextMatchSlot = 2;
+        }
+      } else {
+        // Odd round (L1 -> L2): 1 to 1 mapping
+        for (let i = 0; i < currentMatches.length; i++) {
+          currentMatches[i].nextMatchId = loserRounds[r].matches[i].id;
+          currentMatches[i].nextMatchSlot = 1;
         }
       }
     }
@@ -340,7 +340,7 @@ export function generateBracket(
     ): { id: string; slot: 1 | 2 } | null => {
       let current = allMatches.get(matchId);
       let currentSlot = slot;
-      while (current && current.isBye) {
+      while (current?.isBye) {
         if (!current.nextMatchId) return null; // Reached the end (e.g. Grand Final is Bye? Never happens)
         currentSlot = current.nextMatchSlot!;
         current = allMatches.get(current.nextMatchId);

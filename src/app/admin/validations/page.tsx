@@ -89,7 +89,7 @@ export default function ValidationsPage() {
     setRejectionReason("");
   };
 
-  const handleReject = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleReject = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!rejectingValidationId) return;
 

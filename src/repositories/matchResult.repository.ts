@@ -28,7 +28,7 @@ export interface PendingValidationRow {
 }
 
 export class MatchResultRepository {
-  constructor(private pool: Pool = getPostgresPool()) {}
+  constructor(private readonly pool: Pool = getPostgresPool()) {}
 
   async reportResult(
     matchId: string,

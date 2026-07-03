@@ -180,8 +180,8 @@ export function CreateTournamentForm({ type }: CreateTournamentFormProps) {
       {/* Stepper Header */}
       <div className="flex items-center justify-between mb-8 relative z-10">
         {[1, 2, 3].map((num) => {
-          const stepName =
-            num === 1 ? "Básicos" : num === 2 ? "Reglas" : "Fechas";
+          const stepNames = ["Básicos", "Reglas", "Fechas"];
+          const stepName = stepNames[num - 1];
           return (
             <div
               key={num}
