@@ -8,6 +8,7 @@ export default async function PlayerProfilePage({
 }) {
   const resolvedParams = await params;
   const username = resolvedParams.username;
+  /* eslint-disable @next/next/no-img-element */
 
   const repo = new UserRepository();
   const user = await repo.findByUsername(username);
