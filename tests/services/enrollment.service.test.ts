@@ -170,6 +170,7 @@ describe("EnrollmentService", () => {
         min_players_per_team: 4,
         max_players: 8,
       } as any);
+      mockPool.query.mockResolvedValueOnce({ rows: [] } as any);
       mockTournamentRepo.getEnrollmentCount.mockResolvedValueOnce(0);
 
       await expect(
@@ -188,6 +189,7 @@ describe("EnrollmentService", () => {
         min_players_per_team: 5,
         max_players: 8,
       } as any);
+      mockPool.query.mockResolvedValueOnce({ rows: [] } as any);
       mockTournamentRepo.getEnrollmentCount.mockResolvedValueOnce(0);
       mockTeamRepo.getMemberCount.mockResolvedValueOnce(4); // Only 4 members!
 
@@ -207,6 +209,7 @@ describe("EnrollmentService", () => {
         min_players_per_team: 5,
         max_players: 8,
       } as any);
+      mockPool.query.mockResolvedValueOnce({ rows: [] } as any);
       mockTournamentRepo.getEnrollmentCount.mockResolvedValueOnce(0);
       mockTeamRepo.getMemberCount.mockResolvedValueOnce(5);
 
