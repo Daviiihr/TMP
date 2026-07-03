@@ -80,7 +80,7 @@ export class TournamentService {
 
       // Liberar cupos eliminando las inscripciones
       await this.pool.query(
-        "DELETE FROM team_enrollments WHERE tournament_id = $1",
+        "UPDATE teams SET tournament_id = NULL WHERE tournament_id = $1",
         [tournamentId],
       );
       await this.pool.query(
